@@ -16,8 +16,6 @@ gem 'kicker'
 gem 'sass'
 gem 'compass'
 
-
-
 gem 'uglifier'
 gem 'yui-compressor'
 
@@ -27,3 +25,6 @@ gem 'coffee-script'
 
 gem 'rake-pipeline', git: 'https://github.com/livingsocial/rake-pipeline.git'
 gem 'rake-pipeline-web-filters', git: 'https://github.com/wycats/rake-pipeline-web-filters.git'
+
+gem "jasmine", git: "git@github.com:prateekdayal/jasmine-gem.git"
+gem "guard-jasmine"
