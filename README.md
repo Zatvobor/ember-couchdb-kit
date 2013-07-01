@@ -1,4 +1,4 @@
 ember-couchdb-adapter
 =====================
 
-CouchDB adapter for ember js(write in coffee script)
+An Ember.js adapter for CouchDB (CAUTION: written in coffee script)
