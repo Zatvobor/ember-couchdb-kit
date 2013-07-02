@@ -18,3 +18,5 @@ gem "jasmine"
 gem "guard-jasmine"
 
 gem 'guard-coffeescript'
+
+gemspec
