@@ -2,11 +2,15 @@
 # spec/javascripts/support/jasmine_config.rb
 #
 require 'rack/coffee_compiler'
+require 'rack'
+require "jasmine"
 
 module Jasmine
   class Config
 
-    alias_method :old_js_files, :js_files
+    attr_accessor :app
+
+    #alias_method :old_js_files, :js_files
 
     def js_files(spec_filter = nil)
       # Convert all .coffee files into .js files before putting them in a script tag
@@ -21,23 +25,23 @@ module Jasmine
 
       config = self
 
-      app = Rack::Builder.new do
+      app = ::Rack::Builder.new do
         # Compiler for your specs
-        use Rack::CoffeeCompiler,
+        use ::Rack::CoffeeCompiler,
             :source_dir => File.join(root, 'spec/javascripts'),
-            :url => config.spec_path
+            :url => 'public/spec/javascripts'
 
         # Compiler for your app files
-        use Rack::CoffeeCompiler,
+        use ::Rack::CoffeeCompiler,
             :source_dir => File.join(root, 'public/javascripts'),
             :url => '/public/javascripts'
 
-        run Jasmine.app(config)
+        run ::Jasmine.app(config)
       end
 
-      server = Rack::Server.new(:Port => port, :AccessLog => [])
+      server = ::Rack::Server.new(:Port => port, :AccessLog => [])
       # workaround for Rack bug, when Rack > 1.2.1 is released Rack::Server.start(:app => Jasmine.app(self)) will work
-      server.instance_variable_set(:@app, app)
+      server.instance_variable_set(@app.to_sym, app)
       server.start
     end
   end
