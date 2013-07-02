@@ -34,17 +34,19 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
       json._rev = rev if rev
 
   addTypeAttribute: (json, record) ->
-    typeAttribute = this.get('typeAttribute')
-    json[typeAttribute] = this.stringForType(record.constructor)
+    if this.get('add_type_attribute')
+      typeAttribute = this.get('typeAttribute')
+      json[typeAttribute] = this.stringForType(record.constructor)
 
   addHasMany: (data, record, key, relationship) ->
     value = record.get(key)
-    if this.get('addEmptyHasMany') || !Ember.empty(value)
-      data[key] = value.getEach('id')
+    attr_key = record.get("users_key") || "id"
+    if this.get('addEmptyHasMany') || !Ember.isEmpty(value)
+      data[key] = value.getEach(attr_key)
 
   addBelongsTo: (hash, record, key, relationship) ->
     id = get(record, relationship.key + '.id')
-    hash[key] = id if this.get('addEmptyBelongsTo') || !Ember.empty(id)
+    hash[key] = id if this.get('addEmptyBelongsTo') || !Ember.isEmpty(id)
 
 
 DS.CouchDBAdapter = DS.Adapter.extend
