@@ -6,11 +6,6 @@ require 'rake-pipeline'
 require 'net/http'
 
 require 'guard/jasmine/task'
-require_relative 'spec/javascripts/support/jasmine_config'
-
-Guard::JasmineTask.new
-
-Guard::JasmineTask.new(:jasmine_no_server, '-s none')
 
 task :test do
   puts "test"
@@ -30,4 +25,13 @@ task :ember_update do
   end
 end
 
-Jasmine::Config.new().start_server()
+begin
+  require 'jasmine'
+  load 'jasmine/tasks/jasmine.rake'
+rescue LoadError
+  task :jasmine do
+    abort "Jasmine is not available. In order to run jasmine, you must: (sudo) gem install jasmine"
+  end
+end
+
+Guard::JasmineTask.new

@@ -1,16 +1,20 @@
 require 'rake-pipeline'
 require 'rake-pipeline/middleware'
 require 'rack-rewrite'
+require 'rack'
+require 'rack/lobster'
+require 'bundler/setup'
+Bundler.require
 
-use Rack::Rewrite do
-  rewrite %r{^(.*)\/$}, '$1/index.html'
-end
-
-run Rack::Directory.new('.')
-
-require 'rack/coffee_compiler'
-
-use Rack::CoffeeCompiler,
-    :source_dir => 'app/coffeescripts',
-    :url => '/javascripts',
-    :alert_on_error => true  # Generates a window.alert on compile error.  Defaults to (RACK_ENV != 'production')
+#project_root = File.dirname(__FILE__)
+#
+#assets = Sprockets::Environment.new(project_root) do |env|
+#  env.logger = Logger.new(STDOUT)
+#end
+#
+#assets.append_path(File.join(project_root, 'assets'))
+#
+#session = Rack::Test::Session.new(Rack::MockSession.new(assets))
+#session.get('application.js')
+#puts session.last_response.body
+run Rack::Lobster.new

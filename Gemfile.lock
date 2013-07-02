@@ -1,19 +1,19 @@
 GIT
+  remote: git://github.com/sstephenson/sprockets.git
+  revision: cb859189faf4704022cec66863bb5bc799a1aea6
+  specs:
+    sprockets (2.10.0)
+      hike (~> 1.2)
+      multi_json (~> 1.0)
+      rack (~> 1.0)
+      tilt (~> 1.1, != 1.3.0)
+
+GIT
   remote: git@github.com:jbaudanza/rack-asset-compiler.git
   revision: cbc561f86b6401538a4949ab23e952887f95c63e
   specs:
     rack-asset-compiler (0.2.1)
       rack
-
-GIT
-  remote: git@github.com:prateekdayal/jasmine-gem.git
-  revision: 05f4f877ddc5b4e20eac126ab41570782b91567c
-  specs:
-    jasmine (1.0.2.1)
-      json_pure (>= 1.4.3)
-      rack (>= 1.1)
-      rspec (>= 1.3.1)
-      selenium-webdriver (>= 0.1.3)
 
 GIT
   remote: https://github.com/livingsocial/rake-pipeline.git
@@ -73,8 +73,14 @@ GEM
     guard-rake (0.0.9)
       guard
       rake
+    hike (1.2.3)
+    jasmine (1.3.2)
+      jasmine-core (~> 1.3.1)
+      rack (~> 1.0)
+      rspec (>= 1.3.1)
+      selenium-webdriver (>= 0.1.3)
+    jasmine-core (1.3.1)
     json (1.8.0)
-    json_pure (1.8.0)
     kicker (2.6.1)
       listen
     libv8 (3.11.8.17)
@@ -91,7 +97,12 @@ GEM
       method_source (~> 0.8)
       slop (~> 3.4)
     rack (1.5.2)
+    rack-coffee (1.0.0)
+      coffee-script
+      rack
     rack-rewrite (1.3.3)
+    rack-test (0.6.2)
+      rack (>= 1.0)
     rake (10.0.4)
     rb-fsevent (0.9.3)
     rb-inotify (0.9.0)
@@ -137,16 +148,19 @@ DEPENDENCIES
   guard
   guard-jasmine
   guard-rake
-  jasmine!
+  jasmine
   json
   kicker
   multi_json
   rack
   rack-asset-compiler!
+  rack-coffee
   rack-rewrite
+  rack-test
   rake-pipeline!
   rake-pipeline-web-filters!
   sass
+  sprockets!
   therubyracer
   uglifier
   yui-compressor
