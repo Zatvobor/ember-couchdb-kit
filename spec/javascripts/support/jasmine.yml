@@ -11,8 +11,11 @@
 #   - dist/**/*.js
 #
 src_files:
-    - public/javascripts/**/*.js
+    - vendor/assets/javascripts/jquery.js
+    - vendor/assets/javascripts/handlebars.js
+    - vendor/assets/javascripts/ember.js
     - vendor/assets/javascripts/**/*.js
+    - public/javascripts/**/*.js
 
 # stylesheets
 #
