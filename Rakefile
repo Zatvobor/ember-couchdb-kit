@@ -1,8 +1,6 @@
 APPNAME = 'ember-couchdb-adapter'
 
 require 'colored'
-require 'rack/asset_compiler'
-require 'rake-pipeline'
 require 'net/http'
 
 require 'guard/jasmine/task'
