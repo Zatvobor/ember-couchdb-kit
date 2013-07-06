@@ -20,7 +20,13 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
     hash._id || hash.id
 
   stringForType: (type) ->
-    type.toString()
+    type = type.toString()
+    if type.search(".") < 0
+      type
+    else
+      pattern = /((?:.*))\.(\w+)/ig
+      reg_array = pattern.exec(type)
+      reg_array[reg_array.length - 1].toString().toLowerCase()
 
   getRecordRevision: (record) ->
     record.get('_data.attributes._rev')
@@ -39,15 +45,18 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
       json[typeAttribute] = this.stringForType(record.constructor)
 
   addHasMany: (data, record, key, relationship) ->
+    @_addHasMany(data, record, key, relationship)
+
+  _addHasMany: (data, record, key, relationship) ->
     value = record.get(key)
-    attr_key = record.get("users_key") || "id"
+    attr_key = record.get("#{relationship.key}_key") || "id"
     if this.get('addEmptyHasMany') || !Ember.isEmpty(value)
       data[key] = value.getEach(attr_key)
 
   addBelongsTo: (hash, record, key, relationship) ->
-    id = get(record, relationship.key + '.id')
+    id_key = record.get("#{relationship.key}_key") || "id"
+    id = Ember.get(record, "#{relationship.key}.#{id_key}")
     hash[key] = id if this.get('addEmptyBelongsTo') || !Ember.isEmpty(id)
-
 
 DS.CouchDBAdapter = DS.Adapter.extend
   typeAttribute: 'ember_type'
@@ -56,6 +65,7 @@ DS.CouchDBAdapter = DS.Adapter.extend
   serializer: DS.CouchDBSerializer
 
   _ajax: (url, type, hash) ->
+    if url.split("/").pop() == "" then url = url.substr(0, url.length - 1)
     hash.url = url
     hash.type = type
     hash.dataType = 'json'
@@ -88,7 +98,7 @@ DS.CouchDBAdapter = DS.Adapter.extend
       include_docs: true
       keys: ids
 
-    this.ajax('_all_docs', 'POST', {
+    this.ajax('_all_docs?include_docs=true', 'POST', {
       data: data
       context: this
       success: (data) ->
