@@ -1,3 +1,6 @@
+#= require ember-couchdb-attachment-adapter
+#= require ember-couchdb-revs-adapter
+
 DS.CouchDBSerializer = DS.JSONSerializer.extend
   typeAttribute: 'ember_type'
   addEmptyHasMany: false
@@ -13,8 +16,41 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
     this.addTypeAttribute(json, record)
     json
 
+  extractHasMany: (type, hash, key) ->
+    if key == "attachments" || key == "_attachments"
+      @extract_attachments(hash["_attachments"],  type.toString(), hash)
+    else
+      hash[key]
+
+  extractBelongsTo: (type, hash, key) ->
+    if key == "history"
+      @extractId(type, hash) + "/history"
+    else
+      hash[key]
+
   extract: (loader, json, type) ->
     this.extractRecordRepresentation(loader, type, json)
+
+  extract_attachments: (attachments, type, hash) ->
+    _attachments = []
+    for k, v of attachments
+      key = "#{hash._id}/#{k}"
+      attachment =
+        id: key
+        content_type: v.content_type
+        digest: v.digest
+        length: v.length
+        stub: v.stub
+        doc_id: hash._id
+        _rev: hash._rev
+        file_name: k
+        doc_type: type
+        revpos: v.revpos
+        db: v.db
+
+      AttachmentStore.add(key, attachment)
+      _attachments.push(key)
+    _attachments
 
   extractId: (type, hash) ->
     hash._id || hash.id
@@ -64,6 +100,11 @@ DS.CouchDBAdapter = DS.Adapter.extend
   customTypeLookup: false
   serializer: DS.CouchDBSerializer
 
+
+  ajax: (url, type, hash) ->
+    db = this.get('db')
+    this._ajax('/%@/%@'.fmt(db, url || ''), type, hash)
+
   _ajax: (url, type, hash) ->
     if url.split("/").pop() == "" then url = url.substr(0, url.length - 1)
     hash.url = url
@@ -79,10 +120,6 @@ DS.CouchDBAdapter = DS.Adapter.extend
   shouldCommit: (record, relationships) ->
     this._super.apply(arguments)
 
-  ajax: (url, type, hash) ->
-    db = this.get('db')
-    this._ajax('/%@/%@'.fmt(db, url || ''), type, hash)
-
   stringForType: (type) ->
     this.get('serializer').stringForType(type)
 
@@ -93,26 +130,45 @@ DS.CouchDBAdapter = DS.Adapter.extend
         this.didFindRecord(store, type, data, id)
     })
 
-  findMany: (store, type, ids) ->
-    data =
-      include_docs: true
-      keys: ids
-
-    this.ajax('_all_docs?include_docs=true', 'POST', {
-      data: data
+  find_with_rev: (store, type, id) ->
+    [_id, _rev] = id.split("/")[0..1]
+    this.ajax("#{_id}?rev=#{_rev}", 'GET', {
       context: this
       success: (data) ->
-        store.loadMany(type, data.rows.getEach('doc'))
+        this.didFindRecord(store, type, data, id)
     })
 
-  findQuery: (store, type, query, modelArray) ->
-    designDoc = this.get('designDoc')
-    if query.type == 'view'
-      this.ajax('_design/%@/_view/%@'.fmt(query.designDoc || designDoc, query.viewName), 'GET', {
-        data: query.options
-        success: (data) ->
-          modelArray.load(data.rows.getEach('doc'))
+  find_many_with_rev:(store, type, ids) ->
+    ids.forEach (id) =>
+      @find_with_rev(store, type, id)
+
+  findMany: (store, type, ids) ->
+    if @_check_for_revision(ids[0])
+      @find_many_with_rev(store, type, ids)
+    else
+      data =
+        include_docs: true
+        keys: ids
+
+      this.ajax('_all_docs?include_docs=true', 'POST', {
+        data: data
         context: this
+        success: (data) ->
+          store.loadMany(type, data.rows.getEach('doc'))
+      })
+
+  findQuery: (store, type, query, modelArray) ->
+    if query.type == 'view'
+      designDoc = (query.designDoc || this.get('designDoc'))
+      this.ajax('_design/%@/_view/%@'.fmt(designDoc, query.viewName), 'GET', {
+
+        context: this
+        data: query.options
+
+        success: (data) ->
+          recordDef = {}
+          recordDef[designDoc] = data.rows.getEach('doc')
+          this.didFindQuery(store, type, recordDef, modelArray)
       })
 
   findAll: (store, type) ->
@@ -151,6 +207,8 @@ DS.CouchDBAdapter = DS.Adapter.extend
 
   updateRecord: (store, type, record) ->
     json = this.serialize(record, {associations: true, includeId: true })
+    delete json.history
+    @_update_attachmnets(record, json)
     this.ajax(record.get('id'), 'PUT', {
       data: json,
       context: this,
@@ -167,3 +225,20 @@ DS.CouchDBAdapter = DS.Adapter.extend
       success: (data) ->
         store.didSaveRecord(record)
     })
+
+  _update_attachmnets: (record, json) ->
+    if window.AttachmentStore
+      _attachments = {}
+      record.get('attachments').forEach (item) ->
+        attachment = AttachmentStore.get(item.get('id'))
+        _attachments[item.get('file_name')] =
+          content_type: attachment.content_type
+          digest: attachment.digest
+          length: attachment.length
+          stub:   attachment.stub
+          revpos: attachment.revpos
+      json._attachments = _attachments
+      delete json.attachments
+
+  _check_for_revision: (id) ->
+    id.split("/").length > 1
