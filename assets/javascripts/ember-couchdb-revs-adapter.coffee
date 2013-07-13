@@ -1,35 +1,28 @@
 ###
-This object is a simple json based serializer with advanced `extractHasMany` convinience for
-extracting all document's revisions and prepare them for further loading.
+  An `CouchDBRevsAdapter` is an object which gets revisions info by distict document and used
+  as a main adapter for `Revision` models.
 
-@namespace DS
-@class CouchDBRevsSerializer
-@extends DS.JSONSerializer
-###
-DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
+  Let's consider an usual use case:
 
-  materialize: (record, hash) ->
-    @_super.apply(this, arguments)
+    ```
+    App.Task = DS.Model.extend
+      title: DS.attr('string')
+      history: DS.belongsTo('App.History')
 
-  serialize: (record, options) ->
-    @_super.apply(this, arguments)
+    App.Store.registerAdapter('App.Task', DS.CouchDBAdapter.extend({db: 'docs'}))
 
-  extract: (loader, json, type) ->
-    this.extractRecordRepresentation(loader, type, json)
+    App.History = DS.Model.extend
+      tasks: DS.hasMany('App.Task', {key: "tasks", embedded: true})
 
-  extractId: (type, hash) ->
-    hash._id || hash.id
+    App.Store.registerAdapter('App.History', DS.CouchDBRevsAdapter.extend({db: 'docs'}))
+    ```
 
-  addId: (json, key, id) ->
-    json._id = id
+  So, the `App.Task` model is able to load its revisions as a regular `App.Task` models.
 
-  extractHasMany: (type, hash, key) ->
-    hash[key] = RevsStore.mapRevIds(@extractId(type, hash))
-
-
-###
-An `CouchDBRevsAdapter` is an object which gets revisions info by distict document and used
-as a main adapter for `Revision` models.
+    ```
+    task = App.Task.find("3bbf4b8c504134dd125e7b603b004b71")
+    revs_tasks = task.history.tasks # as an Ember.Enumerable instance
+    ```
 
 @namespace DS
 @class CouchDBRevsAdapter
@@ -66,11 +59,37 @@ DS.CouchDBRevsAdapter = DS.Adapter.extend
 
     Ember.$.ajax(hash)
 
-###
-@private
 
-Document's revisions info registry
 ###
+  This object is a simple json based serializer with advanced `extractHasMany` convinience for
+  extracting all document's revisions and prepare them for further loading.
+
+@namespace DS
+@class CouchDBRevsSerializer
+@extends DS.JSONSerializer
+###
+DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
+
+  materialize: (record, hash) ->
+    @_super.apply(this, arguments)
+
+  serialize: (record, options) ->
+    @_super.apply(this, arguments)
+
+  extract: (loader, json, type) ->
+    this.extractRecordRepresentation(loader, type, json)
+
+  extractId: (type, hash) ->
+    hash._id || hash.id
+
+  addId: (json, key, id) ->
+    json._id = id
+
+  extractHasMany: (type, hash, key) ->
+    hash[key] = RevsStore.mapRevIds(@extractId(type, hash))
+
+
+# @private
 class @RevsStore
   @registiry = {}
 
