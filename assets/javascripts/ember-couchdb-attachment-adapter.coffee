@@ -69,36 +69,36 @@ DS.CouchDBAttachmentAdapter = DS.Adapter.extend
 
   createRecord: (store, type, record) ->
     request = new XMLHttpRequest()
+    request.open('PUT', "/#{this.get('db')}/"+record.get('id') + '?rev=' + record.get('rev'), true)
     request.setRequestHeader('Content-Type', record.get('content_type'))
-
-    path = "/%@/%@?rev=%@".fmt(@get('db'), record.get('id'), record.get('rev'))
-    request.open('PUT', path, true)
     request.send(record.get('blob_data'))
-
     request.onreadystatechange =  =>
       if request.readyState == 4 && (request.status == 201 || request.status == 200)
         data = JSON.parse(request.response)
         data.doc_type = record.get('doc_type')
         data.doc_id = record.get('doc_id')
-
         json = @serialize(record, includeId: true)
-
+        delete data.id
         store.didSaveRecord(record, $.extend(json, data))
 
+  updateRecord: (store, type, record) ->
+    #блядь!
 
-###
-  This object is a simple json based serializer with advanced conviniences for
-  extracting all document's attachment metadata and prepare them for further extracting.
+    deleteRecord: (store, type, record) ->
+      #блядь!
 
-@namespace DS
-@class CouchDBAttachmentSerializer
-@extends DS.JSONSerializer
-###
+      ###
+        This object is a simple json based serializer with advanced conviniences for
+        extracting all document's attachment metadata and prepare them for further extracting.
+
+      @namespace DS
+      @class CouchDBAttachmentSerializer
+      @extends DS.JSONSerializer
+      ###
 DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
 
   materialize: (record, hash) ->
     this._super.apply(this, arguments)
-
     rev = (hash._rev || hash.rev)
     document_class = eval("#{hash.doc_type}")
     document = document_class.find(hash.doc_id)
@@ -111,7 +111,6 @@ DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
 
   serialize: (record, options) ->
     this._super.apply(this, arguments)
-
 
   get_int_revision: (revision) ->
     parseInt(revision.split("-")[0])
@@ -132,7 +131,6 @@ DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
     if options && options.includeId
       rev = this.getRecordRevision(record)
       json._rev = rev if rev
-
 
 # @private
 class @AttachmentStore
