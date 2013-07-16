@@ -1,6 +1,14 @@
 #= require ember-couchdb-attachment-adapter
 #= require ember-couchdb-revs-adapter
 
+###
+  This object is a simple json based serializer with advanced conviniences for
+  managing CouchDB entities.
+
+@namespace DS
+@class CouchDBSerializer
+@extends DS.JSONSerializer
+###
 DS.CouchDBSerializer = DS.JSONSerializer.extend
   typeAttribute: 'ember_type'
   addEmptyHasMany: false
@@ -18,7 +26,7 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
 
   extractHasMany: (type, hash, key) ->
     if key == "attachments" || key == "_attachments"
-      @extract_attachments(hash["_attachments"],  type.toString(), hash)
+      @extractAttachments(hash["_attachments"],  type.toString(), hash)
     else
       hash[key]
 
@@ -31,7 +39,7 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
   extract: (loader, json, type) ->
     this.extractRecordRepresentation(loader, type, json)
 
-  extract_attachments: (attachments, type, hash) ->
+  extractAttachments: (attachments, type, hash) ->
     _attachments = []
     for k, v of attachments
       key = "#{hash._id}/#{k}"
@@ -94,6 +102,12 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
     id = Ember.get(record, "#{relationship.key}.#{id_key}")
     hash[key] = id if this.get('addEmptyBelongsTo') || !Ember.isEmpty(id)
 
+
+###
+@namespace DS
+@class CouchDBAdapter
+@extends DS.Adapter
+###
 DS.CouchDBAdapter = DS.Adapter.extend
   typeAttribute: 'ember_type'
   typeViewName: 'by-ember-type'
@@ -133,7 +147,7 @@ DS.CouchDBAdapter = DS.Adapter.extend
           this.didFindRecord(store, type, data, id)
       })
 
-  find_with_rev: (store, type, id) ->
+  findWithRev: (store, type, id) ->
     [_id, _rev] = id.split("/")[0..1]
     this.ajax("#{_id}?rev=#{_rev}", 'GET', {
       context: this
@@ -141,13 +155,13 @@ DS.CouchDBAdapter = DS.Adapter.extend
         this.didFindRecord(store, type, data, id)
     })
 
-  find_many_with_rev:(store, type, ids) ->
+  findManyWithRev:(store, type, ids) ->
     ids.forEach (id) =>
-      @find_with_rev(store, type, id)
+      @findWithRev(store, type, id)
 
   findMany: (store, type, ids) ->
-    if @_check_for_revision(ids[0])
-      @find_many_with_rev(store, type, ids)
+    if @_checkRorRevision(ids[0])
+      @findManyWithRev(store, type, ids)
     else
       data =
         include_docs: true
@@ -211,7 +225,7 @@ DS.CouchDBAdapter = DS.Adapter.extend
   updateRecord: (store, type, record) ->
     json = this.serialize(record, {associations: true, includeId: true })
     delete json.history
-    @_update_attachmnets(record, json)
+    @_updateAttachmnets(record, json)
     this.ajax(record.get('id'), 'PUT', {
       data: json,
       context: this,
@@ -229,7 +243,7 @@ DS.CouchDBAdapter = DS.Adapter.extend
         store.didSaveRecord(record)
     })
 
-  _update_attachmnets: (record, json) ->
+  _updateAttachmnets: (record, json) ->
     if window.AttachmentStore
       _attachments = {}
       record.get('attachments').forEach (item) ->
@@ -243,5 +257,5 @@ DS.CouchDBAdapter = DS.Adapter.extend
       json._attachments = _attachments
       delete json.attachments
 
-  _check_for_revision: (id) ->
+  _checkRorRevision: (id) ->
     id.split("/").length > 1
