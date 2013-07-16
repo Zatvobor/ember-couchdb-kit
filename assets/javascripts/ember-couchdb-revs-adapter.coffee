@@ -13,6 +13,8 @@
 
     App.History = DS.Model.extend
       tasks: DS.hasMany('App.Task', {key: "tasks", embedded: true})
+      prev_task: DS.belongsTo('App.Task', {key: "prev_task", embedded: true})
+
 
     App.Store.registerAdapter('App.History', DS.CouchDBRevsAdapter.extend({db: 'docs'}))
     ```
