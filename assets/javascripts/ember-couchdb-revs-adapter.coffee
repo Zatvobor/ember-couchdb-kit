@@ -90,6 +90,7 @@ DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
   extractHasMany: (type, hash, key) ->
     hash[key] = RevsStore.mapRevIds(@extractId(type, hash))
 
+<<<<<<< HEAD
   extractBelongsTo: (type, hash, key) ->
     if key.match("prev_")
       hash[key] = RevsStore.mapRevIds(@extractId(type, hash))[1]
@@ -129,6 +130,8 @@ DS.CouchDBRevsAdapter = DS.Adapter.extend
     if hash.data && type != 'GET'
       hash.data = JSON.stringify(hash.data)
     Ember.$.ajax(hash)
+=======
+>>>>>>> parent of ae803d5... close #22
 
 # @private
 class @RevsStore
