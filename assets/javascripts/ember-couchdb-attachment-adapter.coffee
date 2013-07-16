@@ -16,7 +16,7 @@ DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
     document = document_class.find(hash.doc_id)
 
     unless document.get('_data.attributes._rev') == rev
-      if @get_int_revision(document.get('_data.attributes._rev')) < @get_int_revision(rev)
+      if @getIntRevision(document.get('_data.attributes._rev')) < @getIntRevision(rev)
         document.set('_data.attributes._rev', rev)
 
     record.materializeAttribute("document", document)
@@ -25,7 +25,7 @@ DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
     this._super.apply(this, arguments)
 
 
-  get_int_revision: (revision) ->
+  getIntRevision: (revision) ->
     parseInt(revision.split("-")[0])
 
   extract: (loader, json, type) ->
