@@ -1,4 +1,37 @@
 ###
+  This object is a simple json based serializer with advanced `extractHasMany` convinience for
+  extracting all document's revisions and prepare them for further loading.
+
+@namespace DS
+@class CouchDBRevsSerializer
+@extends DS.JSONSerializer
+###
+DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
+
+  materialize: (record, hash) ->
+    this._super.apply(this, arguments)
+
+  serialize: (record, options) ->
+    this._super.apply(this, arguments)
+
+  extract: (loader, json, type) ->
+    this.extractRecordRepresentation(loader, type, json)
+
+  extractId: (type, hash) ->
+    hash._id || hash.id
+
+  addId: (json, key, id) ->
+    json._id = id
+
+  extractHasMany: (type, hash, key) ->
+    hash[key] = RevsStore.mapRevIds(@extractId(type, hash))
+
+  extractBelongsTo: (type, hash, key) ->
+    if key.match("prev_")
+      hash[key] = RevsStore.mapRevIds(@extractId(type, hash))[1]
+
+
+###
   An `CouchDBRevsAdapter` is an object which gets revisions info by distict document and used
   as a main adapter for `Revision` models.
 
@@ -66,38 +99,6 @@ DS.CouchDBRevsAdapter = DS.Adapter.extend
     hash.data = JSON.stringify(hash.data) if (hash.data && type != 'GET')
 
     Ember.$.ajax(hash)
-
-###
-  This object is a simple json based serializer with advanced `extractHasMany` convinience for
-  extracting all document's revisions and prepare them for further loading.
-
-@namespace DS
-@class CouchDBRevsSerializer
-@extends DS.JSONSerializer
-###
-DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
-
-  materialize: (record, hash) ->
-    this._super.apply(this, arguments)
-
-  serialize: (record, options) ->
-    this._super.apply(this, arguments)
-
-  extract: (loader, json, type) ->
-    this.extractRecordRepresentation(loader, type, json)
-
-  extractId: (type, hash) ->
-    hash._id || hash.id
-
-  addId: (json, key, id) ->
-    json._id = id
-
-  extractHasMany: (type, hash, key) ->
-    hash[key] = RevsStore.mapRevIds(@extractId(type, hash))
-
-  extractBelongsTo: (type, hash, key) ->
-    if key.match("prev_")
-      hash[key] = RevsStore.mapRevIds(@extractId(type, hash))[1]
 
 # @private
 class @RevsStore

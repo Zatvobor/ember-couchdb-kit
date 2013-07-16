@@ -1,4 +1,51 @@
 ###
+  This object is a simple json based serializer with advanced conviniences for
+  extracting all document's attachment metadata and prepare them for further extracting.
+
+@namespace DS
+@class CouchDBAttachmentSerializer
+@extends DS.JSONSerializer
+###
+DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
+
+  materialize: (record, hash) ->
+    this._super.apply(this, arguments)
+
+    rev = (hash._rev || hash.rev)
+    document_class = eval("#{hash.doc_type}")
+    document = document_class.find(hash.doc_id)
+
+    unless document.get('_data.attributes._rev') == rev
+      if @get_int_revision(document.get('_data.attributes._rev')) < @get_int_revision(rev)
+        document.set('_data.attributes._rev', rev)
+
+    record.materializeAttribute("document", document)
+
+  serialize: (record, options) ->
+    this._super.apply(this, arguments)
+
+
+  get_int_revision: (revision) ->
+    parseInt(revision.split("-")[0])
+
+  extract: (loader, json, type) ->
+    this.extractRecordRepresentation(loader, type, json)
+
+  extractId: (type, hash) ->
+    hash._id || hash.id
+
+  getRecordRevision: (record) ->
+    record.get('_data.attributes.rev')
+
+  addId: (json, key, id) ->
+    json._id = id
+
+  addRevision: (json, record, options) ->
+    if options && options.includeId
+      rev = this.getRecordRevision(record)
+      json._rev = rev if rev
+
+###
   An `CouchDBAttachmentAdapter` is an object which manages document's attachements and used
   as a main adapter for `Attachment` models.
 
@@ -91,53 +138,6 @@ DS.CouchDBAttachmentAdapter = DS.Adapter.extend
 
   deleteRecord: (store, type, record) ->
     # just for stubbing purpose which should be defined by default
-
-###
-  This object is a simple json based serializer with advanced conviniences for
-  extracting all document's attachment metadata and prepare them for further extracting.
-
-@namespace DS
-@class CouchDBAttachmentSerializer
-@extends DS.JSONSerializer
-###
-DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
-
-  materialize: (record, hash) ->
-    this._super.apply(this, arguments)
-
-    rev = (hash._rev || hash.rev)
-    document_class = eval("#{hash.doc_type}")
-    document = document_class.find(hash.doc_id)
-
-    unless document.get('_data.attributes._rev') == rev
-      if @get_int_revision(document.get('_data.attributes._rev')) < @get_int_revision(rev)
-        document.set('_data.attributes._rev', rev)
-
-    record.materializeAttribute("document", document)
-
-  serialize: (record, options) ->
-    this._super.apply(this, arguments)
-
-
-  get_int_revision: (revision) ->
-    parseInt(revision.split("-")[0])
-
-  extract: (loader, json, type) ->
-    this.extractRecordRepresentation(loader, type, json)
-
-  extractId: (type, hash) ->
-    hash._id || hash.id
-
-  getRecordRevision: (record) ->
-    record.get('_data.attributes.rev')
-
-  addId: (json, key, id) ->
-    json._id = id
-
-  addRevision: (json, record, options) ->
-    if options && options.includeId
-      rev = this.getRecordRevision(record)
-      json._rev = rev if rev
 
 
 # @private
