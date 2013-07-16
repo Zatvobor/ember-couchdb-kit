@@ -75,21 +75,21 @@ DS.CouchDBRevsAdapter = DS.Adapter.extend
   updateRecord: ->
     #never delete this! блядь!
 
-    ajax: (url, type, hash) ->
-      db = this.get('db')
-      this._ajax('/%@/%@'.fmt(db, url || ''), type, hash)
+  ajax: (url, type, hash) ->
+    db = this.get('db')
+    this._ajax('/%@/%@'.fmt(db, url || ''), type, hash)
 
-    _ajax: (url, type, hash) ->
-      if url.split("/").pop() == "" then url = url.substr(0, url.length - 1)
-      hash.url = url
-      hash.type = type
-      hash.dataType = 'json'
-      hash.contentType = 'application/json; charset=utf-8'
-      hash.context = this
+  _ajax: (url, type, hash) ->
+    if url.split("/").pop() == "" then url = url.substr(0, url.length - 1)
+    hash.url = url
+    hash.type = type
+    hash.dataType = 'json'
+    hash.contentType = 'application/json; charset=utf-8'
+    hash.context = this
 
-      if hash.data && type != 'GET'
-        hash.data = JSON.stringify(hash.data)
-      Ember.$.ajax(hash)
+    if hash.data && type != 'GET'
+      hash.data = JSON.stringify(hash.data)
+    Ember.$.ajax(hash)
 
 # @private
 class @RevsStore
