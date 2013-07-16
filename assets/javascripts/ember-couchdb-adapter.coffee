@@ -124,11 +124,14 @@ DS.CouchDBAdapter = DS.Adapter.extend
     this.get('serializer').stringForType(type)
 
   find: (store, type, id) ->
-    this.ajax(id, 'GET', {
-      context: this
-      success: (data) ->
-        this.didFindRecord(store, type, data, id)
-    })
+    if @_check_for_revision(id)
+      @find_with_rev(store, type, id)
+    else
+      this.ajax(id, 'GET', {
+        context: this
+        success: (data) ->
+          this.didFindRecord(store, type, data, id)
+      })
 
   find_with_rev: (store, type, id) ->
     [_id, _rev] = id.split("/")[0..1]

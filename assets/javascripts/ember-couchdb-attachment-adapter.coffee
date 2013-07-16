@@ -82,9 +82,15 @@ DS.CouchDBAttachmentAdapter = DS.Adapter.extend
         data.doc_id = record.get('doc_id')
 
         json = @serialize(record, includeId: true)
+        delete data.id
 
         store.didSaveRecord(record, $.extend(json, data))
 
+  updateRecord: (store, type, record) ->
+    # just for stubbing purpose which should be defined by default
+
+  deleteRecord: (store, type, record) ->
+    # just for stubbing purpose which should be defined by default
 
 ###
   This object is a simple json based serializer with advanced conviniences for

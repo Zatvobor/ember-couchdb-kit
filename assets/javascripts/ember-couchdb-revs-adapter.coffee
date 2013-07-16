@@ -44,6 +44,12 @@ DS.CouchDBRevsAdapter = DS.Adapter.extend
         this.didFindRecord(store, type, {_id: id}, id)
     })
 
+  updateRecord: (store, type, record) ->
+    # just for stubbing purpose which should be defined by default
+
+  deleteRecord: (store, type, record) ->
+    # just for stubbing purpose which should be defined by default
+
   ajax: (url, type, hash) ->
     @_ajax('/%@/%@'.fmt(@get('db'), url || ''), type, hash)
 
@@ -61,7 +67,6 @@ DS.CouchDBRevsAdapter = DS.Adapter.extend
 
     Ember.$.ajax(hash)
 
-
 ###
   This object is a simple json based serializer with advanced `extractHasMany` convinience for
   extracting all document's revisions and prepare them for further loading.
@@ -73,10 +78,10 @@ DS.CouchDBRevsAdapter = DS.Adapter.extend
 DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
 
   materialize: (record, hash) ->
-    @_super.apply(this, arguments)
+    this._super.apply(this, arguments)
 
   serialize: (record, options) ->
-    @_super.apply(this, arguments)
+    this._super.apply(this, arguments)
 
   extract: (loader, json, type) ->
     this.extractRecordRepresentation(loader, type, json)
@@ -90,48 +95,9 @@ DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
   extractHasMany: (type, hash, key) ->
     hash[key] = RevsStore.mapRevIds(@extractId(type, hash))
 
-<<<<<<< HEAD
   extractBelongsTo: (type, hash, key) ->
     if key.match("prev_")
       hash[key] = RevsStore.mapRevIds(@extractId(type, hash))[1]
-
-DS.CouchDBRevsAdapter = DS.Adapter.extend
-  serializer: DS.CouchDBRevsSerializer
-
-  shouldCommit: (record, relationships) ->
-    this._super.apply(arguments)
-
-  find: (store, type, id) ->
-    _id = id.split("/")[0]
-    this.ajax("#{_id}?revs_info=true", 'GET', {
-      context: this
-      success: (data) ->
-        RevsStore.add(id, data)
-        history_item = {}
-        history_item._id = id
-        this.didFindRecord(store, type, history_item, id)
-    })
-
-  updateRecord: ->
-    #never delete this! блядь!
-
-  ajax: (url, type, hash) ->
-    db = this.get('db')
-    this._ajax('/%@/%@'.fmt(db, url || ''), type, hash)
-
-  _ajax: (url, type, hash) ->
-    if url.split("/").pop() == "" then url = url.substr(0, url.length - 1)
-    hash.url = url
-    hash.type = type
-    hash.dataType = 'json'
-    hash.contentType = 'application/json; charset=utf-8'
-    hash.context = this
-
-    if hash.data && type != 'GET'
-      hash.data = JSON.stringify(hash.data)
-    Ember.$.ajax(hash)
-=======
->>>>>>> parent of ae803d5... close #22
 
 # @private
 class @RevsStore
