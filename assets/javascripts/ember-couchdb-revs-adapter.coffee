@@ -30,16 +30,53 @@
 @class CouchDBRevsAdapter
 @extends DS.Adapter
 ###
+DS.CouchDBRevsAdapter = DS.Adapter.extend
+  serializer: DS.CouchDBRevsSerializer
+
+  shouldCommit: (record, relationships) ->
+    this._super.apply(arguments)
+
+  find: (store, type, id) ->
+    this.ajax("#{id.split("/")[0]}?revs_info=true", 'GET', {
+      context: this
+      success: (data) ->
+        RevsStore.add(id, data)
+        this.didFindRecord(store, type, {_id: id}, id)
+    })
+
+  ajax: (url, type, hash) ->
+    @_ajax('/%@/%@'.fmt(@get('db'), url || ''), type, hash)
+
+
+  _ajax: (url, type, hash) ->
+    if url.split("/").pop() == "" then url = url.substr(0, url.length - 1)
+
+    hash.url = url
+    hash.type = type
+    hash.dataType = 'json'
+    hash.contentType = 'application/json; charset=utf-8'
+    hash.context = this
+
+    hash.data = JSON.stringify(hash.data) if (hash.data && type != 'GET')
+
+    Ember.$.ajax(hash)
+
+
+###
+  This object is a simple json based serializer with advanced `extractHasMany` convinience for
+  extracting all document's revisions and prepare them for further loading.
+
+@namespace DS
+@class CouchDBRevsSerializer
+@extends DS.JSONSerializer
+###
 DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
 
   materialize: (record, hash) ->
-    this._super.apply(this, arguments)
+    @_super.apply(this, arguments)
 
   serialize: (record, options) ->
-    this._super.apply(this, arguments)
-
-  get_int_revision: (revision) ->
-    parseInt(revision.split("-")[0])
+    @_super.apply(this, arguments)
 
   extract: (loader, json, type) ->
     this.extractRecordRepresentation(loader, type, json)
