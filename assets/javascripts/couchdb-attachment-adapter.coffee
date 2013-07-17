@@ -9,7 +9,7 @@
 DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
 
   materialize: (record, hash) ->
-    this._super.apply(this, arguments)
+    @_super.apply(@, arguments)
 
     rev = (hash._rev || hash.rev)
     document_class = eval("#{hash.doc_type}")
@@ -22,14 +22,14 @@ DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
     record.materializeAttribute("document", document)
 
   serialize: (record, options) ->
-    this._super.apply(this, arguments)
+    @_super.apply(@, arguments)
 
 
   getIntRevision: (revision) ->
     parseInt(revision.split("-")[0])
 
   extract: (loader, json, type) ->
-    this.extractRecordRepresentation(loader, type, json)
+    @extractRecordRepresentation(loader, type, json)
 
   extractId: (type, hash) ->
     hash._id || hash.id
@@ -42,7 +42,7 @@ DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
 
   addRevision: (json, record, options) ->
     if options && options.includeId
-      rev = this.getRecordRevision(record)
+      rev = @getRecordRevision(record)
       json._rev = rev if rev
 
 ###
@@ -101,16 +101,16 @@ DS.CouchDBAttachmentAdapter = DS.Adapter.extend
   serializer: DS.CouchDBAttachmentSerializer
 
   shouldCommit: (record, relationships) ->
-    this._super.apply(arguments)
+    @_super.apply(arguments)
 
   find: (store, type, id) ->
     data = AttachmentStore.get(id)
-    this.didFindRecord(store, type, data, id)
+    @didFindRecord(store, type, data, id)
 
   findMany: (store, type, ids) ->
     docs = ids.map (item) =>
       item = AttachmentStore.get(item)
-      item.db = this.get('db')
+      item.db = @get('db')
       item
     store.loadMany(type, docs)
 

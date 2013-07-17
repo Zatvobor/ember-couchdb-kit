@@ -1,6 +1,3 @@
-#= require ember-couchdb-attachment-adapter
-#= require ember-couchdb-revs-adapter
-
 ###
   This object is a simple json based serializer with advanced conviniences for
   managing CouchDB entities.
@@ -10,18 +7,22 @@
 @extends DS.JSONSerializer
 ###
 DS.CouchDBSerializer = DS.JSONSerializer.extend
+
   typeAttribute: 'ember_type'
   addEmptyHasMany: false
   addEmptyBelongsTo: false
 
   materialize: (record, hash) ->
-    this._super.apply(this, arguments)
+    @_super.apply(@, arguments)
+
     record.materializeAttribute("_rev", hash.rev || hash._rev)
 
   serialize: (record, options) ->
-    json = this._super.apply(this, arguments)
-    this.addRevision(json, record, options)
-    this.addTypeAttribute(json, record)
+    json = @_super.apply(@, arguments)
+
+    @addRevision(json, record, options)
+    @addTypeAttribute(json, record)
+
     json
 
   extractHasMany: (type, hash, key) ->
@@ -37,7 +38,7 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
       hash[key]
 
   extract: (loader, json, type) ->
-    this.extractRecordRepresentation(loader, type, json)
+    @extractRecordRepresentation(loader, type, json)
 
   extractAttachments: (attachments, type, hash) ->
     _attachments = []
@@ -80,13 +81,13 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
 
   addRevision: (json, record, options) ->
     if options && options.includeId
-      rev = this.getRecordRevision(record)
+      rev = @getRecordRevision(record)
       json._rev = rev if rev
 
   addTypeAttribute: (json, record) ->
-    if this.get('add_type_attribute')
-      typeAttribute = this.get('typeAttribute')
-      json[typeAttribute] = this.stringForType(record.constructor)
+    if @get('add_type_attribute')
+      typeAttribute = @get('typeAttribute')
+      json[typeAttribute] = @stringForType(record.constructor)
 
   addHasMany: (data, record, key, relationship) ->
     @_addHasMany(data, record, key, relationship)
@@ -94,21 +95,66 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
   _addHasMany: (data, record, key, relationship) ->
     value = record.get(key)
     attr_key = record.get("#{relationship.key}_key") || "id"
-    if this.get('addEmptyHasMany') || !Ember.isEmpty(value)
+    if @get('addEmptyHasMany') || !Ember.isEmpty(value)
       data[key] = value.getEach(attr_key)
 
   addBelongsTo: (hash, record, key, relationship) ->
     id_key = record.get("#{relationship.key}_key") || "id"
     id = Ember.get(record, "#{relationship.key}.#{id_key}")
-    hash[key] = id if this.get('addEmptyBelongsTo') || !Ember.isEmpty(id)
+    hash[key] = id if @get('addEmptyBelongsTo') || !Ember.isEmpty(id)
 
 
 ###
+
+  An `CouchDBAdapter` is a main adapter for connecting your models with CouchDB documents.
+
+  In short
+
+    ```
+    EmberApp.CouchDBModel = DS.Model.extend
+       type: DS.attr('string')
+       title: DS.attr('title')
+
+    EmberApp.Store.registerAdapter('EmberApp.CouchDBModel', DS.CouchDBAdapter.extend({db: 'my_couchdb'}))
+    ```
+
+  The following available operations:
+
+    ```
+      # GET /my_couchdb/:id
+      EmberApp.CouchDBModel.find("id")
+
+      # POST /my_couchdb
+      EmberApp.CouchDBModel.create({type: "my_type", title: "title"})
+
+      # PUT /my_couchdb/:id
+      model = EmberApp.CouchDBModel.find("id")
+      model.set('title', 'new_title')
+      model.get('store').commit()
+
+      # DELETE /my_couchdb/:id
+      model.deleteRecord()
+    ```
+
+  In additional, the following relations also available for getting and pushing:
+
+    ```
+    EmberApp.Post = DS.Model.extend
+       title: DS.attr('string')
+
+       # {"owner": "person@example.com"}
+       owner:  DS.belongsTo('EmberApp.User', { key: 'owner': true})
+
+       # {"people":["person1@example.com", "person2@example.com"]}
+       people: DS.hasMany('EmberApp.User',   { key: 'people', embedded: true})
+    ```
+
 @namespace DS
 @class CouchDBAdapter
 @extends DS.Adapter
 ###
 DS.CouchDBAdapter = DS.Adapter.extend
+
   typeAttribute: 'ember_type'
   typeViewName: 'by-ember-type'
   customTypeLookup: false
@@ -116,8 +162,8 @@ DS.CouchDBAdapter = DS.Adapter.extend
 
 
   ajax: (url, type, hash) ->
-    db = this.get('db')
-    this._ajax('/%@/%@'.fmt(db, url || ''), type, hash)
+    db = @get('db')
+    @_ajax('/%@/%@'.fmt(db, url || ''), type, hash)
 
   _ajax: (url, type, hash) ->
     if url.split("/").pop() == "" then url = url.substr(0, url.length - 1)
@@ -132,16 +178,16 @@ DS.CouchDBAdapter = DS.Adapter.extend
     Ember.$.ajax(hash)
 
   shouldCommit: (record, relationships) ->
-    this._super.apply(arguments)
+    @_super.apply(arguments)
 
   stringForType: (type) ->
-    this.get('serializer').stringForType(type)
+    @get('serializer').stringForType(type)
 
   find: (store, type, id) ->
     if @_checkForRevision(id)
       @findWithRev(store, type, id)
     else
-      this.ajax(id, 'GET', {
+      @ajax(id, 'GET', {
         context: this
         success: (data) ->
           this.didFindRecord(store, type, data, id)
@@ -149,10 +195,11 @@ DS.CouchDBAdapter = DS.Adapter.extend
 
   findWithRev: (store, type, id) ->
     [_id, _rev] = id.split("/")[0..1]
-    this.ajax("#{_id}?rev=#{_rev}", 'GET', {
+
+    @ajax("#{_id}?rev=#{_rev}", 'GET', {
       context: this
       success: (data) ->
-        this.didFindRecord(store, type, data, id)
+        @didFindRecord(store, type, data, id)
     })
 
   findManyWithRev:(store, type, ids) ->
@@ -167,7 +214,7 @@ DS.CouchDBAdapter = DS.Adapter.extend
         include_docs: true
         keys: ids
 
-      this.ajax('_all_docs?include_docs=true', 'POST', {
+      @ajax('_all_docs?include_docs=true', 'POST', {
         data: data
         context: this
         success: (data) ->
@@ -176,8 +223,8 @@ DS.CouchDBAdapter = DS.Adapter.extend
 
   findQuery: (store, type, query, modelArray) ->
     if query.type == 'view'
-      designDoc = (query.designDoc || this.get('designDoc'))
-      this.ajax('_design/%@/_view/%@'.fmt(designDoc, query.viewName), 'GET', {
+      designDoc = (query.designDoc || @get('designDoc'))
+      @ajax('_design/%@/_view/%@'.fmt(designDoc, query.viewName), 'GET', {
 
         context: this
         data: query.options
@@ -189,24 +236,27 @@ DS.CouchDBAdapter = DS.Adapter.extend
       })
 
   findAll: (store, type) ->
-    designDoc = this.get('designDoc')
-    if this.get('customTypeLookup') && this.viewForType
+    designDoc = @get('designDoc')
+
+    if @get('customTypeLookup') && @viewForType
       params = {}
-      viewName = this.viewForType(type, params)
+      viewName = @viewForType(type, params)
       params.include_docs = true
-      this.ajax('_design/%@/_view/%@'.fmt(designDoc, viewName), 'GET', {
+
+      @ajax('_design/%@/_view/%@'.fmt(designDoc, viewName), 'GET', {
         data: params
         context: this
         success: (data) ->
           store.loadMany(type, data.rows.getEach('doc'))
       })
     else
-      typeViewName = this.get('typeViewName')
-      typeString = this.stringForType(type)
+      typeViewName = @get('typeViewName')
+      typeString = @stringForType(type)
       data =
         include_docs: true
         key: encodeURI('"' + typeString + '"')
-      this.ajax('_design/%@/_view/%@'.fmt(designDoc, typeViewName), 'GET', {
+
+      @ajax('_design/%@/_view/%@'.fmt(designDoc, typeViewName), 'GET', {
         context: this
         data: data
         success: (data) ->
@@ -214,8 +264,9 @@ DS.CouchDBAdapter = DS.Adapter.extend
       })
 
   createRecord: (store, type, record) ->
-    json = this.serialize(record)
-    this.ajax('', 'POST', {
+    json = @serialize(record)
+
+    @ajax('', 'POST', {
       data: json
       context: this
       success: (data) ->
@@ -223,10 +274,12 @@ DS.CouchDBAdapter = DS.Adapter.extend
     })
 
   updateRecord: (store, type, record) ->
-    json = this.serialize(record, {associations: true, includeId: true })
+    json = @serialize(record, {associations: true, includeId: true })
+
     delete json.history
+
     @_updateAttachmnets(record, json)
-    this.ajax(record.get('id'), 'PUT', {
+    @ajax(record.get('id'), 'PUT', {
       data: json,
       context: this,
       success: (data) ->
@@ -237,7 +290,7 @@ DS.CouchDBAdapter = DS.Adapter.extend
     })
 
   deleteRecord: (store, type, record) ->
-    this.ajax(record.get('id') + '?rev=' + record.get('_data.attributes._rev'), 'DELETE', {
+    @ajax(record.get('id') + '?rev=' + record.get('_data.attributes._rev'), 'DELETE', {
       context: this
       success: (data) ->
         store.didSaveRecord(record)

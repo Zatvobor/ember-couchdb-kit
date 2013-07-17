@@ -9,13 +9,13 @@
 DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
 
   materialize: (record, hash) ->
-    this._super.apply(this, arguments)
+    @_super.apply(@, arguments)
 
   serialize: (record, options) ->
-    this._super.apply(this, arguments)
+    @_super.apply(@, arguments)
 
   extract: (loader, json, type) ->
-    this.extractRecordRepresentation(loader, type, json)
+    @extractRecordRepresentation(loader, type, json)
 
   extractId: (type, hash) ->
     hash._id || hash.id
@@ -67,10 +67,10 @@ DS.CouchDBRevsAdapter = DS.Adapter.extend
   serializer: DS.CouchDBRevsSerializer
 
   shouldCommit: (record, relationships) ->
-    this._super.apply(arguments)
+    @_super.apply(arguments)
 
   find: (store, type, id) ->
-    this.ajax("#{id.split("/")[0]}?revs_info=true", 'GET', {
+    @ajax("#{id.split("/")[0]}?revs_info=true", 'GET', {
       context: this
       success: (data) ->
         RevsStore.add(id, data)
