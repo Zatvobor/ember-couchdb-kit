@@ -116,10 +116,11 @@ DS.CouchDBAttachmentAdapter = DS.Adapter.extend
 
   createRecord: (store, type, record) ->
     request = new XMLHttpRequest()
-    request.setRequestHeader('Content-Type', record.get('content_type'))
 
     path = "/%@/%@?rev=%@".fmt(@get('db'), record.get('id'), record.get('rev'))
+
     request.open('PUT', path, true)
+    request.setRequestHeader('Content-Type', record.get('content_type'))
     request.send(record.get('blob_data'))
 
     request.onreadystatechange =  =>
@@ -129,8 +130,6 @@ DS.CouchDBAttachmentAdapter = DS.Adapter.extend
         data.doc_id = record.get('doc_id')
 
         json = @serialize(record, includeId: true)
-        delete data.id
-
         store.didSaveRecord(record, $.extend(json, data))
 
   updateRecord: (store, type, record) ->

@@ -138,8 +138,8 @@ DS.CouchDBAdapter = DS.Adapter.extend
     this.get('serializer').stringForType(type)
 
   find: (store, type, id) ->
-    if @_check_for_revision(id)
-      @find_with_rev(store, type, id)
+    if @_checkForRevision(id)
+      @findWithRev(store, type, id)
     else
       this.ajax(id, 'GET', {
         context: this
@@ -160,7 +160,7 @@ DS.CouchDBAdapter = DS.Adapter.extend
       @findWithRev(store, type, id)
 
   findMany: (store, type, ids) ->
-    if @_checkRorRevision(ids[0])
+    if @_checkForRevision(ids[0])
       @findManyWithRev(store, type, ids)
     else
       data =
@@ -257,5 +257,5 @@ DS.CouchDBAdapter = DS.Adapter.extend
       json._attachments = _attachments
       delete json.attachments
 
-  _checkRorRevision: (id) ->
+  _checkForRevision: (id) ->
     id.split("/").length > 1
