@@ -108,7 +108,7 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
 
   An `CouchDBAdapter` is a main adapter for connecting your models with CouchDB documents.
 
-  In short
+  Let's consider a simple model:
 
     ```
     EmberApp.CouchDBModel = DS.Model.extend
@@ -136,7 +136,7 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
       model.deleteRecord()
     ```
 
-  In additional, the following relations also available for getting and pushing:
+  In additional, the following relations also available for getting and pushing models directly:
 
     ```
     EmberApp.Post = DS.Model.extend
@@ -148,6 +148,14 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
        # {"people":["person1@example.com", "person2@example.com"]}
        people: DS.hasMany('EmberApp.User',   { key: 'people', embedded: true})
     ```
+
+  You can use `find` method for quering design views too
+
+    ```
+    EmberApp.Task.find({type: "view", designDoc: 'tasks', viewName: "by_assignee", options: 'include_docs=true&key="%@"'.fmt(@get('email'))})
+    # => Ember.Enumerable<EmberApp.Task>
+    ```
+
 
 @namespace DS
 @class CouchDBAdapter
