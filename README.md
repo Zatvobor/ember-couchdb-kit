@@ -13,6 +13,7 @@ There are newbie features:
 * natural integration with `_changes` notifications;
 
 
+jasmine specs ready to go though `rake jasmine:ci` convenience
 
 License
 -------
