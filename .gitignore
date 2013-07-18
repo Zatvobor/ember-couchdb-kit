@@ -3,3 +3,5 @@ vendor/bundle
 .bundle
 .rvmrc
 bin/
+dist/ember-couchdb-kit.js
+spec/javascripts/*.js
