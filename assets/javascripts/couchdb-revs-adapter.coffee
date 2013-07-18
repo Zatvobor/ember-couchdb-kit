@@ -32,7 +32,7 @@ DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
 
 
 ###
-  An `CouchDBRevsAdapter` is an object which gets revisions info by distict document and used
+  An `CouchDBRevsAdapter` is an object which gets revisions info by distinct document and used
   as a main adapter for `Revision` models.
 
   Let's consider an usual use case:
@@ -56,7 +56,9 @@ DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
 
     ```
     task = App.Task.find("3bbf4b8c504134dd125e7b603b004b71")
-    revs_tasks = task.history.tasks # as an Ember.Enumerable instance
+
+    revs_tasks = task.history.tasks
+    # => Ember.Enumerable<App.Task>
     ```
 
 @namespace DS
@@ -70,8 +72,9 @@ DS.CouchDBRevsAdapter = DS.Adapter.extend
     @_super.apply(arguments)
 
   find: (store, type, id) ->
-    @ajax("#{id.split("/")[0]}?revs_info=true", 'GET', {
+    @ajax("%@?revs_info=true".fmt(id.split("/")[0]), 'GET', {
       context: this
+
       success: (data) ->
         RevsStore.add(id, data)
         this.didFindRecord(store, type, {_id: id}, id)

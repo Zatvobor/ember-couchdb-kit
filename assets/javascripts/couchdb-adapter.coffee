@@ -136,7 +136,7 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
       model.deleteRecord()
     ```
 
-  In additional, the following relations also available for getting and pushing models directly:
+  In additional, the following relations also available for getting and pushing related models:
 
     ```
     EmberApp.Post = DS.Model.extend
@@ -149,7 +149,7 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
        people: DS.hasMany('EmberApp.User',   { key: 'people', embedded: true})
     ```
 
-  You can use `find` method for quering design views too
+  You can use `find` method for quering design views too:
 
     ```
     EmberApp.Task.find({type: "view", designDoc: 'tasks', viewName: "by_assignee", options: 'include_docs=true&key="%@"'.fmt(@get('email'))})
@@ -170,11 +170,11 @@ DS.CouchDBAdapter = DS.Adapter.extend
 
 
   ajax: (url, type, hash) ->
-    db = @get('db')
-    @_ajax('/%@/%@'.fmt(db, url || ''), type, hash)
+    @_ajax('/%@/%@'.fmt(@get('db'), url || ''), type, hash)
 
   _ajax: (url, type, hash) ->
     if url.split("/").pop() == "" then url = url.substr(0, url.length - 1)
+
     hash.url = url
     hash.type = type
     hash.dataType = 'json'
@@ -197,6 +197,7 @@ DS.CouchDBAdapter = DS.Adapter.extend
     else
       @ajax(id, 'GET', {
         context: this
+
         success: (data) ->
           this.didFindRecord(store, type, data, id)
       })
@@ -204,8 +205,9 @@ DS.CouchDBAdapter = DS.Adapter.extend
   findWithRev: (store, type, id) ->
     [_id, _rev] = id.split("/")[0..1]
 
-    @ajax("#{_id}?rev=#{_rev}", 'GET', {
+    @ajax("%@?rev=%@".fmt(_id, _rev), 'GET', {
       context: this
+
       success: (data) ->
         @didFindRecord(store, type, data, id)
     })
@@ -225,6 +227,7 @@ DS.CouchDBAdapter = DS.Adapter.extend
       @ajax('_all_docs?include_docs=true', 'POST', {
         data: data
         context: this
+
         success: (data) ->
           store.loadMany(type, data.rows.getEach('doc'))
       })
@@ -232,8 +235,8 @@ DS.CouchDBAdapter = DS.Adapter.extend
   findQuery: (store, type, query, modelArray) ->
     if query.type == 'view'
       designDoc = (query.designDoc || @get('designDoc'))
-      @ajax('_design/%@/_view/%@'.fmt(designDoc, query.viewName), 'GET', {
 
+      @ajax('_design/%@/_view/%@'.fmt(designDoc, query.viewName), 'GET', {
         context: this
         data: query.options
 
@@ -298,7 +301,7 @@ DS.CouchDBAdapter = DS.Adapter.extend
     })
 
   deleteRecord: (store, type, record) ->
-    @ajax(record.get('id') + '?rev=' + record.get('_data.attributes._rev'), 'DELETE', {
+    @ajax("%@?rev=%@".fmt(record.get('id'), record.get('_data.attributes._rev')), 'DELETE', {
       context: this
       success: (data) ->
         store.didSaveRecord(record)
