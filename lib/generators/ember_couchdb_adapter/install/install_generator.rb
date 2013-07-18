@@ -3,13 +3,15 @@ module EmberCouchdbAdapter
     class InstallGenerator < ::Rails::Generators::Base
 
       desc "This generator installs ember adapter for couchdb"
-      source_root File.expand_path('../../../../../assets/javascripts', __FILE__)
+      source_root File.expand_path('../../../../../src', __FILE__)
 
       def copy
-        remove_file "vendor/assets/javascripts/ember-couchdb-adapter.coffee"
-        copy_file "ember-couchdb-adapter.coffee", "vendor/assets/javascripts/ember-couchdb-adapter.coffee"
+        %w(couchdb-adapter.coffee couchdb-attachment-adapter.coffee couchdb-revs-adapter.coffee
+          ember-couchdb-kit.coffee).each do |file|
+          remove_file "vendor/assets/javascripts/#{file}"
+          copy_file "#{file}", "vendor/assets/javascripts/#{file}"
+        end
       end
-
     end
   end
 end
