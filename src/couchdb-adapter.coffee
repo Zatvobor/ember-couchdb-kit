@@ -99,6 +99,7 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
       data[key] = value.getEach(attr_key)
 
   addBelongsTo: (hash, record, key, relationship) ->
+    return if key == "history"
     id_key = record.get("#{relationship.key}_key") || "id"
     id = Ember.get(record, "#{relationship.key}.#{id_key}")
     hash[key] = id if @get('addEmptyBelongsTo') || !Ember.isEmpty(id)
@@ -286,8 +287,6 @@ DS.CouchDBAdapter = DS.Adapter.extend
 
   updateRecord: (store, type, record) ->
     json = @serialize(record, {associations: true, includeId: true })
-
-    delete json.history
 
     @_updateAttachmnets(record, json)
     @ajax(record.get('id'), 'PUT', {
