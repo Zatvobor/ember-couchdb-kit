@@ -15,7 +15,8 @@
     addEmptyBelongsTo: false,
     materialize: function(record, hash) {
       this._super.apply(this, arguments);
-      return record.materializeAttribute("_rev", hash.rev || hash._rev);
+      record.materializeAttribute("_rev", hash.rev || hash._rev);
+      return record.materializeAttribute("raw_json", hash);
     },
     serialize: function(record, options) {
       var json;
@@ -121,6 +122,9 @@
     addBelongsTo: function(hash, record, key, relationship) {
       var id, id_key;
 
+      if (key === "history") {
+        return;
+      }
       id_key = record.get("" + relationship.key + "_key") || "id";
       id = Ember.get(record, "" + relationship.key + "." + id_key);
       if (this.get('addEmptyBelongsTo') || !Ember.isEmpty(id)) {
@@ -180,6 +184,17 @@
       EmberApp.Task.find({type: "view", designDoc: 'tasks', viewName: "by_assignee", options: 'include_docs=true&key="%@"'.fmt(@get('email'))})
       # => Ember.Enumerable<EmberApp.Task>
       ```
+  
+    ## Tip and tricks
+  
+    Getting a raw document object
+  
+      ```
+      doc = EmberApp.CouchDBModel.find("id")
+      raw_json = doc.get('_data.attributes.raw_json')
+      # => Object {_id: "...", _rev: "...", …}
+      ```
+  
   
   
   @namespace DS
@@ -333,7 +348,6 @@
         associations: true,
         includeId: true
       });
-      delete json.history;
       this._updateAttachmnets(record, json);
       return this.ajax(record.get('id'), 'PUT', {
         data: json,

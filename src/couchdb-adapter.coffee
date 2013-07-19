@@ -16,6 +16,8 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
     @_super.apply(@, arguments)
 
     record.materializeAttribute("_rev", hash.rev || hash._rev)
+    # convenience for getting row document body
+    record.materializeAttribute("raw_json", hash)
 
   serialize: (record, options) ->
     json = @_super.apply(@, arguments)
@@ -156,6 +158,17 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
     EmberApp.Task.find({type: "view", designDoc: 'tasks', viewName: "by_assignee", options: 'include_docs=true&key="%@"'.fmt(@get('email'))})
     # => Ember.Enumerable<EmberApp.Task>
     ```
+
+  ## Tip and tricks
+
+  Getting a raw document object
+
+    ```
+    doc = EmberApp.CouchDBModel.find("id")
+    raw_json = doc.get('_data.attributes.raw_json')
+    # => Object {_id: "...", _rev: "...", …}
+    ```
+
 
 
 @namespace DS
