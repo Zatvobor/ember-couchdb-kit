@@ -116,21 +116,19 @@ DS.CouchDBAttachmentAdapter = DS.Adapter.extend
 
   createRecord: (store, type, record) ->
     request = new XMLHttpRequest()
-
     path = "/%@/%@?rev=%@".fmt(@get('db'), record.get('id'), record.get('rev'))
-
     request.open('PUT', path, true)
     request.setRequestHeader('Content-Type', record.get('content_type'))
-    request.send(record.get('blob_data'))
 
     request.onreadystatechange =  =>
       if request.readyState == 4 && (request.status == 201 || request.status == 200)
         data = JSON.parse(request.response)
         data.doc_type = record.get('doc_type')
         data.doc_id = record.get('doc_id')
-
         json = @serialize(record, includeId: true)
         store.didSaveRecord(record, $.extend(json, data))
+
+    request.send(record.get('file'))
 
   updateRecord: (store, type, record) ->
     # just for stubbing purpose which should be defined by default

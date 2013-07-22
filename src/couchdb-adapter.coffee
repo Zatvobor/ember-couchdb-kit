@@ -24,7 +24,6 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
 
     @addRevision(json, record, options)
     @addTypeAttribute(json, record)
-
     json
 
   extractHasMany: (type, hash, key) ->
@@ -98,14 +97,18 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
     value = record.get(key)
     attr_key = record.get("#{relationship.key}_key") || "id"
     if @get('addEmptyHasMany') || !Ember.isEmpty(value)
-      data[key] = value.getEach(attr_key)
+      values = value.getEach(attr_key)
+      if (values.every (value) -> !value) #find undefined in relations
+        values = record.get('_data.attributes.raw_json')[key]
+        data[key] = values if values
+      else
+        data[key] = values
 
   addBelongsTo: (hash, record, key, relationship) ->
     return if key == "history"
     id_key = record.get("#{relationship.key}_key") || "id"
     id = Ember.get(record, "#{relationship.key}.#{id_key}")
     hash[key] = id if @get('addEmptyBelongsTo') || !Ember.isEmpty(id)
-
 
 ###
 
@@ -168,8 +171,6 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
     raw_json = doc.get('_data.attributes.raw_json')
     # => Object {_id: "...", _rev: "...", …}
     ```
-
-
 
 @namespace DS
 @class CouchDBAdapter
@@ -299,9 +300,10 @@ DS.CouchDBAdapter = DS.Adapter.extend
     })
 
   updateRecord: (store, type, record) ->
-    json = @serialize(record, {associations: true, includeId: true })
+    json = @serialize(record, {associations: false, includeId: true })
 
     @_updateAttachmnets(record, json)
+
     @ajax(record.get('id'), 'PUT', {
       data: json,
       context: this,
