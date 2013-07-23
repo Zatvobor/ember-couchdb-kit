@@ -170,7 +170,16 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
     doc = EmberApp.CouchDBModel.find("id")
     raw_json = doc.get('_data.attributes.raw_json')
     # => Object {_id: "...", _rev: "...", …}
+
+  If you wonder about `id` which could be missed in your db then, you should check its `isLoaded` state
+
     ```
+    doc = EmberApp.CouchDBModel.find("undefined")
+    # GET http://127.0.0:5984/db/undefined 404 (Object Not Found)
+    doc.get('isLoaded')
+    # => false
+    ```
+
 
 @namespace DS
 @class CouchDBAdapter
@@ -322,7 +331,7 @@ DS.CouchDBAdapter = DS.Adapter.extend
     })
 
   _updateAttachmnets: (record, json) ->
-    if window.AttachmentStore
+    if window.AttachmentStore && record.get('attachments')
       _attachments = {}
       record.get('attachments').forEach (item) ->
         attachment = AttachmentStore.get(item.get('id'))
