@@ -138,8 +138,7 @@
       path = "/%@/%@?rev=%@".fmt(this.get('db'), record.get('id'), record.get('rev'));
       request.open('PUT', path, true);
       request.setRequestHeader('Content-Type', record.get('content_type'));
-      request.send(record.get('blob_data'));
-      return request.onreadystatechange = function() {
+      request.onreadystatechange = function() {
         var data, json;
 
         if (request.readyState === 4 && (request.status === 201 || request.status === 200)) {
@@ -152,6 +151,7 @@
           return store.didSaveRecord(record, $.extend(json, data));
         }
       };
+      return request.send(record.get('file'));
     },
     updateRecord: function(store, type, record) {},
     deleteRecord: function(store, type, record) {}

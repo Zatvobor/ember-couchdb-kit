@@ -111,12 +111,22 @@
       return this._addHasMany(data, record, key, relationship);
     },
     _addHasMany: function(data, record, key, relationship) {
-      var attr_key, value;
+      var attr_key, value, values;
 
       value = record.get(key);
       attr_key = record.get("" + relationship.key + "_key") || "id";
       if (this.get('addEmptyHasMany') || !Ember.isEmpty(value)) {
-        return data[key] = value.getEach(attr_key);
+        values = value.getEach(attr_key);
+        if (values.every(function(value) {
+          return !value;
+        })) {
+          values = record.get('_data.attributes.raw_json')[key];
+          if (values) {
+            return data[key] = values;
+          }
+        } else {
+          return data[key] = values;
+        }
       }
     },
     addBelongsTo: function(hash, record, key, relationship) {
@@ -193,8 +203,15 @@
       doc = EmberApp.CouchDBModel.find("id")
       raw_json = doc.get('_data.attributes.raw_json')
       # => Object {_id: "...", _rev: "...", …}
-      ```
   
+    If you wonder about `id` which could be missed in your db then, you should check its `isLoaded` state
+  
+      ```
+      doc = EmberApp.CouchDBModel.find("undefined")
+      # GET http://127.0.0:5984/db/undefined 404 (Object Not Found)
+      doc.get('isLoaded')
+      # => false
+      ```
   
   
   @namespace DS
@@ -345,7 +362,7 @@
       var json;
 
       json = this.serialize(record, {
-        associations: true,
+        associations: false,
         includeId: true
       });
       this._updateAttachmnets(record, json);
@@ -373,7 +390,7 @@
     _updateAttachmnets: function(record, json) {
       var _attachments;
 
-      if (window.AttachmentStore) {
+      if (window.AttachmentStore && record.get('attachments')) {
         _attachments = {};
         record.get('attachments').forEach(function(item) {
           var attachment;
