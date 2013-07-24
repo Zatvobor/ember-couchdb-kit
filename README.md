@@ -18,11 +18,6 @@ There are some of these:
 
 Check source docs for more examples and details.
 
-
-
-jasmine specs ready to go though `rake jasmine:ci` convenience
-
-
 License
 -------
 
