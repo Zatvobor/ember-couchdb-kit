@@ -16,7 +16,7 @@
     materialize: function(record, hash) {
       this._super.apply(this, arguments);
       record.materializeAttribute("_rev", hash.rev || hash._rev);
-      return record.materializeAttribute("raw_json", hash);
+      return record.materializeAttribute("raw", hash);
     },
     serialize: function(record, options) {
       var json;
@@ -120,7 +120,7 @@
         if (values.every(function(value) {
           return !value;
         })) {
-          values = record.get('_data.attributes.raw_json')[key];
+          values = record.get('_data.attributes.raw')[key];
           if (values) {
             return data[key] = values;
           }
@@ -183,9 +183,11 @@
   
          # {"owner": "person@example.com"}
          owner:  DS.belongsTo('EmberApp.User', { key: 'owner': true})
+         owner_key: 'email'
   
          # {"people":["person1@example.com", "person2@example.com"]}
          people: DS.hasMany('EmberApp.User',   { key: 'people', embedded: true})
+         people_key: 'email'
       ```
   
     You can use `find` method for quering design views too:
@@ -201,7 +203,7 @@
   
       ```
       doc = EmberApp.CouchDBModel.find("id")
-      raw_json = doc.get('_data.attributes.raw_json')
+      raw_json = doc.get('_data.attributes.raw')
       # => Object {_id: "...", _rev: "...", …}
   
     If you wonder about `id` which could be missed in your db then, you should check its `isLoaded` state
