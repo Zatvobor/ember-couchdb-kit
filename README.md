@@ -3,16 +3,25 @@ ember-couchdb-kit
 
 An `ember-data` kit for Apache CouchDB.
 
-Inspired by [pangratz/ember-couchdb-adapter](https://github.com/pangratz/ember-couchdb-adapter) and contains fixes for working with relations and many others necessary things (check source docs for more details).
+We love a CouchDB and its RESTful and many other core things such as MVCC, attachments and /_changes. These all brings your data and application flow together as well.
+
+Inspired by [pangratz/ember-couchdb-adapter](https://github.com/pangratz/ember-couchdb-adapter) and contains many fixes and newbie features.
 
 There are some of these:
 
-* document's attachements designed as `hasMany`able models;
+* natural `find/create/deleteRecord` functions;
+* ability to work with `views`;
+* document's attachements designed as `hasMany` relation;
 * document's revisions designed as `belongsTo` relationship that points back such as corresponding `hasMany` relation;
-* natural integration with `_changes` notifications;
+* ability to work with `/_changes`;
+
+
+Check source docs for more examples and details.
+
 
 
 jasmine specs ready to go though `rake jasmine:ci` convenience
+
 
 License
 -------
