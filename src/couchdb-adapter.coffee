@@ -108,7 +108,10 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
     return if key == "history"
     id_key = record.get("#{relationship.key}_key") || "id"
     id = Ember.get(record, "#{relationship.key}.#{id_key}")
-    hash[key] = id if @get('addEmptyBelongsTo') || !Ember.isEmpty(id)
+    if Ember.isEmpty(id) && record.get('_data.attributes.raw')
+      hash[key] = record.get('_data.attributes.raw')[key] unless Ember.isEmpty(record.get('_data.attributes.raw')[key])
+    else
+      hash[key] = id if @get('addEmptyBelongsTo') || !Ember.isEmpty(id)
 
 ###
 
