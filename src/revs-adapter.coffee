@@ -2,11 +2,11 @@
   This object is a simple json based serializer with advanced `extractHasMany` convinience for
   extracting all document's revisions and prepare them for further loading.
 
-@namespace DS
-@class CouchDBRevsSerializer
+@namespace EmberCouchDBKit 
+@class RevsSerializer
 @extends DS.JSONSerializer
 ###
-DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
+EmberCouchDBKit.RevsSerializer = DS.JSONSerializer.extend
 
   materialize: (record, hash) ->
     @_super.apply(@, arguments)
@@ -32,7 +32,7 @@ DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
 
 
 ###
-  An `CouchDBRevsAdapter` is an object which gets revisions info by distinct document and used
+  An `RevsAdapter` is an object which gets revisions info by distinct document and used
   as a main adapter for `Revision` models.
 
   Let's consider an usual use case:
@@ -42,14 +42,14 @@ DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
       title: DS.attr('string')
       history: DS.belongsTo('App.History')
 
-    App.Store.registerAdapter('App.Task', DS.CouchDBAdapter.extend({db: 'docs'}))
+    App.Store.registerAdapter('App.Task', EmberCouchDBKit.DocumentAdapter.extend({db: 'docs'}))
 
     App.History = DS.Model.extend
       tasks: DS.hasMany('App.Task', {key: "tasks", embedded: true})
       prev_task: DS.belongsTo('App.Task', {key: "prev_task", embedded: true})
 
 
-    App.Store.registerAdapter('App.History', DS.CouchDBRevsAdapter.extend({db: 'docs'}))
+    App.Store.registerAdapter('App.History', EmberCouchDBKit.RevsAdapter.extend({db: 'docs'}))
     ```
 
   So, the `App.Task` model is able to load its revisions as a regular `App.Task` models.
@@ -61,12 +61,12 @@ DS.CouchDBRevsSerializer = DS.JSONSerializer.extend
     # => Ember.Enumerable<App.Task>
     ```
 
-@namespace DS
-@class CouchDBRevsAdapter
+@namespace EmberCouchDBKit
+@class RevsAdapter
 @extends DS.Adapter
 ###
-DS.CouchDBRevsAdapter = DS.Adapter.extend
-  serializer: DS.CouchDBRevsSerializer
+EmberCouchDBKit.RevsAdapter = DS.Adapter.extend
+  serializer: EmberCouchDBKit.RevsSerializer
 
   shouldCommit: (record, relationships) ->
     @_super.apply(arguments)

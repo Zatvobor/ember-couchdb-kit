@@ -2,11 +2,11 @@
   This object is a simple json based serializer with advanced conviniences for
   extracting all document's attachment metadata and prepare them for further extracting.
 
-@namespace DS
-@class CouchDBAttachmentSerializer
+@namespace EmberCouchDBKit
+@class AttachmentSerializer
 @extends DS.JSONSerializer
 ###
-DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
+EmberCouchDBKit.AttachmentSerializer = DS.JSONSerializer.extend
 
   materialize: (record, hash) ->
     @_super.apply(@, arguments)
@@ -46,7 +46,7 @@ DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
       json._rev = rev if rev
 
 ###
-  An `CouchDBAttachmentAdapter` is an object which manages document's attachements and used
+  An `AttachmentAdapter` is an object which manages document's attachements and used
   as a main adapter for `Attachment` models.
 
   Let's consider an usual use case:
@@ -56,7 +56,7 @@ DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
       title: DS.attr('string')
       attachments: DS.hasMany('App.Attachment', {embedded: true})
 
-    App.Store.registerAdapter('App.Task', DS.CouchDBAdapter.extend({db: 'docs'}))
+    App.Store.registerAdapter('App.Task', EmberCouchDBKit.DocumentAdapter.extend({db: 'docs'}))
 
     App.Attachment = DS.Model.extend
       content_type: DS.attr('string')
@@ -64,7 +64,7 @@ DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
       file_name: DS.attr('string')
       db: DS.attr('string')
 
-    App.Store.registerAdapter('App.Attachment', DS.CouchDBAttachmentAdapter.extend({db: 'docs'}))
+    App.Store.registerAdapter('App.Attachment', EmberCouchDBKit.AttachmentAdapter.extend({db: 'docs'}))
     ```
 
   So, the `App.Task` model is able to load its attachments as many `App.Attachment` models.
@@ -93,12 +93,13 @@ DS.CouchDBAttachmentSerializer = DS.JSONSerializer.extend
     attachment.get('store').commit()
     ```
 
-@namespace DS
-@class CouchDBAttachmentAdapter
+@namespace EmberCouchDBKit
+@class AttachmentAdapter
 @extends DS.Adapter
 ###
-DS.CouchDBAttachmentAdapter = DS.Adapter.extend
-  serializer: DS.CouchDBAttachmentSerializer
+EmberCouchDBKit.AttachmentAdapter = DS.Adapter.extend
+
+  serializer: EmberCouchDBKit.AttachmentSerializer
 
   shouldCommit: (record, relationships) ->
     @_super.apply(arguments)

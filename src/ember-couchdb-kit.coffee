@@ -1,8 +1,9 @@
 #= require_self
-#= require couchdb-adapter
-#= require couchdb-attachment-adapter
-#= require couchdb-revs-adapter
-#= require couchdb-changes
+#
+#= require document-adapter
+#= require attachment-adapter
+#= require revs-adapter
+#= require changes-feed
 
 
 window.EmberCouchDBKit = Ember.Namespace.create({

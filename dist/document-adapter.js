@@ -2,14 +2,14 @@
   This object is a simple json based serializer with advanced conviniences for
   managing CouchDB entities.
 
-@namespace DS
-@class CouchDBSerializer
+@namespace EmberCouchDBKit 
+@class DocumentSerializer
 @extends DS.JSONSerializer
 */
 
 
 (function() {
-  DS.CouchDBSerializer = DS.JSONSerializer.extend({
+  EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend({
     typeAttribute: 'ember_type',
     addEmptyHasMany: false,
     addEmptyBelongsTo: false,
@@ -153,7 +153,7 @@
 
   /*
   
-    An `CouchDBAdapter` is a main adapter for connecting your models with CouchDB documents.
+    An `DocumentAdapter` is a main adapter for connecting your models with CouchDB documents.
   
     Let's consider a simple model:
   
@@ -162,7 +162,7 @@
          type: DS.attr('string')
          title: DS.attr('title')
   
-      EmberApp.Store.registerAdapter('EmberApp.CouchDBModel', DS.CouchDBAdapter.extend({db: 'my_couchdb'}))
+      EmberApp.Store.registerAdapter('EmberApp.CouchDBModel', EmberCouchDBKit.DodumentAdapter.extend({db: 'my_couchdb'}))
       ```
   
     The following available operations:
@@ -224,17 +224,17 @@
       ```
   
   
-  @namespace DS
-  @class CouchDBAdapter
+  @namespace EmberCouchDBKit
+  @class DocumentAdapter
   @extends DS.Adapter
   */
 
 
-  DS.CouchDBAdapter = DS.Adapter.extend({
+  EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend({
     typeAttribute: 'ember_type',
     typeViewName: 'by-ember-type',
     customTypeLookup: false,
-    serializer: DS.CouchDBSerializer,
+    serializer: EmberCouchDBKit.DocumentSerializer,
     ajax: function(url, type, hash) {
       return this._ajax('/%@/%@'.fmt(this.get('db'), url || ''), type, hash);
     },
