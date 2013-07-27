@@ -102,7 +102,7 @@ DS.CouchDBSerializer = DS.JSONSerializer.extend
         values = record.get('_data.attributes.raw')[key]
         data[key] = values if values
       else
-        data[key] = values
+        data[key] = (values.filter (value) -> value && value != null)
 
   addBelongsTo: (hash, record, key, relationship) ->
     return if key == "history"

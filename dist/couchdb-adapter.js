@@ -125,7 +125,9 @@
             return data[key] = values;
           }
         } else {
-          return data[key] = values;
+          return data[key] = values.filter(function(value) {
+            return value && value !== null;
+          });
         }
       }
     },
@@ -137,8 +139,14 @@
       }
       id_key = record.get("" + relationship.key + "_key") || "id";
       id = Ember.get(record, "" + relationship.key + "." + id_key);
-      if (this.get('addEmptyBelongsTo') || !Ember.isEmpty(id)) {
-        return hash[key] = id;
+      if (Ember.isEmpty(id) && record.get('_data.attributes.raw')) {
+        if (!Ember.isEmpty(record.get('_data.attributes.raw')[key])) {
+          return hash[key] = record.get('_data.attributes.raw')[key];
+        }
+      } else {
+        if (this.get('addEmptyBelongsTo') || !Ember.isEmpty(id)) {
+          return hash[key] = id;
+        }
       }
     }
   });

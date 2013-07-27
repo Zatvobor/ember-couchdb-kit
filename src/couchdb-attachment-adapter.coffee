@@ -120,6 +120,8 @@ DS.CouchDBAttachmentAdapter = DS.Adapter.extend
     request.open('PUT', path, true)
     request.setRequestHeader('Content-Type', record.get('content_type'))
 
+    @_updateUploadState(record, request)
+
     request.onreadystatechange =  =>
       if request.readyState == 4 && (request.status == 201 || request.status == 200)
         data = JSON.parse(request.response)
@@ -135,6 +137,16 @@ DS.CouchDBAttachmentAdapter = DS.Adapter.extend
 
   deleteRecord: (store, type, record) ->
     # just for stubbing purpose which should be defined by default
+
+
+  _updateUploadState: (record, request) ->
+    view = record.get('view')
+    if view
+      view.start_upload()
+      request.onprogress = (oEvent) =>
+        if oEvent.lengthComputable
+          percentComplete = (oEvent.loaded / oEvent.total) * 100
+          view.update_upload(percentComplete)
 
 
 # @private

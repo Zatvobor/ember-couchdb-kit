@@ -138,6 +138,7 @@
       path = "/%@/%@?rev=%@".fmt(this.get('db'), record.get('id'), record.get('rev'));
       request.open('PUT', path, true);
       request.setRequestHeader('Content-Type', record.get('content_type'));
+      this._updateUploadState(record, request);
       request.onreadystatechange = function() {
         var data, json;
 
@@ -154,7 +155,24 @@
       return request.send(record.get('file'));
     },
     updateRecord: function(store, type, record) {},
-    deleteRecord: function(store, type, record) {}
+    deleteRecord: function(store, type, record) {},
+    _updateUploadState: function(record, request) {
+      var view,
+        _this = this;
+
+      view = record.get('view');
+      if (view) {
+        view.start_upload();
+        return request.onprogress = function(oEvent) {
+          var percentComplete;
+
+          if (oEvent.lengthComputable) {
+            percentComplete = (oEvent.loaded / oEvent.total) * 100;
+            return view.update_upload(percentComplete);
+          }
+        };
+      }
+    }
   });
 
   this.AttachmentStore = (function() {
