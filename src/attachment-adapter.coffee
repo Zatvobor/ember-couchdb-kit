@@ -105,12 +105,12 @@ EmberCouchDBKit.AttachmentAdapter = DS.Adapter.extend
     @_super.apply(arguments)
 
   find: (store, type, id) ->
-    data = AttachmentStore.get(id)
+    data = EmberCouchDBKit.AttachmentStore.get(id)
     @didFindRecord(store, type, data, id)
 
   findMany: (store, type, ids) ->
     docs = ids.map (item) =>
-      item = AttachmentStore.get(item)
+      item = EmberCouchDBKit.AttachmentStore.get(item)
       item.db = @get('db')
       item
     store.loadMany(type, docs)
@@ -148,16 +148,3 @@ EmberCouchDBKit.AttachmentAdapter = DS.Adapter.extend
         if oEvent.lengthComputable
           percentComplete = (oEvent.loaded / oEvent.total) * 100
           view.update_upload(percentComplete)
-
-
-# @private
-class @AttachmentStore
-  @attachments = {}
-  @add: (key, value) ->
-    @attachments[key] = value
-
-  @get: (key) ->
-    @attachments[key]
-
-  @remove: ->
-    @attachments[key] = undefined

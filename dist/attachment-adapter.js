@@ -116,7 +116,7 @@
     find: function(store, type, id) {
       var data;
 
-      data = AttachmentStore.get(id);
+      data = EmberCouchDBKit.AttachmentStore.get(id);
       return this.didFindRecord(store, type, data, id);
     },
     findMany: function(store, type, ids) {
@@ -124,7 +124,7 @@
         _this = this;
 
       docs = ids.map(function(item) {
-        item = AttachmentStore.get(item);
+        item = EmberCouchDBKit.AttachmentStore.get(item);
         item.db = _this.get('db');
         return item;
       });
@@ -174,26 +174,5 @@
       }
     }
   });
-
-  this.AttachmentStore = (function() {
-    function AttachmentStore() {}
-
-    AttachmentStore.attachments = {};
-
-    AttachmentStore.add = function(key, value) {
-      return this.attachments[key] = value;
-    };
-
-    AttachmentStore.get = function(key) {
-      return this.attachments[key];
-    };
-
-    AttachmentStore.remove = function() {
-      return this.attachments[key] = void 0;
-    };
-
-    return AttachmentStore;
-
-  })();
 
 }).call(this);

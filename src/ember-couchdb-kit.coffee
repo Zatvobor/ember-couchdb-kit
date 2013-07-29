@@ -1,5 +1,6 @@
 #= require_self
 #
+#= require registry
 #= require document-adapter
 #= require attachment-adapter
 #= require revs-adapter

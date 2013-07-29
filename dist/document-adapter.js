@@ -63,7 +63,7 @@
           revpos: v.revpos,
           db: v.db
         };
-        AttachmentStore.add(key, attachment);
+        EmberCouchDBKit.AttachmentStore.add(key, attachment);
         _attachments.push(key);
       }
       return _attachments;
@@ -400,12 +400,12 @@
     _updateAttachmnets: function(record, json) {
       var _attachments;
 
-      if (window.AttachmentStore && record.get('attachments')) {
+      if (record.get('attachments')) {
         _attachments = {};
         record.get('attachments').forEach(function(item) {
           var attachment;
 
-          attachment = AttachmentStore.get(item.get('id'));
+          attachment = EmberCouchDBKit.AttachmentStore.get(item.get('id'));
           return _attachments[item.get('file_name')] = {
             content_type: attachment.content_type,
             digest: attachment.digest,

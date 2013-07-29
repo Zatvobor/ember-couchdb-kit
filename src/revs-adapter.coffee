@@ -24,11 +24,11 @@ EmberCouchDBKit.RevsSerializer = DS.JSONSerializer.extend
     json._id = id
 
   extractHasMany: (type, hash, key) ->
-    hash[key] = RevsStore.mapRevIds(@extractId(type, hash))
+    hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(@extractId(type, hash))
 
   extractBelongsTo: (type, hash, key) ->
     if key.match("prev_")
-      hash[key] = RevsStore.mapRevIds(@extractId(type, hash))[1]
+      hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(@extractId(type, hash))[1]
 
 
 ###
@@ -76,7 +76,7 @@ EmberCouchDBKit.RevsAdapter = DS.Adapter.extend
       context: this
 
       success: (data) ->
-        RevsStore.add(id, data)
+        EmberCouchDBKit.RevsStore.add(id, data)
         this.didFindRecord(store, type, {_id: id}, id)
     })
 
@@ -102,19 +102,3 @@ EmberCouchDBKit.RevsAdapter = DS.Adapter.extend
     hash.data = JSON.stringify(hash.data) if (hash.data && type != 'GET')
 
     Ember.$.ajax(hash)
-
-# @private
-class @RevsStore
-  @registiry = {}
-
-  @add: (key, value) ->
-    @registiry[key] = value
-
-  @get: (key) ->
-    @registiry[key]
-
-  @remove: ->
-    @registiry[key] = undefined
-
-  @mapRevIds: (key)->
-    @get(key)._revs_info.map (_rev) =>  "%@/%@".fmt(@get(key)._id, _rev.rev)

@@ -26,11 +26,11 @@
       return json._id = id;
     },
     extractHasMany: function(type, hash, key) {
-      return hash[key] = RevsStore.mapRevIds(this.extractId(type, hash));
+      return hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(this.extractId(type, hash));
     },
     extractBelongsTo: function(type, hash, key) {
       if (key.match("prev_")) {
-        return hash[key] = RevsStore.mapRevIds(this.extractId(type, hash))[1];
+        return hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(this.extractId(type, hash))[1];
       }
     }
   });
@@ -80,7 +80,7 @@
       return this.ajax("%@?revs_info=true".fmt(id.split("/")[0]), 'GET', {
         context: this,
         success: function(data) {
-          RevsStore.add(id, data);
+          EmberCouchDBKit.RevsStore.add(id, data);
           return this.didFindRecord(store, type, {
             _id: id
           }, id);
@@ -107,34 +107,5 @@
       return Ember.$.ajax(hash);
     }
   });
-
-  this.RevsStore = (function() {
-    function RevsStore() {}
-
-    RevsStore.registiry = {};
-
-    RevsStore.add = function(key, value) {
-      return this.registiry[key] = value;
-    };
-
-    RevsStore.get = function(key) {
-      return this.registiry[key];
-    };
-
-    RevsStore.remove = function() {
-      return this.registiry[key] = void 0;
-    };
-
-    RevsStore.mapRevIds = function(key) {
-      var _this = this;
-
-      return this.get(key)._revs_info.map(function(_rev) {
-        return "%@/%@".fmt(_this.get(key)._id, _rev.rev);
-      });
-    };
-
-    return RevsStore;
-
-  })();
 
 }).call(this);

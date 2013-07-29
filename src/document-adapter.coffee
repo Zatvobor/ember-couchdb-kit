@@ -58,7 +58,7 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
         revpos: v.revpos
         db: v.db
 
-      AttachmentStore.add(key, attachment)
+      EmberCouchDBKit.AttachmentStore.add(key, attachment)
       _attachments.push(key)
     _attachments
 
@@ -336,10 +336,10 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     })
 
   _updateAttachmnets: (record, json) ->
-    if window.AttachmentStore && record.get('attachments')
+    if record.get('attachments')
       _attachments = {}
       record.get('attachments').forEach (item) ->
-        attachment = AttachmentStore.get(item.get('id'))
+        attachment = EmberCouchDBKit.AttachmentStore.get(item.get('id'))
         _attachments[item.get('file_name')] =
           content_type: attachment.content_type
           digest: attachment.digest
