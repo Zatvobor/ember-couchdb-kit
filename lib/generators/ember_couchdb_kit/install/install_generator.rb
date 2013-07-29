@@ -1,4 +1,4 @@
-module EmberCouchdbAdapter
+module EmberCouchdbKit
   module Generators
     class InstallGenerator < ::Rails::Generators::Base
 
