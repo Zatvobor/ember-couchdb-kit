@@ -1,4 +1,4 @@
-module EmberCouchdbAdapter
+module EmberCouchdbKit
   module Generators
     class InstallGenerator < ::Rails::Generators::Base
 
@@ -6,13 +6,14 @@ module EmberCouchdbAdapter
       source_root File.expand_path('../../../../../src', __FILE__)
 
       def copy
-        %w(document-adapter attachment-adapter revs-adapter changes-feed ember-couchdb-kit).each do |package|
-          filename      = "#{package}.coffee"
+        path = File.expand_path('../../../../../src/*.coffee', __FILE__)
+        Dir.glob(path).each do |package|
+          filename = package.split("/").last
           vendored_file = "vendor/assets/javascripts/#{filename}"
-
           remove_file(vendored_file)
           copy_file(filename, vendored_file)
         end
+        puts "Please add into your application.js  ->  //= require ember-couchdb-kit"
       end
     end
   end
