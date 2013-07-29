@@ -33,11 +33,12 @@ Ready to install as a regular gem
 gem "ember-couchdb-kit", git: "git@github.com:roundscope/ember-couchdb-kit.git"
 ```
 
-Rails aware generator for vendoring packaages into application vendor/assets/javascripts placeholder
+Rails aware generator for vendoring packages into application vendor/assets/javascripts placeholder
 
 ```
 ./bin/rails g ember_couchdb_kit:install
 ```
+
 Add into your application.js
 ```
 //= require ember-couchdb-kit
