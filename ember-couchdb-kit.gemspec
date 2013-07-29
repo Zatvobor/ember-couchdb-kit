@@ -2,11 +2,11 @@ Gem::Specification.new do |s|
   s.name        = "ember-couchdb-kit"
   s.version     = "0.0.1"
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["Roundscope"]
+  s.authors     = ["Roundscope contributors"]
   s.email       = ["hi@roundscope.com"]
   s.homepage    = "https://github.com/roundscope/ember-couchdb-kit"
   s.summary     = "An ember-data kit for Apache CouchDB"
-  s.description = "This gem provides conveniences for working with Apache Couch DB"
+  s.description = "This gem provides conveniences for working with Apache CouchDB"
   s.license     = "MIT License"
 
   s.required_rubygems_version = ">= 1.3.6"
