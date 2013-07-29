@@ -13,6 +13,7 @@ module EmberCouchdbKit
           remove_file(vendored_file)
           copy_file(filename, vendored_file)
         end
+        puts "Please add into your application.js  ->  //= require ember-couchdb-kit"
       end
     end
   end
