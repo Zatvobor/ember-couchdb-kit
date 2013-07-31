@@ -121,7 +121,6 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
 
     ```
     EmberApp.CouchDBModel = DS.Model.extend
-       type: DS.attr('string')
        title: DS.attr('title')
 
     EmberApp.Store.registerAdapter('EmberApp.CouchDBModel', EmberCouchDBKit.DodumentAdapter.extend({db: 'my_couchdb'}))
@@ -149,7 +148,9 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
 
     ```
     EmberApp.Post = DS.Model.extend
+       type: DS.attr('string', defaultValue: 'post')
        title: DS.attr('string')
+
 
        # {"owner": "person@example.com"}
        owner:  DS.belongsTo('EmberApp.User', { key: 'owner': true})
@@ -160,11 +161,13 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
        people_key: 'email'
     ```
 
-  You can use `find` method for quering design views too:
+  You can use `find` method for quering design views:
 
     ```
-    EmberApp.Task.find({type: "view", designDoc: 'tasks', viewName: "by_assignee", options: 'include_docs=true&key="%@"'.fmt(@get('email'))})
+    tasks = EmberApp.Task.find({type: "view", designDoc: 'tasks', viewName: "by_assignee", options: 'include_docs=true&key="%@"'.fmt(@get('email'))})
     # => Ember.Enumerable<EmberApp.Task>
+    array = tasks.get('content')
+    # => Array[EmberApp.Task,..]
     ```
 
   ## Tip and tricks
