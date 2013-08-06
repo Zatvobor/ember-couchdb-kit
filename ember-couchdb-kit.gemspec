@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "ember-couchdb-kit"
-  s.version     = "0.0.1"
+  s.version     = "0.5"
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Roundscope contributors"]
   s.email       = ["hi@roundscope.com"]
