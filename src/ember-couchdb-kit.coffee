@@ -8,5 +8,5 @@
 
 
 window.EmberCouchDBKit = Ember.Namespace.create({
-  VERSION: '0.5'
+  VERSION: '0.6.dev'
 })
