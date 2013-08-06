@@ -123,7 +123,7 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
     EmberApp.CouchDBModel = DS.Model.extend
        title: DS.attr('title')
 
-    EmberApp.Store.registerAdapter('EmberApp.CouchDBModel', EmberCouchDBKit.DodumentAdapter.extend({db: 'my_couchdb'}))
+    EmberApp.Store.registerAdapter('EmberApp.CouchDBModel', EmberCouchDBKit.DocumentAdapter.extend({db: 'my_couchdb'}))
     ```
 
   The following available operations:
@@ -150,7 +150,6 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
     EmberApp.Post = DS.Model.extend
        type: DS.attr('string', defaultValue: 'post')
        title: DS.attr('string')
-
 
        # {"owner": "person@example.com"}
        owner:  DS.belongsTo('EmberApp.User', { key: 'owner': true})
