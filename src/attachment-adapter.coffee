@@ -15,9 +15,9 @@ EmberCouchDBKit.AttachmentSerializer = DS.JSONSerializer.extend
     document_class = eval("#{hash.doc_type}")
     document = document_class.find(hash.doc_id)
 
-    unless document.get('_data.attributes._rev') == rev
-      if @getIntRevision(document.get('_data.attributes._rev')) < @getIntRevision(rev)
-        document.set('_data.attributes._rev', rev)
+    unless document.get('_data._rev') == rev
+      if @getIntRevision(document.get('_data._rev')) < @getIntRevision(rev)
+        document.set('_data._rev', rev)
 
     record.materializeAttribute("document", document)
 
@@ -35,7 +35,7 @@ EmberCouchDBKit.AttachmentSerializer = DS.JSONSerializer.extend
     hash._id || hash.id
 
   getRecordRevision: (record) ->
-    record.get('_data.attributes.rev')
+    record.get('_data.rev')
 
   addId: (json, key, id) ->
     json._id = id

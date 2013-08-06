@@ -84,7 +84,7 @@
       }
     },
     getRecordRevision: function(record) {
-      return record.get('_data.attributes._rev');
+      return record.get('_data._rev');
     },
     addId: function(json, key, id) {
       return json._id = id;
@@ -120,14 +120,19 @@
         if (values.every(function(value) {
           return !value;
         })) {
-          values = record.get('_data.attributes.raw')[key];
+          values = record.get('_data.raw')[key];
           if (values) {
             return data[key] = values;
           }
         } else {
-          return data[key] = values.filter(function(value) {
+          values = values.filter(function(value) {
             return value && value !== null;
           });
+          if (record["hasManyValidation"]) {
+            return data[key] = record.hasManyValidation(key, values);
+          } else {
+            return data[key] = values;
+          }
         }
       }
     },
@@ -139,9 +144,9 @@
       }
       id_key = record.get("" + relationship.key + "_key") || "id";
       id = Ember.get(record, "" + relationship.key + "." + id_key);
-      if (Ember.isEmpty(id) && record.get('_data.attributes.raw')) {
-        if (!Ember.isEmpty(record.get('_data.attributes.raw')[key])) {
-          return hash[key] = record.get('_data.attributes.raw')[key];
+      if (Ember.isEmpty(id) && record.get('_data.raw')) {
+        if (!Ember.isEmpty(record.get('_data.raw')[key])) {
+          return hash[key] = record.get('_data.raw')[key];
         }
       } else {
         if (this.get('addEmptyBelongsTo') || !Ember.isEmpty(id)) {
@@ -202,7 +207,6 @@
   
       ```
       tasks = EmberApp.Task.find({type: "view", designDoc: 'tasks', viewName: "by_assignee", options: 'include_docs=true&key="%@"'.fmt(@get('email'))})
-      # => Ember.Enumerable<EmberApp.Task>
       array = tasks.get('content')
       # => Array[EmberApp.Task,..]
       ```
@@ -213,7 +217,7 @@
   
       ```
       doc = EmberApp.CouchDBModel.find("id")
-      raw_json = doc.get('_data.attributes.raw')
+      raw_json = doc.get('_data.raw')
       # => Object {_id: "...", _rev: "...", …}
   
     If you wonder about `id` which could be missed in your db then, you should check its `isLoaded` state
@@ -392,7 +396,7 @@
       });
     },
     deleteRecord: function(store, type, record) {
-      return this.ajax("%@?rev=%@".fmt(record.get('id'), record.get('_data.attributes._rev')), 'DELETE', {
+      return this.ajax("%@?rev=%@".fmt(record.get('id'), record.get('_data._rev')), 'DELETE', {
         context: this,
         success: function(data) {
           return store.didSaveRecord(record);

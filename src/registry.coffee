@@ -1,25 +1,31 @@
 class EmberCouchDBKit.BaseRegistry
-  @registiry = {}
+  constructor: ->
+    @registiry = {}
 
-  @add: (key, value) ->
+  add: (key, value) ->
     @registiry[key] = value
 
-  @get: (key) ->
+  get: (key) ->
     @registiry[key]
 
-  @remove: ->
+  remove: ->
     delete @registiry[key]
 
-class EmberCouchDBKit.RevsStore extends EmberCouchDBKit.BaseRegistry
-  @mapRevIds: (key)->
+class EmberCouchDBKit.RevsStoreClass extends EmberCouchDBKit.BaseRegistry
+  mapRevIds: (key)->
     @get(key)._revs_info.map (_rev) =>  "%@/%@".fmt(@get(key)._id, _rev.rev)
 
-#store attachments
-class EmberCouchDBKit.AttachmentStore extends EmberCouchDBKit.BaseRegistry
+EmberCouchDBKit.RevsStore = new EmberCouchDBKit.RevsStoreClass()
 
+#store attachments
+class EmberCouchDBKit.AttachmentStoreClass extends EmberCouchDBKit.BaseRegistry
+
+EmberCouchDBKit.AttachmentStore = new EmberCouchDBKit.AttachmentStoreClass()
 
 #works with changes you nedd registred longpoll worker
-class EmberCouchDBKit.ChangesWorkers extends EmberCouchDBKit.BaseRegistry
-  @stopAll: ->
+class EmberCouchDBKit.ChangesWorkersClass extends EmberCouchDBKit.BaseRegistry
+  stopAll: ->
     for k,v of @registiry
       v.stop()
+
+EmberCouchDBKit.ChangesWorkers =  new EmberCouchDBKit.ChangesWorkersClass()

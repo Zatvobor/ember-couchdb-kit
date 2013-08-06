@@ -75,7 +75,7 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
       reg_array[reg_array.length - 1].toString().toLowerCase()
 
   getRecordRevision: (record) ->
-    record.get('_data.attributes._rev')
+    record.get('_data._rev')
 
   addId: (json, key, id) ->
     json._id = id
@@ -99,17 +99,22 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
     if @get('addEmptyHasMany') || !Ember.isEmpty(value)
       values = value.getEach(attr_key)
       if (values.every (value) -> !value) #find undefined in relations
-        values = record.get('_data.attributes.raw')[key]
+        values = record.get('_data.raw')[key]
         data[key] = values if values
       else
-        data[key] = (values.filter (value) -> value && value != null)
+        #don't move this into github couchdb-kit!
+        values = (values.filter (value) -> value && value != null)
+        if record["hasManyValidation"]
+          data[key] = record.hasManyValidation(key, values)
+        else
+          data[key] = values
 
   addBelongsTo: (hash, record, key, relationship) ->
     return if key == "history"
     id_key = record.get("#{relationship.key}_key") || "id"
     id = Ember.get(record, "#{relationship.key}.#{id_key}")
-    if Ember.isEmpty(id) && record.get('_data.attributes.raw')
-      hash[key] = record.get('_data.attributes.raw')[key] unless Ember.isEmpty(record.get('_data.attributes.raw')[key])
+    if Ember.isEmpty(id) && record.get('_data.raw')
+      hash[key] = record.get('_data.raw')[key] unless Ember.isEmpty(record.get('_data.raw')[key])
     else
       hash[key] = id if @get('addEmptyBelongsTo') || !Ember.isEmpty(id)
 
@@ -164,7 +169,6 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
 
     ```
     tasks = EmberApp.Task.find({type: "view", designDoc: 'tasks', viewName: "by_assignee", options: 'include_docs=true&key="%@"'.fmt(@get('email'))})
-    # => Ember.Enumerable<EmberApp.Task>
     array = tasks.get('content')
     # => Array[EmberApp.Task,..]
     ```
@@ -175,7 +179,7 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
 
     ```
     doc = EmberApp.CouchDBModel.find("id")
-    raw_json = doc.get('_data.attributes.raw')
+    raw_json = doc.get('_data.raw')
     # => Object {_id: "...", _rev: "...", …}
 
   If you wonder about `id` which could be missed in your db then, you should check its `isLoaded` state
@@ -331,7 +335,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     })
 
   deleteRecord: (store, type, record) ->
-    @ajax("%@?rev=%@".fmt(record.get('id'), record.get('_data.attributes._rev')), 'DELETE', {
+    @ajax("%@?rev=%@".fmt(record.get('id'), record.get('_data._rev')), 'DELETE', {
       context: this
       success: (data) ->
         store.didSaveRecord(record)

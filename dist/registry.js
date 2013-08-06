@@ -4,19 +4,19 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   EmberCouchDBKit.BaseRegistry = (function() {
-    function BaseRegistry() {}
+    function BaseRegistry() {
+      this.registiry = {};
+    }
 
-    BaseRegistry.registiry = {};
-
-    BaseRegistry.add = function(key, value) {
+    BaseRegistry.prototype.add = function(key, value) {
       return this.registiry[key] = value;
     };
 
-    BaseRegistry.get = function(key) {
+    BaseRegistry.prototype.get = function(key) {
       return this.registiry[key];
     };
 
-    BaseRegistry.remove = function() {
+    BaseRegistry.prototype.remove = function() {
       return delete this.registiry[key];
     };
 
@@ -24,15 +24,15 @@
 
   })();
 
-  EmberCouchDBKit.RevsStore = (function(_super) {
-    __extends(RevsStore, _super);
+  EmberCouchDBKit.RevsStoreClass = (function(_super) {
+    __extends(RevsStoreClass, _super);
 
-    function RevsStore() {
-      _ref = RevsStore.__super__.constructor.apply(this, arguments);
+    function RevsStoreClass() {
+      _ref = RevsStoreClass.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
-    RevsStore.mapRevIds = function(key) {
+    RevsStoreClass.prototype.mapRevIds = function(key) {
       var _this = this;
 
       return this.get(key)._revs_info.map(function(_rev) {
@@ -40,31 +40,35 @@
       });
     };
 
-    return RevsStore;
+    return RevsStoreClass;
 
   })(EmberCouchDBKit.BaseRegistry);
 
-  EmberCouchDBKit.AttachmentStore = (function(_super) {
-    __extends(AttachmentStore, _super);
+  EmberCouchDBKit.RevsStore = new EmberCouchDBKit.RevsStoreClass();
 
-    function AttachmentStore() {
-      _ref1 = AttachmentStore.__super__.constructor.apply(this, arguments);
+  EmberCouchDBKit.AttachmentStoreClass = (function(_super) {
+    __extends(AttachmentStoreClass, _super);
+
+    function AttachmentStoreClass() {
+      _ref1 = AttachmentStoreClass.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
-    return AttachmentStore;
+    return AttachmentStoreClass;
 
   })(EmberCouchDBKit.BaseRegistry);
 
-  EmberCouchDBKit.ChangesWorkers = (function(_super) {
-    __extends(ChangesWorkers, _super);
+  EmberCouchDBKit.AttachmentStore = new EmberCouchDBKit.AttachmentStoreClass();
 
-    function ChangesWorkers() {
-      _ref2 = ChangesWorkers.__super__.constructor.apply(this, arguments);
+  EmberCouchDBKit.ChangesWorkersClass = (function(_super) {
+    __extends(ChangesWorkersClass, _super);
+
+    function ChangesWorkersClass() {
+      _ref2 = ChangesWorkersClass.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 
-    ChangesWorkers.stopAll = function() {
+    ChangesWorkersClass.prototype.stopAll = function() {
       var k, v, _ref3, _results;
 
       _ref3 = this.registiry;
@@ -76,8 +80,10 @@
       return _results;
     };
 
-    return ChangesWorkers;
+    return ChangesWorkersClass;
 
   })(EmberCouchDBKit.BaseRegistry);
+
+  EmberCouchDBKit.ChangesWorkers = new EmberCouchDBKit.ChangesWorkersClass();
 
 }).call(this);
