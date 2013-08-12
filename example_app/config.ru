@@ -16,7 +16,7 @@ builder = Rack::Builder.new do
   use Rack::CommonLogger
 
 
-  map '/docs' do
+  map '/boards' do
     app = Proc.new { |env|
       con = Excon.new('http://geemus.com', :proxy => 'http://localhost:5984')
       resp = con.request(:method => env["REQUEST_METHOD"], :body => env["rack.input"], :path => env["REQUEST_URI"], headers: {"Content-Type" => "application/json"})
@@ -39,9 +39,9 @@ builder = Rack::Builder.new do
   end
 
   map '/version' do
-    run Proc.new {|env| [200, {"Content-Type" => "text/html"}, "simple_chat 0.1"] }
+    run Proc.new {|env| [200, {"Content-Type" => "text/html"}, ["ember-couchdb-kit example app"]] }
   end
 end
 
 
-Rack::Handler::Thin.run builder, :Port => 3020
+Rack::Handler::Thin.run builder, :Port => 3000

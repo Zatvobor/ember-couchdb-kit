@@ -2,7 +2,7 @@ var App = Ember.Application.create();
 
 App.Store = DS.Store.extend({
     revision: 13,
-    adapter: EmberCouchDBKit.DocumentAdapter.create({db: 'board'})
+    adapter: EmberCouchDBKit.DocumentAdapter.create({db: 'boards'})
 });
 
 App.Issue = DS.Model.extend({
@@ -16,7 +16,7 @@ App.IndexRoute = Ember.Route.extend({
         //this.feed()
     },
     feed: function(){
-        feed = EmberCouchDBKit.ChangesFeed.create({ db: 'board', content: {"include_docs": true, "timeout":1000}});
+        feed = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: {"include_docs": true, "timeout":1000}});
         feed.longpoll(this.callback, this);
     },
     callback: function(data){
@@ -39,7 +39,7 @@ App.IndexController = Ember.ArrayController.extend({
     }
 });
 
-App.Board = ["Basic","Intermediate","Advanced"];
+App.Boards = ["Basic","Intermediate","Advanced"];
 
 App.BoardView = Ember.View.extend({
     tagName: "li"

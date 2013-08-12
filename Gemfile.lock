@@ -8,7 +8,10 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.6.2)
+    daemons (1.1.9)
     diff-lcs (1.2.4)
+    eventmachine (1.0.3)
+    excon (0.25.3)
     execjs (1.4.0)
       multi_json (~> 1.0)
     ffi (1.9.0)
@@ -66,6 +69,10 @@ GEM
     therubyracer (0.11.4)
       libv8 (~> 3.11.8.12)
       ref
+    thin (1.5.1)
+      daemons (>= 1.0.9)
+      eventmachine (>= 0.12.6)
+      rack (>= 1.0.0)
     thor (0.18.1)
     websocket (1.0.7)
 
@@ -74,8 +81,11 @@ PLATFORMS
 
 DEPENDENCIES
   coffee-script
+  excon
   guard
   guard-coffeescript
   jasmine
+  rack
   rake
   therubyracer
+  thin
