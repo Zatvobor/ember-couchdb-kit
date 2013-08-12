@@ -1,0 +1,47 @@
+# installing rackup
+# $ gem install rack thin excon
+#
+# run server which listen an 80 port
+# $ rvmsudo rackup
+#
+# open application
+# $ curl http://localhost/index.html
+
+require 'rubygems'
+require 'rack'
+require 'excon'
+
+builder = Rack::Builder.new do
+
+  use Rack::CommonLogger
+
+
+  map '/docs' do
+    app = Proc.new { |env|
+      con = Excon.new('http://geemus.com', :proxy => 'http://localhost:5984')
+      resp = con.request(:method => env["REQUEST_METHOD"], :body => env["rack.input"], :path => env["REQUEST_URI"], headers: {"Content-Type" => "application/json"})
+
+      if resp.headers['Transfer-Encoding'] == 'chunked'
+        body = Rack::Chunked::Body.new([resp.body])
+      else
+        body = [resp.body]
+      end
+
+
+      [ resp.status, resp.headers, body ]
+    }
+
+    run app
+  end
+
+  map '/' do
+   run Rack::Directory.new(Dir.pwd)
+  end
+
+  map '/version' do
+    run Proc.new {|env| [200, {"Content-Type" => "text/html"}, "simple_chat 0.1"] }
+  end
+end
+
+
+Rack::Handler::Thin.run builder, :Port => 3020
