@@ -356,4 +356,4 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
       delete json.attachments
 
   _checkForRevision: (id) ->
-    id.split("/").length > 1
+    id?.split("/").length > 1
