@@ -5,7 +5,7 @@ App.Store = DS.Store.extend({
     adapter: EmberCouchDBKit.DocumentAdapter.create({db: 'board'})
 });
 
-App.Message = DS.Model.extend({
+App.Issue = DS.Model.extend({
     text: DS.attr('string'),
     type: DS.attr('string', {defaultValue: 'message'})
 });
@@ -19,4 +19,3 @@ App.IndexRoute = Ember.Route.extend({
 App.IndexController = Ember.ArrayController.extend({
 
 });
-

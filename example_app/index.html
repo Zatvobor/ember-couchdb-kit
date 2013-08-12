@@ -33,6 +33,61 @@
 {{outlet}}
 </script>
 
+<script type="text/x-handlebars" data-template-name="index">
+<div>
+    <ul class="inline">
+        <li class="navbar alert alert-success"> 
+            <h4>Basic</h4>
+            {{partial "basic"}}
+        </li>
+        <li class="navbar alert alert-success"> 
+            <h4>Intermediate</h4> 
+            {{partial "intermediate"}}
+        </li>
+        <li class="navbar alert alert-success"> 
+            <h4>Advanced</h4>
+            {{partial "advanced"}}
+        </li>
+    </ul>
+</div>
+</script>
+
+<script type="text/x-handlebars" data-template-name="_basic">
+    <ul class="list-group">
+        <li class="list-group-item">
+            <div class="navbar alert alert-success">
+                one
+            </div>      
+        </li>
+    </ul> 
+
+
+</script>
+
+<script type="text/x-handlebars" data-template-name="_intermediate">
+    <ul class="list-group">
+        <li class="list-group-item">
+            <div class="navbar alert alert-success">
+                two
+            </div>      
+        </li>
+    </ul> 
+    
+
+</script>
+
+<script type="text/x-handlebars" data-template-name="_advanced">
+    <ul class="list-group">
+        <li class="list-group-item">
+            <div class="navbar alert alert-success">
+                three
+            </div>      
+        </li>
+    </ul> 
+
+</script>
+
+
 
 </body>
 </html>
