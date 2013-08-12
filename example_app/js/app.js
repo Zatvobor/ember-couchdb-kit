@@ -50,6 +50,7 @@ App.NewIssueView = Ember.View.extend({
     create: false,
     submit: function(event){
         event.preventDefault();
+        this.get('controller').send("createMessage", {text: this.get("TextArea.value")} );
         this.toggleProperty('create');
     }
 });
