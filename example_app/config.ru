@@ -35,7 +35,7 @@ builder = Rack::Builder.new do
   end
 
   map '/' do
-   run Rack::Directory.new(Dir.pwd)
+   run Rack::Directory.new(File.expand_path(".."))
   end
 
   map '/version' do
