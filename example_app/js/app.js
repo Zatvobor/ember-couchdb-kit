@@ -13,15 +13,35 @@ App.Issue = DS.Model.extend({
 
 App.Store.registerAdapter('App.Issue', EmberCouchDBKit.DocumentAdapter.extend({db: 'boards'}));
 
+App.Boards = ['common', 'intermediate', 'advanced'];
+
 App.IndexRoute = Ember.Route.extend({
   setupController: function(controller, model) {
     self = this;
-    ['common', 'intermediate', 'advanced'].forEach(function(type) {
-       options = 'key="%@"&include_docs=true'.fmt(type);
-       issues = App.Issue.find({type: "view", designDoc: 'issues', viewName: "all_by_board", options: options});
-       self.controllerFor(type).set('content', issues);
+    App.Boards.forEach(function(type) {
+      self.controllerFor(type).set('content', []);
     });
+    this.feed()
   },
+  feed: function(){
+    feed = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: {"include_docs": true, "timeout":1000}});
+    feed.longpoll(this.callback, this);
+  },
+  callback: function(data){
+    indexController = this.controllerFor("index");
+    store = indexController.get('store')
+    data.forEach(function(obj){
+      if ((obj.doc.text)&&(obj.doc.type =='issue')&&(obj.doc.board)){ 
+        store.adapterForType(App.Issue).load(store, App.Issue, obj.doc);
+        App.Boards.forEach(function(type) {
+          if (obj.doc.board == type){
+            issue = App.Issue.find(obj.doc._id);
+            indexController.controllerFor(type).get('content').pushObject(issue);
+          }      
+        });
+      }
+    })
+  },  
   renderTemplate: function() {
     this.render();
 
