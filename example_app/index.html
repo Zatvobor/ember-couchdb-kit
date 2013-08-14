@@ -1,79 +1,93 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
 
-    <title>Board</title>
-    <link href="/example_app/css/libs/bootstrap.css" rel="stylesheet" media="screen">
+  <title>Board</title>
+  <link href="/example_app/css/libs/bootstrap.css" rel="stylesheet" media="screen">
 
-    <script src="/example_app/js/libs/jquery.js"></script>
-    <script src="/example_app/js/libs/handlebars.js"></script>
-    <script src="/example_app/js/libs/ember.js"></script>
-    <script src="/example_app/js/libs/ember-data.js"></script>
+  <script src="/example_app/js/libs/jquery.js"></script>
+  <script src="/example_app/js/libs/handlebars.js"></script>
+  <script src="/example_app/js/libs/ember.js"></script>
+  <script src="/example_app/js/libs/ember-data.js"></script>
 
-    <script src="/dist/ember-couchdb-kit.js"></script>
-    <script src="/dist/attachment-adapter.js"></script>
-    <script src="/dist/changes-feed.js"></script>
-    <script src="/dist/document-adapter.js"></script>
-    <script src="/dist/registry.js"></script>
-    <script src="/dist/revs-adapter.js"></script>
+  <script src="/dist/ember-couchdb-kit.js"></script>
+  <script src="/dist/attachment-adapter.js"></script>
+  <script src="/dist/changes-feed.js"></script>
+  <script src="/dist/document-adapter.js"></script>
+  <script src="/dist/registry.js"></script>
+  <script src="/dist/revs-adapter.js"></script>
 
-    <script src="/example_app/js/app.js"></script>
+  <script src="/example_app/js/app.js"></script>
 
 </head>
 <body>
 
 <script type="text/x-handlebars" data-template-name="index">
 
-    <div class="navbar alert alert-success">
-        <div class="navbar alert alert-success">
-            <h1>Issue boards</h1>
-        </div>
-    </div>
+  <div class="alert alert-success">
+    <h1>Issue boards</h1>
+  </div>
 
-    <div>
-        <ul class="inline">
-            {{#each board in App.Boards}}
-                {{#view App.BoardView class="navbar alert alert-success"}}
-                    <h4>{{board}}</h4>
-                    {{partial "issueList"}}
-                    {{partial "createIssue"}}
-                {{/view}}
-            {{/each}}
-        </ul>
+  <div class="row">
+    <div class="col-lg-3">{{outlet basic}}</div>
+    <div class="col-lg-3">{{outlet intermediate}}</div>
+    <div class="col-lg-3">{{outlet advanced}}</div>
+  </div>
+  
+</script>
+
+
+<script type="text/x-handlebars" data-template-name="basic">
+      {{partial "board"}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="intermediate">
+      {{partial "board"}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="advanced">
+      {{partial "board"}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="_board">
+  <div class="thumbnail">
+    <div class="alert alert-success">
+      <h4>{{name}}</h4>
+      {{partial "issueList"}}
+      {{partial "createIssue"}}
     </div>
+  </div>
 </script>
 
 <script type="text/x-handlebars" data-template-name="_issueList">
-    <div>
-        <ul class="list-group">
-            {{#each controller}}
-                <li class="list-group-item">
-                    <div class="navbar alert alert-success">
-                        {{text}}
-                    </div>      
-                </li>
-            {{/each}}
-        </ul>
-    </div>
+  <div>
+    <ul class="list-group">
+      {{#each controller}}
+        <li class="list-group-item">
+          {{text}}      
+        </li>
+      {{/each}}
+    </ul>
+  </div>
 </script>
 
 <script type="text/x-handlebars" data-template-name="_createIssue">
-    {{#view App.NewIssueView}}
-        {{#if view.create}}
-            {{#view Ember.TextArea viewName="TextArea" class="form-control"}}
-            {{/view}}
-            <p>
-            <button type="submit" class="btn btn-warning"> Save </button>
-            {{#view App.CancelView}}
-                <button class="btn"> &times; </button>
-            {{/view}}
-            </p>
-        {{else}}
-            <button type="submit" class="btn btn-warning"> Add new issue </button>
-        {{/if}}
-    {{/view}} 
+  {{#view App.NewIssueView boardBinding=name}}
+    {{#if view.create}}
+      {{#view Ember.TextArea viewName="TextArea" class="form-control"}}
+      {{/view}}
+        <p>
+        <button type="submit" class="btn btn-warning"> Save </button>
+        {{#view App.CancelView}}
+          <button class="btn"> &times; </button>
+        {{/view}}
+        </p>
+    {{else}}
+      <button type="submit" class="btn btn-warning"> Add new issue </button>
+    {{/if}}
+  {{/view}}
 </script>
 
 </body>
