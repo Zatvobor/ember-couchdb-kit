@@ -31,27 +31,15 @@
   </div>
 
   <div class="row">
-    <div class="col-lg-3">{{outlet basic}}</div>
-    <div class="col-lg-3">{{outlet intermediate}}</div>
-    <div class="col-lg-3">{{outlet advanced}}</div>
+    <div class="col-lg-3">{{outlet 'common'}}</div>
+    <div class="col-lg-3">{{outlet 'intermediate'}}</div>
+    <div class="col-lg-3">{{outlet 'advanced'}}</div>
   </div>
   
 </script>
 
 
-<script type="text/x-handlebars" data-template-name="basic">
-      {{partial "board"}}
-</script>
-
-<script type="text/x-handlebars" data-template-name="intermediate">
-      {{partial "board"}}
-</script>
-
-<script type="text/x-handlebars" data-template-name="advanced">
-      {{partial "board"}}
-</script>
-
-<script type="text/x-handlebars" data-template-name="_board">
+<script type="text/x-handlebars" data-template-name="board">
   <div class="thumbnail">
     <div class="alert alert-success">
       <h4>{{name}}</h4>
@@ -66,7 +54,7 @@
     <ul class="list-group">
       {{#each controller}}
         <li class="list-group-item">
-          {{text}}      
+          {{text}}
         </li>
       {{/each}}
     </ul>
@@ -74,7 +62,7 @@
 </script>
 
 <script type="text/x-handlebars" data-template-name="_createIssue">
-  {{#view App.NewIssueView boardBinding=name}}
+  {{#view App.NewIssueView}}
     {{#if view.create}}
       {{#view Ember.TextArea viewName="TextArea" class="form-control"}}
       {{/view}}
