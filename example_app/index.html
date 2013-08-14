@@ -64,7 +64,7 @@
 <script type="text/x-handlebars" data-template-name="_createIssue">
   {{#view App.NewIssueView}}
     {{#if view.create}}
-      {{#view Ember.TextArea viewName="TextArea" class="form-control"}}
+      {{#view App.FocusTextArea viewName="TextArea" class="form-control"}}
       {{/view}}
         <p>
         <button type="submit" class="btn btn-warning"> Save </button>

@@ -21,7 +21,7 @@ App.IndexRoute = Ember.Route.extend({
     App.Boards.forEach(function(type) {
       self.controllerFor(type).set('content', []);
     });
-    this.feed()
+    //this.feed()
   },
   feed: function(){
     feed = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: {"include_docs": true, "timeout":1000}});
@@ -44,7 +44,6 @@ App.IndexRoute = Ember.Route.extend({
   },  
   renderTemplate: function() {
     this.render();
-
     this.render('board',{outlet: 'common', into: 'index', controller: 'common'});
     this.render('board',{outlet: 'intermediate', into: 'index', controller: 'intermediate'});
     this.render('board',{outlet: 'advanced', into: 'index', controller: 'advanced'});
@@ -58,18 +57,17 @@ App.IndexController = Ember.ArrayController.extend({
   }
 });
 
-App.CommonController = App.IndexController.extend( {
+App.CommonController = App.IndexController.extend({
   name: 'common'
-} );
+});
 
-App.IntermediateController = App.IndexController.extend( {
+App.IntermediateController = App.IndexController.extend({
   name: 'intermediate'
-} );
+});
 
-App.AdvancedController = App.IndexController.extend( {
+App.AdvancedController = App.IndexController.extend({
   name: 'advanced'
-} );
-
+});
 
 App.NewIssueView = Ember.View.extend({
   tagName: "form",
@@ -81,6 +79,11 @@ App.NewIssueView = Ember.View.extend({
     }
     this.toggleProperty('create');
   }
+});
+
+App.FocusTextArea = Ember.TextArea.extend({
+    attributeBindings: ['autofocus'],
+    autofocus: 'autofocus'
 });
 
 App.CancelView = Ember.View.extend({
