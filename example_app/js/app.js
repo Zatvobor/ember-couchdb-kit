@@ -21,7 +21,7 @@ App.IndexRoute = Ember.Route.extend({
     App.Boards.forEach(function(type) {
       self.controllerFor(type).set('content', []);
     });
-    //this.feed()
+    this.feed()
   },
   feed: function(){
     feed = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: {"include_docs": true, "timeout":1000}});
@@ -36,7 +36,7 @@ App.IndexRoute = Ember.Route.extend({
         App.Boards.forEach(function(type) {
           if (obj.doc.board == type){
             issue = App.Issue.find(obj.doc._id);
-            indexController.controllerFor(type).get('content').pushObject(issue);
+            indexController.get('controllers.%@'.fmt(type)).get('content').pushObject(issue);
           }      
         });
       }
@@ -54,7 +54,8 @@ App.IndexController = Ember.ArrayController.extend({
   createIssue: function(fields) {
     issue = App.Issue.createRecord(fields);
     issue.get('store').commit();
-  }
+  },
+  needs: App.Boards
 });
 
 App.CommonController = App.IndexController.extend({
