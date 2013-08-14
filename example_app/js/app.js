@@ -31,17 +31,21 @@ App.IndexRoute = Ember.Route.extend({
     indexController = this.controllerFor("index");
     store = indexController.get('store')
     data.forEach(function(obj){
-      if ((obj.doc.text)&&(obj.doc.type =='issue')&&(obj.doc.board)){ 
-        store.adapterForType(App.Issue).load(store, App.Issue, obj.doc);
+      if ((obj.doc.text)&&(obj.doc.type =='issue')&&(obj.doc.board)){
         App.Boards.forEach(function(type) {
-          if (obj.doc.board == type){
-            issue = App.Issue.find(obj.doc._id);
-            indexController.get('controllers.%@'.fmt(type)).get('content').pushObject(issue);
-          }      
+          if (!(obj.doc._deleted)&&(indexController.get('controllers.%@'.fmt(type)).get('content').mapProperty('id').indexOf(obj.doc._id) >= 0)){
+            App.Issue.find(obj.doc._id).reload();
+          }else{
+            store.adapterForType(App.Issue).load(store, App.Issue, obj.doc);
+            if (obj.doc.board == type){
+              issue = App.Issue.find(obj.doc._id);
+              indexController.get('controllers.%@'.fmt(type)).get('content').pushObject(issue);
+            }
+          }
         });
       }
-    })
-  },  
+    });
+  },
   renderTemplate: function() {
     this.render();
     this.render('board',{outlet: 'common', into: 'index', controller: 'common'});
@@ -54,6 +58,9 @@ App.IndexController = Ember.ArrayController.extend({
   createIssue: function(fields) {
     issue = App.Issue.createRecord(fields);
     issue.get('store').commit();
+  },
+  saveMessage: function(message) {
+    message.save();
   },
   needs: App.Boards
 });
@@ -73,18 +80,26 @@ App.AdvancedController = App.IndexController.extend({
 App.NewIssueView = Ember.View.extend({
   tagName: "form",
   create: false,
-  submit: function(event){
+  _save:  function(event) {
     event.preventDefault();
     if (this.get('create')){
       this.get('controller').send("createIssue", {text: this.get("TextArea.value"), board: this.get('controller.name')} );
     }
     this.toggleProperty('create');
+  },
+  submit: function(event){
+    this._save(event);
+  },
+  keyDown: function(event){
+    if(event.keyCode == 13){
+      this._save(event);
+    }
   }
 });
 
 App.FocusTextArea = Ember.TextArea.extend({
-    attributeBindings: ['autofocus'],
-    autofocus: 'autofocus'
+  attributeBindings: ['autofocus'],
+  autofocus: 'autofocus'
 });
 
 App.CancelView = Ember.View.extend({
@@ -93,4 +108,18 @@ App.CancelView = Ember.View.extend({
     event.preventDefault();
     this.set('parentView.create',false);
   }
+});
+
+App.EditIssueView = Ember.View.extend({
+  tagName: "form",
+  edit: false,
+  submit: function(event){
+    event.preventDefault();
+    if (this.get('edit')){
+      this.get('controller').send('saveMessage', this.get("context"));
+    }
+    this.toggleProperty('edit');
+  },
+  attributeBindings: ['draggable'],
+  draggable: 'true'
 });
