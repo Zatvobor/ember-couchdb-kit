@@ -59,8 +59,11 @@ App.IndexController = Ember.ArrayController.extend({
     issue = App.Issue.createRecord(fields);
     issue.get('store').commit();
   },
-  saveMessage: function(message) {
-    message.save();
+  saveMessage: function(model) {
+    model.save();
+  },
+  countCurrentPossition: function() {
+
   },
   needs: App.Boards
 });
@@ -110,7 +113,7 @@ App.CancelView = Ember.View.extend({
   }
 });
 
-App.EditIssueView = Ember.View.extend({
+App.IssueView = Ember.View.extend({
   tagName: "form",
   edit: false,
   submit: function(event){
@@ -120,6 +123,25 @@ App.EditIssueView = Ember.View.extend({
     }
     this.toggleProperty('edit');
   },
-  attributeBindings: ['draggable'],
-  draggable: 'true'
+  attributeBindings: 'draggable',
+  draggable: 'true',
+  dragStart: function(event) {
+    event.dataTransfer.setData('Text', this.get('elementId'));
+  },
+  dragEnter: function(event) {
+    event.preventDefault();
+  },
+  dragOver: function(event) {
+    event.preventDefault();
+  },
+  drop: function(event) {
+    var viewId = event.dataTransfer.getData('Text');
+    var view = Ember.View.views[viewId];
+    var model = view.get('context');
+    view.get('controller.content').removeObject(model);
+    this.get('controller.content').addObject(model);
+    model.set('board', this.get('controller.name'));
+    this.get('controller').send('saveMessage', model);
+    event.preventDefault();
+  }
 });

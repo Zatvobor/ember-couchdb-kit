@@ -52,7 +52,7 @@
 <script type="text/x-handlebars" data-template-name="_issueList">
   <div>
     {{#each controller}}
-      {{#view App.EditIssueView contextBinding=this}}
+      {{#view App.IssueView contextBinding=this}}
         <div class="thumbnail">
           {{#if view.edit}}
             {{#view App.FocusTextArea class="form-control" viewName="TextAreaEdit" valueBinding=view.context.text}}
