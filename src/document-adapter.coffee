@@ -178,6 +178,14 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
     raw_json = doc.get('_data.attributes.raw')
     # => Object {_id: "...", _rev: "...", …}
 
+  Creating a named document
+
+    ```
+    myDoc = EmberApp.CouchDBModel.createRecord({id: 'myId'})
+    # …
+    myDoc = EmberApp.CouchDBModel.find('myId')
+    # => Object {id: "myId", …}
+
   If you wonder about `id` which could be missed in your db then, you should check its `isLoaded` state
 
     ```
@@ -307,28 +315,13 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
 
   createRecord: (store, type, record) ->
     json = @serialize(record)
-
-    @ajax('', 'POST', {
-      data: json
-      context: this
-      success: (data) ->
-        store.didSaveRecord(record, $.extend(json, data))
-    })
+    @_push(store, type, record, json)
 
   updateRecord: (store, type, record) ->
     json = @serialize(record, {associations: false, includeId: true })
 
-    @_updateAttachmnets(record, json)
-
-    @ajax(record.get('id'), 'PUT', {
-      data: json,
-      context: this,
-      success: (data) ->
-        store.didSaveRecord(record, $.extend(json, data))
-      error: (xhr, textStatus, errorThrown) ->
-        if xhr.status == 409
-          store.recordWasInvalid(record, {})
-    })
+    @_updateAttachmnets(record, json) if record.get('attachments')
+    @_push(store, type, record, json)
 
   deleteRecord: (store, type, record) ->
     @ajax("%@?rev=%@".fmt(record.get('id'), record.get('_data.attributes._rev')), 'DELETE', {
@@ -338,18 +331,32 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     })
 
   _updateAttachmnets: (record, json) ->
-    if record.get('attachments')
-      _attachments = {}
-      record.get('attachments').forEach (item) ->
-        attachment = EmberCouchDBKit.AttachmentStore.get(item.get('id'))
-        _attachments[item.get('file_name')] =
-          content_type: attachment.content_type
-          digest: attachment.digest
-          length: attachment.length
-          stub:   attachment.stub
-          revpos: attachment.revpos
-      json._attachments = _attachments
-      delete json.attachments
+    _attachments = {}
+
+    record.get('attachments').forEach (item) ->
+      attachment = EmberCouchDBKit.AttachmentStore.get(item.get('id'))
+      _attachments[item.get('file_name')] =
+        content_type: attachment.content_type
+        digest: attachment.digest
+        length: attachment.length
+        stub:   attachment.stub
+        revpos: attachment.revpos
+
+    json._attachments = _attachments
+    delete json.attachments
 
   _checkForRevision: (id) ->
     id.split("/").length > 1
+
+  _push: (store, type, record, json) ->
+    id     = record.get('id') || ''
+    method = if record.get('id') then 'PUT' else 'POST'
+
+    @ajax(id, method, {
+      data: json,
+      context: this,
+      success: (data) ->
+        store.didSaveRecord(record, $.extend(json, data))
+      error: (xhr, textStatus, errorThrown) ->
+        store.recordWasInvalid(record, {}) if xhr.status == 409
+    })
