@@ -11,7 +11,21 @@ App.Issue = DS.Model.extend({
   board: DS.attr('string')
 });
 
-App.Store.registerAdapter('App.Issue', EmberCouchDBKit.DocumentAdapter.extend({db: 'boards'}));
+DS.JSONTransforms.array = {
+  serialize: function(value) {
+    return Ember.isNone(value) ? [] : value ;
+  },
+  deserialize: function(value) {
+    return Ember.isNone(value) ? [] : value ;
+  }
+};
+
+App.Position = DS.Model.extend({
+  pos: DS.attr('array')
+});
+
+
+//App.Store.registerAdapter('App.Issue', EmberCouchDBKit.DocumentAdapter.extend({db: 'boards'}));
 
 App.Boards = ['common', 'intermediate', 'advanced'];
 
@@ -58,7 +72,6 @@ App.IndexRoute = Ember.Route.extend({
       }
     }); // forEach
   } // _callback fuction
-
 });
 
 
@@ -69,12 +82,11 @@ App.IndexController = Ember.ArrayController.extend({
   createIssue: function(fields) {
     issue = App.Issue.createRecord(fields);
     issue.get('store').commit();
+    issue = App.Position.createRecord();
+    issue.get('store').commit();
   },
   saveMessage: function(model) {
     model.save();
-  },
-  countCurrentPossition: function() {
-
   },
   needs: App.Boards
 });

@@ -55,7 +55,7 @@
         {{#view App.IssueView contextBinding=this}}
           <div class="thumbnail">
             {{#if view.edit}}
-              {{#view App.FocusTextArea class="form-control" viewName="TextAreaEdit" valueBinding=view.context.text}}
+              {{#view App.FocusedTextArea class="form-control" viewName="TextAreaEdit" valueBinding=view.context.text}}
               {{/view}}
               <button type="submit" class="btn btn-xs btn-default"> Ok </button>
             {{else}}
