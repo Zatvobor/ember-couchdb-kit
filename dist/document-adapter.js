@@ -220,6 +220,14 @@
       raw_json = doc.get('_data.raw')
       # => Object {_id: "...", _rev: "...", …}
   
+    Creating a named document
+  
+      ```
+      myDoc = EmberApp.CouchDBModel.createRecord({id: 'myId'})
+      # …
+      myDoc = EmberApp.CouchDBModel.find('myId')
+      # => Object {id: "myId", …}
+  
     If you wonder about `id` which could be missed in your db then, you should check its `isLoaded` state
   
       ```
@@ -366,13 +374,7 @@
       var json;
 
       json = this.serialize(record);
-      return this.ajax('', 'POST', {
-        data: json,
-        context: this,
-        success: function(data) {
-          return store.didSaveRecord(record, $.extend(json, data));
-        }
-      });
+      return this._push(store, type, record, json);
     },
     updateRecord: function(store, type, record) {
       var json;
@@ -381,19 +383,10 @@
         associations: false,
         includeId: true
       });
-      this._updateAttachmnets(record, json);
-      return this.ajax(record.get('id'), 'PUT', {
-        data: json,
-        context: this,
-        success: function(data) {
-          return store.didSaveRecord(record, $.extend(json, data));
-        },
-        error: function(xhr, textStatus, errorThrown) {
-          if (xhr.status === 409) {
-            return store.recordWasInvalid(record, {});
-          }
-        }
-      });
+      if (record.get('attachments')) {
+        this._updateAttachmnets(record, json);
+      }
+      return this._push(store, type, record, json);
     },
     deleteRecord: function(store, type, record) {
       return this.ajax("%@?rev=%@".fmt(record.get('id'), record.get('_data._rev')), 'DELETE', {
@@ -406,26 +399,43 @@
     _updateAttachmnets: function(record, json) {
       var _attachments;
 
-      if (record.get('attachments')) {
-        _attachments = {};
-        record.get('attachments').forEach(function(item) {
-          var attachment;
+      _attachments = {};
+      record.get('attachments').forEach(function(item) {
+        var attachment;
 
-          attachment = EmberCouchDBKit.AttachmentStore.get(item.get('id'));
-          return _attachments[item.get('file_name')] = {
-            content_type: attachment.content_type,
-            digest: attachment.digest,
-            length: attachment.length,
-            stub: attachment.stub,
-            revpos: attachment.revpos
-          };
-        });
-        json._attachments = _attachments;
-        return delete json.attachments;
-      }
+        attachment = EmberCouchDBKit.AttachmentStore.get(item.get('id'));
+        return _attachments[item.get('file_name')] = {
+          content_type: attachment.content_type,
+          digest: attachment.digest,
+          length: attachment.length,
+          stub: attachment.stub,
+          revpos: attachment.revpos
+        };
+      });
+      json._attachments = _attachments;
+      return delete json.attachments;
     },
     _checkForRevision: function(id) {
+      (id != null ? id.split("/").length : void 0) > 1;
       return id.split("/").length > 1;
+    },
+    _push: function(store, type, record, json) {
+      var id, method;
+
+      id = record.get('id') || '';
+      method = record.get('id') ? 'PUT' : 'POST';
+      return this.ajax(id, method, {
+        data: json,
+        context: this,
+        success: function(data) {
+          return store.didSaveRecord(record, $.extend(json, data));
+        },
+        error: function(xhr, textStatus, errorThrown) {
+          if (xhr.status === 409) {
+            return store.recordWasInvalid(record, {});
+          }
+        }
+      });
     }
   });
 
