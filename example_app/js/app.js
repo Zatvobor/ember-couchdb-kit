@@ -15,19 +15,31 @@ App.Store.registerAdapter('App.Issue', EmberCouchDBKit.DocumentAdapter.extend({d
 
 App.Boards = ['common', 'intermediate', 'advanced'];
 
+
+
+// Routes
+
 App.IndexRoute = Ember.Route.extend({
+
   setupController: function(controller, model) {
-    self = this;
-    App.Boards.forEach(function(type) {
-      self.controllerFor(type).set('content', []);
-    });
-    this.feed()
+    this._feed();
   },
-  feed: function(){
+
+  renderTemplate: function() {
+    this.render();
+    this.render('board',{outlet: 'common', into: 'index', controller: 'common'});
+    this.render('board',{outlet: 'intermediate', into: 'index', controller: 'intermediate'});
+    this.render('board',{outlet: 'advanced', into: 'index', controller: 'advanced'});
+  },
+
+  _feed: function(){
+    // create a CouchDB `/_change` feed listener
     feed = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: {"include_docs": true, "timeout":1000}});
-    feed.longpoll(this.callback, this);
+    // all upcoming changes are passed to `_handleChanges` callback through `longpool` strategy
+    feed.longpoll(this._handleChanges, this);
   },
-  callback: function(data){
+
+  _handleChanges: function(data){
     indexController = this.controllerFor("index");
     store = indexController.get('store')
     data.forEach(function(obj){
@@ -44,15 +56,14 @@ App.IndexRoute = Ember.Route.extend({
           }
         });
       }
-    });
-  },
-  renderTemplate: function() {
-    this.render();
-    this.render('board',{outlet: 'common', into: 'index', controller: 'common'});
-    this.render('board',{outlet: 'intermediate', into: 'index', controller: 'intermediate'});
-    this.render('board',{outlet: 'advanced', into: 'index', controller: 'advanced'});
-  }
+    }); // forEach
+  } // _callback fuction
+
 });
+
+
+
+// Conttrollers
 
 App.IndexController = Ember.ArrayController.extend({
   createIssue: function(fields) {
@@ -68,17 +79,13 @@ App.IndexController = Ember.ArrayController.extend({
   needs: App.Boards
 });
 
-App.CommonController = App.IndexController.extend({
-  name: 'common'
-});
+App.CommonController       = App.IndexController.extend({ name: 'common' });
+App.IntermediateController = App.IndexController.extend({ name: 'intermediate' });
+App.AdvancedController     = App.IndexController.extend({ name: 'advanced' });
 
-App.IntermediateController = App.IndexController.extend({
-  name: 'intermediate'
-});
 
-App.AdvancedController = App.IndexController.extend({
-  name: 'advanced'
-});
+
+//  Views
 
 App.NewIssueView = Ember.View.extend({
   tagName: "form",
@@ -100,7 +107,7 @@ App.NewIssueView = Ember.View.extend({
   }
 });
 
-App.FocusTextArea = Ember.TextArea.extend({
+App.FocusedTextArea = Ember.TextArea.extend({
   attributeBindings: ['autofocus'],
   autofocus: 'autofocus'
 });

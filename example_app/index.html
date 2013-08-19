@@ -24,66 +24,66 @@
 </head>
 <body>
 
-<script type="text/x-handlebars" data-template-name="index">
-
-  <div class="alert alert-success">
-    <h1>Issue boards</h1>
-  </div>
-
-  <div class="row">
-    <div class="col-lg-3">{{outlet 'common'}}</div>
-    <div class="col-lg-3">{{outlet 'intermediate'}}</div>
-    <div class="col-lg-3">{{outlet 'advanced'}}</div>
-  </div>
+  <script type="text/x-handlebars" data-template-name="index">
   
-</script>
-
-
-<script type="text/x-handlebars" data-template-name="board">
-  <div class="thumbnail">
     <div class="alert alert-success">
-      <h4>{{name}}</h4>
-      {{partial "issueList"}}
-      {{partial "createIssue"}}
+      <h1>Issue boards</h1>
     </div>
-  </div>
-</script>
-
-<script type="text/x-handlebars" data-template-name="_issueList">
-  <div>
-    {{#each controller}}
-      {{#view App.IssueView contextBinding=this}}
-        <div class="thumbnail">
-          {{#if view.edit}}
-            {{#view App.FocusTextArea class="form-control" viewName="TextAreaEdit" valueBinding=view.context.text}}
-            {{/view}}
-            <button type="submit" class="btn btn-xs btn-default"> Ok </button>
-          {{else}}
-            {{text}}
-            <button type="submit" class="btn btn-xs btn-default"> Edit </button>
-          {{/if}}
-        </div>
-      {{/view}}
-    {{/each}}
-  </div>
-</script>
-
-<script type="text/x-handlebars" data-template-name="_createIssue">
-  {{#view App.NewIssueView}}
-    {{#if view.create}}
-      {{#view App.FocusTextArea viewName="TextArea" class="form-control"}}
-      {{/view}}
-        <p>
-        <button type="submit" class="btn btn-warning"> Save </button>
-        {{#view App.CancelView}}
-          <button class="btn"> &times; </button>
+  
+    <div class="row">
+      <div class="col-lg-3">{{outlet 'common'}}</div>
+      <div class="col-lg-3">{{outlet 'intermediate'}}</div>
+      <div class="col-lg-3">{{outlet 'advanced'}}</div>
+    </div>
+    
+  </script>
+  
+  
+  <script type="text/x-handlebars" data-template-name="board">
+    <div class="thumbnail">
+      <div class="alert alert-success">
+        <h4>{{name}}</h4>
+        {{partial "issueList"}}
+        {{partial "createIssue"}}
+      </div>
+    </div>
+  </script>
+  
+  <script type="text/x-handlebars" data-template-name="_issueList">
+    <div>
+      {{#each controller}}
+        {{#view App.IssueView contextBinding=this}}
+          <div class="thumbnail">
+            {{#if view.edit}}
+              {{#view App.FocusTextArea class="form-control" viewName="TextAreaEdit" valueBinding=view.context.text}}
+              {{/view}}
+              <button type="submit" class="btn btn-xs btn-default"> Ok </button>
+            {{else}}
+              {{text}}
+              <button type="submit" class="btn btn-xs btn-default"> Edit </button>
+            {{/if}}
+          </div>
         {{/view}}
-        </p>
-    {{else}}
-      <button type="submit" class="btn btn-warning"> Add new issue </button>
-    {{/if}}
-  {{/view}}
-</script>
+      {{/each}}
+    </div>
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="_createIssue">
+    {{#view App.NewIssueView}}
+      {{#if view.create}}
+        {{#view App.FocusedTextArea viewName="TextArea" class="form-control"}}
+        {{/view}}
+          <p>
+          <button type="submit" class="btn btn-warning"> Save </button>
+          {{#view App.CancelView}}
+            <button class="btn"> &times; </button>
+          {{/view}}
+          </p>
+      {{else}}
+        <button type="submit" class="btn btn-warning"> Add new issue </button>
+      {{/if}}
+    {{/view}}
+  </script>
 
 </body>
 </html>
