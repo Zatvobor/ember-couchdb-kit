@@ -1,5 +1,9 @@
 var App = Ember.Application.create();
 
+
+
+// Models
+
 App.Store = DS.Store.extend({
   revision: 13,
   adapter: EmberCouchDBKit.DocumentAdapter.create({db: 'boards'})
@@ -11,21 +15,12 @@ App.Issue = DS.Model.extend({
   board: DS.attr('string')
 });
 
-DS.JSONTransforms.array = {
-  serialize: function(value) {
-    return Ember.isNone(value) ? [] : value ;
-  },
-  deserialize: function(value) {
-    return Ember.isNone(value) ? [] : value ;
-  }
-};
-
 App.Position = DS.Model.extend({
-  pos: DS.attr('array')
+  _id: DS.attr('string'),
+  issues: DS.hasMany('App.Issue', {embeded: true}),
+  type: DS.attr('string', {defaultValue: 'position'})
 });
 
-
-//App.Store.registerAdapter('App.Issue', EmberCouchDBKit.DocumentAdapter.extend({db: 'boards'}));
 
 App.Boards = ['common', 'intermediate', 'advanced'];
 
