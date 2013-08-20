@@ -35,8 +35,16 @@ App.IndexRoute = Ember.Route.extend({
     self = this;
     App.Boards.forEach(function(type) {
       controller = self.controllerFor(type);
-      controller.addObserver('content', controller, function(){
 
+      controller.set('position', App.Position.find(type));
+      //
+      controller.addObserver('content', controller, function(){
+        controller.get('position').set('issues', controller.get('content'));
+        controller.get('position.store').commit();
+      });
+      //
+      controller.get('position').one('didLoad', function() {
+        controller.set('content', controller.get('position.issues'));
       });
     });
   },
@@ -62,7 +70,7 @@ App.IndexRoute = Ember.Route.extend({
     // create a CouchDB `/_change` feed listener
     feed = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: {"include_docs": true, "timeout":1000}});
     // all upcoming changes are passed to `_handleChanges` callback through `longpool` strategy
-    feed.longpoll(this._handleChanges, this);
+    //feed.longpoll(this._handleChanges, this);
   },
 
   _handleChanges: function(data){
