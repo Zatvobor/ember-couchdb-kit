@@ -8,6 +8,10 @@ bundle install
 setup application related design docs
 
 ```
+curl -X PUT http://localhost:5984/boards
+```
+
+```
 curl -X PUT http://localhost:5984/boards/_design/issues -H 'Content-Type: application/json' -d '
 {
    "_id": "_design/issues",
