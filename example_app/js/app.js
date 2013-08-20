@@ -32,10 +32,11 @@ App.IndexRoute = Ember.Route.extend({
   setupController: function(controller, model) {
     this._feed();
     //this._setupPosition();
+    self = this;
+    App.Boards.forEach(function(type) {
+      controller = self.controllerFor(type);
+      controller.addObserver('content', controller, function(){
 
-    controller.addObserver('content', controller, function(){
-      App.Boards.forEach(function(type) {
-        position = App.Position.find(type);
       });
     });
   },
@@ -96,7 +97,7 @@ App.IndexController = Ember.ArrayController.extend({
     issue.on('didCreate', function() {
       position = App.Position.find(fields.board);
       position.get('issues').pushObject(issue);
-      position.get('store').commit();
+      position.get('transaction').commit();
     });
   },
   saveMessage: function(model) {
@@ -159,7 +160,7 @@ App.IssueView = Ember.View.extend({
   attributeBindings: 'draggable',
   draggable: 'true',
   dragStart: function(event) {
-    event.dataTransfer.setData('Text', this.get('elementId'));
+    event.dataTransfer.setData('id', this.get('elementId'));
   },
   dragEnter: function(event) {
     event.preventDefault();
@@ -168,7 +169,7 @@ App.IssueView = Ember.View.extend({
     event.preventDefault();
   },
   drop: function(event) {
-    var viewId = event.dataTransfer.getData('Text');
+    var viewId = event.dataTransfer.getData('id');
     var view = Ember.View.views[viewId];
     var model = view.get('context');
     view.get('controller.content').removeObject(model);
