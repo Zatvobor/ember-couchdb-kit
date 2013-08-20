@@ -38,13 +38,16 @@ App.IndexRoute = Ember.Route.extend({
 
       controller.set('position', App.Position.find(type));
       //
-      controller.addObserver('content', controller, function(){
+      controller.addObserver('content', controller, function() {
+        controller = self.controllerFor(type);
+
         controller.get('position').set('issues', controller.get('content'));
         controller.get('position.store').commit();
       });
       //
       controller.get('position').one('didLoad', function() {
-        controller.set('content', controller.get('position.issues'));
+        issues = self.controllerFor(type).get('position.issues');
+        self.controllerFor(type).set('content', issues);
       });
     });
   },
