@@ -16,7 +16,6 @@ App.Issue = DS.Model.extend({
 });
 
 App.Position = DS.Model.extend({
-  _id: DS.attr('string'),
   issues: DS.hasMany('App.Issue', {embeded: true}),
   type: DS.attr('string', {defaultValue: 'position'})
 });
@@ -32,6 +31,13 @@ App.IndexRoute = Ember.Route.extend({
 
   setupController: function(controller, model) {
     this._feed();
+    //this._setupPosition();
+
+    controller.addObserver('content', controller, function(){
+      App.Boards.forEach(function(type) {
+        position = App.Position.find(type);
+      });
+    });
   },
 
   renderTemplate: function() {
@@ -39,6 +45,16 @@ App.IndexRoute = Ember.Route.extend({
     this.render('board',{outlet: 'common', into: 'index', controller: 'common'});
     this.render('board',{outlet: 'intermediate', into: 'index', controller: 'intermediate'});
     this.render('board',{outlet: 'advanced', into: 'index', controller: 'advanced'});
+  },
+
+  _setupPosition: function() {
+    App.Boards.forEach(function(type) {
+      doc = App.Position.find(type);
+      if (!(doc.get('isLoaded'))){
+        issue = App.Position.createRecord({ id: type });
+        issue.get('store').commit();
+      }
+    });
   },
 
   _feed: function(){
@@ -77,8 +93,11 @@ App.IndexController = Ember.ArrayController.extend({
   createIssue: function(fields) {
     issue = App.Issue.createRecord(fields);
     issue.get('store').commit();
-    issue = App.Position.createRecord();
-    issue.get('store').commit();
+    issue.on('didCreate', function() {
+      position = App.Position.find(fields.board);
+      position.get('issues').pushObject(issue);
+      position.get('store').commit();
+    });
   },
   saveMessage: function(model) {
     model.save();
