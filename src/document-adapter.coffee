@@ -308,7 +308,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
       typeString = @stringForType(type)
       data =
         include_docs: true
-        key: encodeURI('"' + typeString + '"')
+        key: '"' + typeString + '"'
 
       @ajax('_design/%@/_view/%@'.fmt(designDoc, typeViewName), 'GET', {
         context: this
