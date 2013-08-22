@@ -359,7 +359,7 @@
         typeString = this.stringForType(type);
         data = {
           include_docs: true,
-          key: encodeURI('"' + typeString + '"')
+          key: '"' + typeString + '"'
         };
         return this.ajax('_design/%@/_view/%@'.fmt(designDoc, typeViewName), 'GET', {
           context: this,
