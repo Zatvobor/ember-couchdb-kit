@@ -94,7 +94,7 @@ App.IndexRoute = Ember.Route.extend({
         });
       }
     }); // forEach
-  } // _callback fuction
+  } // _callback function
 });
 
 
@@ -168,8 +168,21 @@ App.IssueView = Ember.View.extend({
     }
     this.toggleProperty('edit');
   },
-  attributeBindings: 'draggable',
+  attributeBindings: ['draggable', 'data-id', 'data-board'],
   draggable: 'true',
+  'data-id': function(){
+    return this.get('context.id')
+  }.property(),
+  'data-board': function(){
+    return this.get('controller.name')
+  }.property(),
+  _getArray: function(board) {
+    var dataList = [];
+    $("form[data-board=" + board +"]").each(function() {
+      dataList.push($(this).data('id'));
+    });
+    return dataList;
+  },
   dragStart: function(event) {
     event.dataTransfer.setData('id', this.get('elementId'));
   },
@@ -179,14 +192,28 @@ App.IssueView = Ember.View.extend({
   dragOver: function(event) {
     event.preventDefault();
   },
-  drop: function(event) {
-    var viewId = event.dataTransfer.getData('id');
-    var view = Ember.View.views[viewId];
-    var model = view.get('context');
-    view.get('controller.content').removeObject(model);
-    this.get('controller.content').addObject(model);
-    model.set('board', this.get('controller.name'));
-    this.get('controller').send('saveMessage', model);
+  dragEnd: function(event) {
     event.preventDefault();
+  },
+  drop: function(event) {
+    event.preventDefault();
+    var Id = event.dataTransfer.getData('id');
+    var el1 = document.getElementById(Id);
+    el1.parentNode.removeChild(el1);
+    var currentId = this.get('elementId');
+    var el2 = document.getElementById(currentId);
+    el2.parentNode.appendChild(el1);
+    console.log(this._getArray(this.get('context.board')));
   }
-});
+})  
+
+
+
+
+    //var view = Ember.View.views[viewId];
+    //var model = view.get('context');
+    //var currentViewId = this.get('elementId');
+    //view.destroy();
+    //this.get('controller.content').on("willDestroyElement", function() {
+    //view.appendTo($("#" + currentViewId +""));})
+    //console.log(this._getArray(this.get('context.board')));
