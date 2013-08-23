@@ -127,7 +127,9 @@ App.AdvancedController     = App.IndexController.extend({ name: 'advanced' });
 
 App.NewIssueView = Ember.View.extend({
   tagName: "form",
+  
   create: false,
+  
   _save:  function(event) {
     event.preventDefault();
     if (this.get('create')){
@@ -135,9 +137,11 @@ App.NewIssueView = Ember.View.extend({
     }
     this.toggleProperty('create');
   },
+  
   submit: function(event){
     this._save(event);
   },
+  
   keyDown: function(event){
     if(event.keyCode == 13){
       this._save(event);
@@ -147,11 +151,13 @@ App.NewIssueView = Ember.View.extend({
 
 App.FocusedTextArea = Ember.TextArea.extend({
   attributeBindings: ['autofocus'],
+  
   autofocus: 'autofocus'
 });
 
 App.CancelView = Ember.View.extend({
   tagName: "span",
+  
   click: function(event){
     event.preventDefault();
     this.set('parentView.create',false);
@@ -160,7 +166,9 @@ App.CancelView = Ember.View.extend({
 
 App.IssueView = Ember.View.extend({
   tagName: "form",
+  
   edit: false,
+  
   submit: function(event){
     event.preventDefault();
     if (this.get('edit')){
@@ -168,52 +176,43 @@ App.IssueView = Ember.View.extend({
     }
     this.toggleProperty('edit');
   },
-  attributeBindings: ['draggable', 'data-id', 'data-board'],
+  
+  attributeBindings: ['draggable'],
+  
   draggable: 'true',
-  'data-id': function(){
-    return this.get('context.id')
-  }.property(),
-  'data-board': function(){
-    return this.get('controller.name')
-  }.property(),
-  _getArray: function(board) {
-    var dataList = [];
-    $("form[data-board=" + board +"]").each(function() {
-      dataList.push($(this).data('id'));
-    });
-    return dataList;
-  },
+  
   dragStart: function(event) {
     event.dataTransfer.setData('id', this.get('elementId'));
   },
+  
   dragEnter: function(event) {
     event.preventDefault();
   },
+  
   dragOver: function(event) {
     event.preventDefault();
   },
-  dragEnd: function(event) {
-    event.preventDefault();
-  },
+  
   drop: function(event) {
+    var viewId = event.dataTransfer.getData('id');
+    var view = Ember.View.views[viewId];
+    var newModel = view.get('context');
+    var oldModel = this.get('context');
+    var position = this.get('controller.content').toArray().indexOf(oldModel)
+    view.get('controller.content').removeObject(newModel);
+    thisArray = this.get('controller.content').toArray().insertAt(position, newModel);
+    this.set('controller.content.content', thisArray.getEach('_reference'));
+    this.set('controller.position.issues.content', thisArray.getEach('_reference'));
+    this.get('controller.position').save();
+
+    if(view.get('controller.name') !== this.get('controller.name')){
+      newModel.set('board', this.get('controller.name'));
+      newModel.get('store').commit();
+      viewArray = view.get('controller.content').toArray();
+      view.set('controller.content.content', viewArray.getEach('_reference'));
+      view.set('controller.position.issues.content', viewArray.getEach('_reference'));
+      view.get('controller.position').save();
+    }
     event.preventDefault();
-    var Id = event.dataTransfer.getData('id');
-    var el1 = document.getElementById(Id);
-    el1.parentNode.removeChild(el1);
-    var currentId = this.get('elementId');
-    var el2 = document.getElementById(currentId);
-    el2.parentNode.appendChild(el1);
-    console.log(this._getArray(this.get('context.board')));
   }
-})  
-
-
-
-
-    //var view = Ember.View.views[viewId];
-    //var model = view.get('context');
-    //var currentViewId = this.get('elementId');
-    //view.destroy();
-    //this.get('controller.content').on("willDestroyElement", function() {
-    //view.appendTo($("#" + currentViewId +""));})
-    //console.log(this._getArray(this.get('context.board')));
+});  
