@@ -51,6 +51,9 @@
   
   <script type="text/x-handlebars" data-template-name="_issueList">
     <div>
+      {{#view App.IssueView}}
+        <font size=4px> &#9998;</font>
+      {{/view}}
       {{#each controller}}
         {{#view App.IssueView contextBinding=this }}
           <div class="thumbnail">
