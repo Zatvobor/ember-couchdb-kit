@@ -187,10 +187,15 @@ App.IssueView = Ember.View.extend({
   
   dragEnter: function(event) {
     event.preventDefault();
+    event.target.style.opacity = '0.4';
   },
   
   dragOver: function(event) {
     event.preventDefault();
+  },
+  dragLeave: function(event) {
+    event.preventDefault();
+    event.target.style.opacity = '1';
   },
   
   drop: function(event) {
@@ -214,5 +219,7 @@ App.IssueView = Ember.View.extend({
       view.get('controller.position').save();
     }
     event.preventDefault();
+    
+    event.target.style.opacity = '1';
   }
 });  
