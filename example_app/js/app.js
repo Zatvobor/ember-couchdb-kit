@@ -30,27 +30,8 @@ App.Boards = ['common', 'intermediate', 'advanced'];
 App.IndexRoute = Ember.Route.extend({
 
   setupController: function(controller, model) {
-    this._feed();
+    this._position();
     //this._setupPosition();
-    self = this;
-    // [TODO] move this into changes handler. This block should be treated as a initialization which means should be invoked once...
-    App.Boards.forEach(function(type) {
-      controller = self.controllerFor(type);
-
-      controller.set('position', App.Position.find(type));
-      //
-      controller.addObserver('content', controller, function() {
-        controller = self.controllerFor(type);
-
-        controller.get('position').set('issues', controller.get('content'));
-        controller.get('position.store').commit();
-      });
-      //
-      controller.get('position').one('didLoad', function() {
-        issues = self.controllerFor(type).get('position.issues');
-        self.controllerFor(type).set('content', issues);
-      });
-    });
   },
 
   renderTemplate: function() {
@@ -72,23 +53,38 @@ App.IndexRoute = Ember.Route.extend({
     });
   },
 
-  _feed: function(){
-    // create a CouchDB `/_change` feed listener which filtered only by position documents
+  _position: function(){
+    // create a CouchDB `/_change` position listener which filtered only by position documents
     params = { include_docs: true, timeout: 1000, filter: 'issues/only_positions'}
-    feed = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: params });
+    position = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: params });
 
-    // all upcoming changes are passed to `_handleChanges` callback through `longpool` strategy
-    feed.longpoll(this._handleChanges, this);
+    // all upcoming changes are passed to `_handlePositionChanges` callback through `longpool` strategy
+    position.longpoll(this._handlePositionChanges, this);
   },
 
-  _handleChanges: function(data) {
-    // not yet implemented
-  } // _callback function
+  _handlePositionChanges: function(data) {
+    self = this;
+    data.forEach(function(obj){
+      controller = self.controllerFor(obj.doc._id);
+
+      controller.set('position', App.Position.find(obj.doc._id));
+      
+      controller.get('position').one('didLoad', function() {
+        controller = self.controllerFor(obj.doc._id);
+        issues = controller.get('position.issues');
+        controller.set('content', issues);
+      });
+
+      // didn't work !!! couldn't reload because of rootstate !!!
+      //controller.get('position').reload();
+
+    });
+  }
 });
 
 
 
-// Conttrollers
+// Controllers
 
 App.IndexController = Ember.ArrayController.extend({
   createIssue: function(fields) {
@@ -208,7 +204,6 @@ App.IssueView = Ember.View.extend({
       view.get('controller.position').save();
     }
     event.preventDefault();
-    
     event.target.style.opacity = '1';
   }
 });  
