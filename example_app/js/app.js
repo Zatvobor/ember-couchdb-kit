@@ -33,6 +33,7 @@ App.IndexRoute = Ember.Route.extend({
     this._feed();
     //this._setupPosition();
     self = this;
+    // [TODO] move this into changes handler. This block should be treated as a initialization which means should be invoked once...
     App.Boards.forEach(function(type) {
       controller = self.controllerFor(type);
 
@@ -59,6 +60,8 @@ App.IndexRoute = Ember.Route.extend({
     this.render('board',{outlet: 'advanced', into: 'index', controller: 'advanced'});
   },
 
+  // [TODO] rewrite me, depends by opne issue
+  // https://github.com/roundscope/ember-couchdb-kit/issues/54
   _setupPosition: function() {
     App.Boards.forEach(function(type) {
       doc = App.Position.find(type);
@@ -70,30 +73,16 @@ App.IndexRoute = Ember.Route.extend({
   },
 
   _feed: function(){
-    // create a CouchDB `/_change` feed listener
-    feed = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: {"include_docs": true, "timeout":1000}});
+    // create a CouchDB `/_change` feed listener which filtered only by position documents
+    params = { include_docs: true, timeout: 1000, filter: 'issues/only_positions'}
+    feed = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: params });
+
     // all upcoming changes are passed to `_handleChanges` callback through `longpool` strategy
-    //feed.longpoll(this._handleChanges, this);
+    feed.longpoll(this._handleChanges, this);
   },
 
-  _handleChanges: function(data){
-    indexController = this.controllerFor("index");
-    store = indexController.get('store')
-    data.forEach(function(obj){
-      if ((obj.doc.text)&&(obj.doc.type =='issue')&&(obj.doc.board)){
-        App.Boards.forEach(function(type) {
-          if (!(obj.doc._deleted)&&(indexController.get('controllers.%@'.fmt(type)).get('content').mapProperty('id').indexOf(obj.doc._id) >= 0)){
-            App.Issue.find(obj.doc._id).reload();
-          }else{
-            store.adapterForType(App.Issue).load(store, App.Issue, obj.doc);
-            if (obj.doc.board == type){
-              issue = App.Issue.find(obj.doc._id);
-              indexController.get('controllers.%@'.fmt(type)).get('content').pushObject(issue);
-            }
-          }
-        });
-      }
-    }); // forEach
+  _handleChanges: function(data) {
+    // not yet implemented
   } // _callback function
 });
 

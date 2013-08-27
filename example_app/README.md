@@ -23,6 +23,9 @@ curl -X PUT http://localhost:5984/boards/_design/issues -H 'Content-Type: applic
        "all_by_board": {
            "map":  "function(doc) { if (doc.type == \"issue\")  emit(doc.board, {_id: doc._id}) }"
        }
+   },
+   "filters": {
+     "only_positions": "function(doc, req) { if(doc.type == \"position\") { return true; } }"
    }
 }'
 ```
