@@ -66,19 +66,17 @@ App.IndexRoute = Ember.Route.extend({
     self = this;
     data.forEach(function(obj){
       controller = self.controllerFor(obj.doc._id);
-
-      controller.set('position', App.Position.find(obj.doc._id));
-      
-      controller.get('position').one('didLoad', function() {
-        controller = self.controllerFor(obj.doc._id);
-        issues = controller.get('position.issues');
-        controller.set('content', issues);
-      });
-
-      // didn't work !!! couldn't reload because of rootstate !!!
-      //controller.get('position').reload();
-
-    });
+      if (controller.get('position') == App.Position.find(obj.doc._id)){ 
+        controller.get('position').reload();
+      }else{
+        controller.set('position', App.Position.find(obj.doc._id));   
+        controller.get('position').one('didLoad', function() {
+          controller = self.controllerFor(obj.doc._id);
+          issues = controller.get('position.issues');
+          controller.set('content', issues);
+        });
+      }
+    });   
   }
 });
 
@@ -98,6 +96,12 @@ App.IndexController = Ember.ArrayController.extend({
   },
   saveMessage: function(model) {
     model.save();
+    var position = this.get('content').toArray().indexOf(model)
+    this.get('content').removeObject(model);
+    thisArray = this.get('content').toArray().insertAt(position, model);
+    this.set('content.content', thisArray.getEach('_reference'));
+    this.set('position.issues.content', thisArray.getEach('_reference'));
+    this.get('position').save();
   },
   needs: App.Boards
 });
