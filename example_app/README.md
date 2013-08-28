@@ -25,7 +25,8 @@ curl -X PUT http://localhost:5984/boards/_design/issues -H 'Content-Type: applic
        }
    },
    "filters": {
-     "only_positions": "function(doc, req) { if(doc.type == \"position\") { return true; } }"
+     "only_positions": "function(doc, req) { if(doc.type == \"position\") { return true; } }",
+     "issue": "function(doc, req) {if(doc.type == \"issue\") { return true; } }"
    }
 }'
 ```

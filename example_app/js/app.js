@@ -31,6 +31,7 @@ App.IndexRoute = Ember.Route.extend({
 
   setupController: function(controller, model) {
     this._position();
+    this._issue();
     //this._setupPosition();
   },
 
@@ -58,7 +59,7 @@ App.IndexRoute = Ember.Route.extend({
     params = { include_docs: true, timeout: 1000, filter: 'issues/only_positions'}
     position = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: params });
 
-    // all upcoming changes are passed to `_handlePositionChanges` callback through `longpool` strategy
+    // all upcoming changes are passed to `_handlePositionChanges` callback through `longpoll` strategy
     position.longpoll(this._handlePositionChanges, this);
   },
 
@@ -77,6 +78,28 @@ App.IndexRoute = Ember.Route.extend({
         });
       }
     });   
+  },
+
+  _issue: function(){
+    // create a CouchDB `/_change` issue listener which filtered only by issue documents
+    params = { include_docs: true, timeout: 1000, filter: 'issues/issue'}
+    issue = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: params });
+
+    // all upcoming changes are passed to `_handleIssueChanges` callback through `fromTail` strategy
+    self = this;
+    issue.fromTail( (function(){
+      return issue.longpoll(self._handleIssueChanges, self);
+    }) );
+  },
+
+  _handleIssueChanges: function(data) {
+    self = this;
+    data.forEach(function(obj){
+      controller = self.controllerFor(obj.doc.board);
+      if ((controller.get('content').mapProperty('id').indexOf(obj.doc._id) >= 0)){
+        App.Issue.find(obj.doc._id).reload();
+      }
+    });
   }
 });
 
@@ -96,12 +119,10 @@ App.IndexController = Ember.ArrayController.extend({
   },
   saveMessage: function(model) {
     model.save();
-    var position = this.get('content').toArray().indexOf(model)
-    this.get('content').removeObject(model);
-    thisArray = this.get('content').toArray().insertAt(position, model);
-    this.set('content.content', thisArray.getEach('_reference'));
-    this.set('position.issues.content', thisArray.getEach('_reference'));
-    this.get('position').save();
+  },
+  deleteMessage: function(message) {
+    message.deleteRecord();
+    message.get('store').commit();
   },
   needs: App.Boards
 });
@@ -151,6 +172,14 @@ App.CancelView = Ember.View.extend({
     event.preventDefault();
     this.set('parentView.create',false);
   }
+});
+
+App.DeleteView = Ember.View.extend({
+    tagName: "span",
+    click: function(event){
+        event.preventDefault();
+        this.get('controller').send('deleteMessage', this.get('context'));
+    }
 });
 
 App.IssueView = Ember.View.extend({

@@ -64,6 +64,9 @@
             {{else}}
               {{text}}
               <button type="submit" class="btn btn-xs btn-default"> Edit </button>
+              {{#view App.DeleteView contextBinding=this}}
+                <button class="btn btn-xs btn-default"> &times; </button>
+              {{/view}}
             {{/if}}
           </div>
         {{/view}}
