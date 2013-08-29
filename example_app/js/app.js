@@ -9,10 +9,20 @@ App.Store = DS.Store.extend({
   adapter: EmberCouchDBKit.DocumentAdapter.create({db: 'boards'})
 });
 
+App.Store.registerAdapter('App.Attachment', EmberCouchDBKit.AttachmentAdapter.extend({db: 'boards'}));
+
 App.Issue = DS.Model.extend({
   text: DS.attr('string'),
   type: DS.attr('string', {defaultValue: 'issue'}),
-  board: DS.attr('string')
+  board: DS.attr('string'),
+  attachments: DS.hasMany('App.Attachment', {embedded: true})
+});
+
+App.Attachment = DS.Model.extend({
+  content_type: DS.attr('string'),
+  length: DS.attr('number'),
+  file_name: DS.attr('string'),
+  db: DS.attr('string')
 });
 
 App.Position = DS.Model.extend({
@@ -22,7 +32,6 @@ App.Position = DS.Model.extend({
 
 
 App.Boards = ['common', 'intermediate', 'advanced'];
-
 
 
 // Routes
@@ -56,7 +65,7 @@ App.IndexRoute = Ember.Route.extend({
 
   _position: function(){
     // create a CouchDB `/_change` position listener which filtered only by position documents
-    params = { include_docs: true, timeout: 1000, filter: 'issues/only_positions'}
+    params = { include_docs: true, timeout: 100, filter: 'issues/only_positions'}
     position = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: params });
 
     // all upcoming changes are passed to `_handlePositionChanges` callback through `longpoll` strategy
@@ -82,7 +91,7 @@ App.IndexRoute = Ember.Route.extend({
 
   _issue: function(){
     // create a CouchDB `/_change` issue listener which filtered only by issue documents
-    params = { include_docs: true, timeout: 1000, filter: 'issues/issue'}
+    params = { include_docs: true, timeout: 100, filter: 'issues/issue'}
     issue = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: params });
 
     // all upcoming changes are passed to `_handleIssueChanges` callback through `fromTail` strategy
@@ -123,6 +132,11 @@ App.IndexController = Ember.ArrayController.extend({
   deleteMessage: function(message) {
     message.deleteRecord();
     message.get('store').commit();
+           this.get('content').removeObject(message); 
+  },
+  browseFile: function(view) {
+    viewId = view.get('elementId');
+    document.getElementById(viewId).click();
   },
   needs: App.Boards
 });
@@ -137,8 +151,12 @@ App.AdvancedController     = App.IndexController.extend({ name: 'advanced' });
 
 App.NewIssueView = Ember.View.extend({
   tagName: "form",
-  
+
   create: false,
+  
+  attributeBindings: ["style"],
+  
+  style: "display:inline",
   
   _save:  function(event) {
     event.preventDefault();
@@ -159,11 +177,13 @@ App.NewIssueView = Ember.View.extend({
   }
 });
 
+
 App.FocusedTextArea = Ember.TextArea.extend({
   attributeBindings: ['autofocus'],
   
   autofocus: 'autofocus'
 });
+
 
 App.CancelView = Ember.View.extend({
   tagName: "span",
@@ -174,12 +194,34 @@ App.CancelView = Ember.View.extend({
   }
 });
 
+
 App.DeleteView = Ember.View.extend({
-    tagName: "span",
-    click: function(event){
-        event.preventDefault();
-        this.get('controller').send('deleteMessage', this.get('context'));
+  tagName: "span",
+
+  click: function(event){
+    event.preventDefault();
+    this.get('controller').send('deleteMessage', this.get('context'));
+  }
+});
+
+
+App.AttachmentView = Ember.TextField.extend({
+  type: 'file',
+  attributeBindings: ["style"],
+  style: "display:none",
+  change: function(event) {
+    id = this.get('elementId')
+    console.log(event.target.files);
+    var files = event.target.files;
+
+    for (var i = 0, f; f = files[i]; i++) {
+      if (!f.type.match('image.*')) {
+        continue;
+      }
+      console.log( f.name, f.type, f.size || 'n/a', f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a');
     }
+
+  }
 });
 
 App.IssueView = Ember.View.extend({
@@ -198,7 +240,7 @@ App.IssueView = Ember.View.extend({
   attributeBindings: ['draggable'],
   
   draggable: 'true',
-  
+
   dragStart: function(event) {
     event.dataTransfer.setData('id', this.get('elementId'));
   },

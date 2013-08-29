@@ -42,18 +42,15 @@
   <script type="text/x-handlebars" data-template-name="board">
     <div class="thumbnail">
       <div class="alert alert-success">
-        <h4 style="text-transform:capitalize;">{{name}}</h4>
-        {{partial "issueList"}}
+        <h4 style="text-transform:capitalize; display:inline;">{{name}}</h4>
         {{partial "createIssue"}}
+        {{partial "issueList"}}
       </div>
     </div>
   </script>
   
   <script type="text/x-handlebars" data-template-name="_issueList">
-    <div>
-      {{#view App.IssueView}}
-        <font size=4px> &#9998;</font>
-      {{/view}}
+    <div>    
       {{#each controller}}
         {{#view App.IssueView contextBinding=this }}
           <div class="thumbnail">
@@ -63,12 +60,23 @@
               <button type="submit" class="btn btn-xs btn-default"> Ok </button>
             {{else}}
               {{text}}
+
               <button type="submit" class="btn btn-xs btn-default"> Edit </button>
+              
               {{#view App.DeleteView contextBinding=this}}
                 <button class="btn btn-xs btn-default"> &times; </button>
               {{/view}}
+
+              {{#view App.AttachmentView contextBinding=this}}
+                <button {{action 'browseFile' view}} class="btn btn-xs btn-default">Attach</button>
+              {{/view}}
+
             {{/if}}
           </div>
+        {{/view}}
+      {{else}}
+        {{#view App.IssueView draggable=false}}
+          <font> Empty board...</font>
         {{/view}}
       {{/each}}
     </div>
@@ -77,16 +85,16 @@
   <script type="text/x-handlebars" data-template-name="_createIssue">
     {{#view App.NewIssueView}}
       {{#if view.create}}
+        <p style="display:inline;">
+          <button type="submit" class="btn btn-default"> Save </button>
+          {{#view App.CancelView}}
+            <button class="btn btn-default"> &times; </button>
+          {{/view}}
+        </p>
         {{#view App.FocusedTextArea viewName="TextArea" class="form-control"}}
         {{/view}}
-          <p>
-          <button type="submit" class="btn btn-warning"> Save </button>
-          {{#view App.CancelView}}
-            <button class="btn"> &times; </button>
-          {{/view}}
-          </p>
       {{else}}
-        <button type="submit" class="btn btn-warning"> Add new issue </button>
+        <button type="submit" class="btn btn-default"> Add new issue &#9998; </button>
       {{/if}}
     {{/view}}
   </script>
