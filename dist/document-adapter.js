@@ -125,14 +125,7 @@
             return data[key] = values;
           }
         } else {
-          values = values.filter(function(value) {
-            return value && value !== null;
-          });
-          if (record["hasManyValidation"]) {
-            return data[key] = record.hasManyValidation(key, values);
-          } else {
-            return data[key] = values;
-          }
+          return data[key] = values;
         }
       }
     },
