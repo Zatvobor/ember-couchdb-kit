@@ -216,7 +216,7 @@
     Getting a raw document object
   
       ```
-      doc = EmberApp.CouchDBModel.find("id")
+      doc = EmberApp.CouchDBModel.find('myId')
       raw_json = doc.get('_data.raw')
       # => Object {_id: "...", _rev: "...", …}
   
@@ -228,13 +228,26 @@
       myDoc = EmberApp.CouchDBModel.find('myId')
       # => Object {id: "myId", …}
   
-    If you wonder about `id` which could be missed in your db then, you should check its `isLoaded` state
+    If you wonder about some document which could be missed in your db, then you could use a simple `is` convenience
   
       ```
-      doc = EmberApp.CouchDBModel.find("undefined")
-      # GET http://127.0.0:5984/db/undefined 404 (Object Not Found)
-      doc.get('isLoaded')
-      # => false
+      doc = EmberApp.CouchDBModel.find(myId)
+      doc.get('store.adapter').is(200, {for: doc})
+      # => true
+      doc.get('store.adapter').is(404, {for: doc})
+      # => undefined
+      ```
+  
+    You're able to fetch a `HEAD` for your document
+  
+      ```
+      doc = EmberApp.CouchDBModel.find(myId)
+      doc.get('store.adapter').head(doc).getAllResponseHeaders()
+      # => "Date: Sat, 31 Aug 2013 13:48:30 GMT
+      #    Cache-Control: must-revalidate
+      #    Server: CouchDB/1.3.1 (Erlang OTP/R15B03)
+      #    Connection: keep-alive
+      #    ..."
       ```
   
   
@@ -249,6 +262,19 @@
     typeViewName: 'by-ember-type',
     customTypeLookup: false,
     serializer: EmberCouchDBKit.DocumentSerializer,
+    is: function(status, h) {
+      if (this.head(h["for"]).status === status) {
+        return true;
+      }
+    },
+    head: function(h) {
+      var docId;
+
+      docId = typeof h === "object" ? h.get('id') : h;
+      return this.ajax(docId, 'HEAD', {
+        async: false
+      });
+    },
     ajax: function(url, type, hash) {
       return this._ajax('/%@/%@'.fmt(this.get('db'), url || ''), type, hash);
     },
