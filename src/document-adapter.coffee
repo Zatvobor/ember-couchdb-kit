@@ -102,12 +102,7 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
         values = record.get('_data.raw')[key]
         data[key] = values if values
       else
-        #don't move this into github couchdb-kit!
-        values = (values.filter (value) -> value && value != null)
-        if record["hasManyValidation"]
-          data[key] = record.hasManyValidation(key, values)
-        else
-          data[key] = values
+        data[key] = values
 
   addBelongsTo: (hash, record, key, relationship) ->
     return if key == "history"
