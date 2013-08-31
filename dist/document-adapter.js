@@ -84,7 +84,7 @@
       }
     },
     getRecordRevision: function(record) {
-      return record.get('_data.attributes._rev');
+      return record.get('_data._rev');
     },
     addId: function(json, key, id) {
       return json._id = id;
@@ -120,14 +120,19 @@
         if (values.every(function(value) {
           return !value;
         })) {
-          values = record.get('_data.attributes.raw')[key];
+          values = record.get('_data.raw')[key];
           if (values) {
             return data[key] = values;
           }
         } else {
-          return data[key] = values.filter(function(value) {
+          values = values.filter(function(value) {
             return value && value !== null;
           });
+          if (record["hasManyValidation"]) {
+            return data[key] = record.hasManyValidation(key, values);
+          } else {
+            return data[key] = values;
+          }
         }
       }
     },
@@ -139,9 +144,9 @@
       }
       id_key = record.get("" + relationship.key + "_key") || "id";
       id = Ember.get(record, "" + relationship.key + "." + id_key);
-      if (Ember.isEmpty(id) && record.get('_data.attributes.raw')) {
-        if (!Ember.isEmpty(record.get('_data.attributes.raw')[key])) {
-          return hash[key] = record.get('_data.attributes.raw')[key];
+      if (Ember.isEmpty(id) && record.get('_data.raw')) {
+        if (!Ember.isEmpty(record.get('_data.raw')[key])) {
+          return hash[key] = record.get('_data.raw')[key];
         }
       } else {
         if (this.get('addEmptyBelongsTo') || !Ember.isEmpty(id)) {
@@ -202,7 +207,6 @@
   
       ```
       tasks = EmberApp.Task.find({type: "view", designDoc: 'tasks', viewName: "by_assignee", options: 'include_docs=true&key="%@"'.fmt(@get('email'))})
-      # => Ember.Enumerable<EmberApp.Task>
       array = tasks.get('content')
       # => Array[EmberApp.Task,..]
       ```
@@ -212,8 +216,8 @@
     Getting a raw document object
   
       ```
-      doc = EmberApp.CouchDBModel.find("id")
-      raw_json = doc.get('_data.attributes.raw')
+      doc = EmberApp.CouchDBModel.find('myId')
+      raw_json = doc.get('_data.raw')
       # => Object {_id: "...", _rev: "...", …}
   
     Creating a named document
@@ -227,10 +231,31 @@
     If you wonder about `id` which could be missed in your db then, you should check its `isLoaded` state
   
       ```
-      doc = EmberApp.CouchDBModel.find("undefined")
-      # GET http://127.0.0:5984/db/undefined 404 (Object Not Found)
-      doc.get('isLoaded')
-      # => false
+      myDoc = EmberApp.CouchDBModel.createRecord({id: 'myId'})
+      # …
+      myDoc = EmberApp.CouchDBModel.find('myId')
+      # => Object {id: "myId", …}
+  
+    If you wonder about some document which could be missed in your db, then you could use a simple `is` convenience
+  
+      ```
+      doc = EmberApp.CouchDBModel.find(myId)
+      doc.get('store.adapter').is(200, {for: doc})
+      # => true
+      doc.get('store.adapter').is(404, {for: doc})
+      # => undefined
+      ```
+  
+    You're able to fetch a `HEAD` for your document
+  
+      ```
+      doc = EmberApp.CouchDBModel.find(myId)
+      doc.get('store.adapter').head(doc).getAllResponseHeaders()
+      # => "Date: Sat, 31 Aug 2013 13:48:30 GMT
+      #    Cache-Control: must-revalidate
+      #    Server: CouchDB/1.3.1 (Erlang OTP/R15B03)
+      #    Connection: keep-alive
+      #    ..."
       ```
   
   
@@ -245,6 +270,19 @@
     typeViewName: 'by-ember-type',
     customTypeLookup: false,
     serializer: EmberCouchDBKit.DocumentSerializer,
+    is: function(status, h) {
+      if (this.head(h["for"]).status === status) {
+        return true;
+      }
+    },
+    head: function(h) {
+      var docId;
+
+      docId = typeof h === "object" ? h.get('id') : h;
+      return this.ajax(docId, 'HEAD', {
+        async: false
+      });
+    },
     ajax: function(url, type, hash) {
       return this._ajax('/%@/%@'.fmt(this.get('db'), url || ''), type, hash);
     },
@@ -355,7 +393,7 @@
         typeString = this.stringForType(type);
         data = {
           include_docs: true,
-          key: encodeURI('"' + typeString + '"')
+          key: '"' + typeString + '"'
         };
         return this.ajax('_design/%@/_view/%@'.fmt(designDoc, typeViewName), 'GET', {
           context: this,
@@ -385,7 +423,7 @@
       return this._push(store, type, record, json);
     },
     deleteRecord: function(store, type, record) {
-      return this.ajax("%@?rev=%@".fmt(record.get('id'), record.get('_data.attributes._rev')), 'DELETE', {
+      return this.ajax("%@?rev=%@".fmt(record.get('id'), record.get('_data._rev')), 'DELETE', {
         context: this,
         success: function(data) {
           return store.didSaveRecord(record);
@@ -412,6 +450,7 @@
       return delete json.attachments;
     },
     _checkForRevision: function(id) {
+      (id != null ? id.split("/").length : void 0) > 1;
       return id.split("/").length > 1;
     },
     _push: function(store, type, record, json) {

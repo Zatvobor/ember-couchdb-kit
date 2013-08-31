@@ -75,7 +75,7 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
       reg_array[reg_array.length - 1].toString().toLowerCase()
 
   getRecordRevision: (record) ->
-    record.get('_data.attributes._rev')
+    record.get('_data._rev')
 
   addId: (json, key, id) ->
     json._id = id
@@ -99,17 +99,22 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
     if @get('addEmptyHasMany') || !Ember.isEmpty(value)
       values = value.getEach(attr_key)
       if (values.every (value) -> !value) #find undefined in relations
-        values = record.get('_data.attributes.raw')[key]
+        values = record.get('_data.raw')[key]
         data[key] = values if values
       else
-        data[key] = (values.filter (value) -> value && value != null)
+        #don't move this into github couchdb-kit!
+        values = (values.filter (value) -> value && value != null)
+        if record["hasManyValidation"]
+          data[key] = record.hasManyValidation(key, values)
+        else
+          data[key] = values
 
   addBelongsTo: (hash, record, key, relationship) ->
     return if key == "history"
     id_key = record.get("#{relationship.key}_key") || "id"
     id = Ember.get(record, "#{relationship.key}.#{id_key}")
-    if Ember.isEmpty(id) && record.get('_data.attributes.raw')
-      hash[key] = record.get('_data.attributes.raw')[key] unless Ember.isEmpty(record.get('_data.attributes.raw')[key])
+    if Ember.isEmpty(id) && record.get('_data.raw')
+      hash[key] = record.get('_data.raw')[key] unless Ember.isEmpty(record.get('_data.raw')[key])
     else
       hash[key] = id if @get('addEmptyBelongsTo') || !Ember.isEmpty(id)
 
@@ -164,7 +169,6 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
 
     ```
     tasks = EmberApp.Task.find({type: "view", designDoc: 'tasks', viewName: "by_assignee", options: 'include_docs=true&key="%@"'.fmt(@get('email'))})
-    # => Ember.Enumerable<EmberApp.Task>
     array = tasks.get('content')
     # => Array[EmberApp.Task,..]
     ```
@@ -174,8 +178,8 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
   Getting a raw document object
 
     ```
-    doc = EmberApp.CouchDBModel.find("id")
-    raw_json = doc.get('_data.attributes.raw')
+    doc = EmberApp.CouchDBModel.find('myId')
+    raw_json = doc.get('_data.raw')
     # => Object {_id: "...", _rev: "...", …}
 
   Creating a named document
@@ -189,10 +193,31 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
   If you wonder about `id` which could be missed in your db then, you should check its `isLoaded` state
 
     ```
-    doc = EmberApp.CouchDBModel.find("undefined")
-    # GET http://127.0.0:5984/db/undefined 404 (Object Not Found)
-    doc.get('isLoaded')
-    # => false
+    myDoc = EmberApp.CouchDBModel.createRecord({id: 'myId'})
+    # …
+    myDoc = EmberApp.CouchDBModel.find('myId')
+    # => Object {id: "myId", …}
+
+  If you wonder about some document which could be missed in your db, then you could use a simple `is` convenience
+
+    ```
+    doc = EmberApp.CouchDBModel.find(myId)
+    doc.get('store.adapter').is(200, {for: doc})
+    # => true
+    doc.get('store.adapter').is(404, {for: doc})
+    # => undefined
+    ```
+
+  You're able to fetch a `HEAD` for your document
+
+    ```
+    doc = EmberApp.CouchDBModel.find(myId)
+    doc.get('store.adapter').head(doc).getAllResponseHeaders()
+    # => "Date: Sat, 31 Aug 2013 13:48:30 GMT
+    #    Cache-Control: must-revalidate
+    #    Server: CouchDB/1.3.1 (Erlang OTP/R15B03)
+    #    Connection: keep-alive
+    #    ..."
     ```
 
 
@@ -206,6 +231,14 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
   typeViewName: 'by-ember-type'
   customTypeLookup: false
   serializer: EmberCouchDBKit.DocumentSerializer
+
+
+  is: (status, h) ->
+    return true if @head(h.for).status == status
+
+  head: (h) ->
+    docId = if typeof h == "object" then h.get('id') else h
+    @ajax(docId, 'HEAD', { async: false })
 
 
   ajax: (url, type, hash) ->
@@ -304,7 +337,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
       typeString = @stringForType(type)
       data =
         include_docs: true
-        key: encodeURI('"' + typeString + '"')
+        key: '"' + typeString + '"'
 
       @ajax('_design/%@/_view/%@'.fmt(designDoc, typeViewName), 'GET', {
         context: this
@@ -324,7 +357,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     @_push(store, type, record, json)
 
   deleteRecord: (store, type, record) ->
-    @ajax("%@?rev=%@".fmt(record.get('id'), record.get('_data.attributes._rev')), 'DELETE', {
+    @ajax("%@?rev=%@".fmt(record.get('id'), record.get('_data._rev')), 'DELETE', {
       context: this
       success: (data) ->
         store.didSaveRecord(record)
@@ -346,6 +379,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     delete json.attachments
 
   _checkForRevision: (id) ->
+    id?.split("/").length > 1
     id.split("/").length > 1
 
   _push: (store, type, record, json) ->

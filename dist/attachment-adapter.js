@@ -17,9 +17,9 @@
       rev = hash._rev || hash.rev;
       document_class = eval("" + hash.doc_type);
       document = document_class.find(hash.doc_id);
-      if (document.get('_data.attributes._rev') !== rev) {
-        if (this.getIntRevision(document.get('_data.attributes._rev')) < this.getIntRevision(rev)) {
-          document.set('_data.attributes._rev', rev);
+      if (document.get('_data._rev') !== rev) {
+        if (this.getIntRevision(document.get('_data._rev')) < this.getIntRevision(rev)) {
+          document.set('_data._rev', rev);
         }
       }
       return record.materializeAttribute("document", document);
@@ -37,7 +37,7 @@
       return hash._id || hash.id;
     },
     getRecordRevision: function(record) {
-      return record.get('_data.attributes.rev');
+      return record.get('_data.rev');
     },
     addId: function(json, key, id) {
       return json._id = id;
