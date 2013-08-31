@@ -31,6 +31,20 @@ curl -X PUT http://localhost:5984/boards/_design/issues -H 'Content-Type: applic
 }'
 ```
 
+```
+curl -X PUT http://127.0.0.1:5984/boards/common -H 'Content-Type: application/json' -d '{
+     "type": "position"
+}'
+
+curl -X PUT http://127.0.0.1:5984/boards/advanced -H 'Content-Type: application/json' -d '{
+     "type": "position"
+}'
+
+curl -X PUT http://127.0.0.1:5984/boards/intermediate -H 'Content-Type: application/json' -d '{
+     "type": "position"
+}'
+```
+
 Run
 ===
 
