@@ -188,11 +188,11 @@
          title: DS.attr('string')
   
          # {"owner": "person@example.com"}
-         owner:  DS.belongsTo('EmberApp.User', { key: 'owner': true})
+         owner:  DS.belongsTo('EmberApp.User', {key: 'owner', embeded: true})
          owner_key: 'email'
   
          # {"people":["person1@example.com", "person2@example.com"]}
-         people: DS.hasMany('EmberApp.User',   { key: 'people', embedded: true})
+         people: DS.hasMany('EmberApp.User', {key: 'people', embedded: true})
          people_key: 'email'
       ```
   
