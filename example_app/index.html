@@ -51,7 +51,7 @@
   
   <script type="text/x-handlebars" data-template-name="_issueList">
     <div>    
-      {{#each controller}}
+      {{#each controller.content}}
         {{#view App.IssueView contextBinding=this }}
           <div class="thumbnail">
             {{#if view.edit}}

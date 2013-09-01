@@ -39,9 +39,10 @@ App.Boards = ['common', 'intermediate', 'advanced'];
 App.IndexRoute = Ember.Route.extend({
 
   setupController: function(controller, model) {
+    this._setupPositionHolders();
+
     this._position();
     this._issue();
-    //this._setupPosition();
   },
 
   renderTemplate: function() {
@@ -51,14 +52,19 @@ App.IndexRoute = Ember.Route.extend({
     this.render('board',{outlet: 'advanced', into: 'index', controller: 'advanced'});
   },
 
-  // [TODO] rewrite me, depends by opne issue
-  // https://github.com/roundscope/ember-couchdb-kit/issues/54
-  _setupPosition: function() {
+  _setupPositionHolders: function() {
+    self = this;
+
     App.Boards.forEach(function(type) {
-      doc = App.Position.find(type);
-      if (!(doc.get('isLoaded'))){
-        issue = App.Position.createRecord({ id: type });
-        issue.get('store').commit();
+      // link issues into appropriate controller
+      position = App.Position.find(type);
+      position.one('didLoad', function() {
+        self.controllerFor(type).set('position', this);
+      });
+      // create position documents helper (as a part of first time initialization)
+      if (position.get('store.adapter').is(404, {for: type})) {
+        App.Position.createRecord({ id: type }).get('store').commit();
+        position.reload();
       }
     });
   },
@@ -75,18 +81,11 @@ App.IndexRoute = Ember.Route.extend({
   _handlePositionChanges: function(data) {
     self = this;
     data.forEach(function(obj){
-      controller = self.controllerFor(obj.doc._id);
-      if (controller.get('position') == App.Position.find(obj.doc._id)){ 
-        controller.get('position').reload();
-      }else{
-        controller.set('position', App.Position.find(obj.doc._id));   
-        controller.get('position').one('didLoad', function() {
-          controller = self.controllerFor(obj.doc._id);
-          issues = controller.get('position.issues');
-          controller.set('content', issues);
-        });
-      }
-    });   
+      position = self.controllerFor(obj.doc._id).get('position');
+      // we should reload postions in case of changes from another user
+      if (position.get('_data.raw._rev') != obj.doc._rev)
+        position.reload();
+    });
   },
 
   _issue: function(){
@@ -116,7 +115,9 @@ App.IndexRoute = Ember.Route.extend({
 
 // Controllers
 
-App.IndexController = Ember.ArrayController.extend({
+App.IndexController = Ember.Controller.extend({
+  content: Ember.computed.alias('position.issues'),
+
   createIssue: function(fields) {
     issue = App.Issue.createRecord(fields);
     issue.get('store').commit();
