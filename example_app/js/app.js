@@ -151,38 +151,95 @@ App.AdvancedController     = App.IndexController.extend({ name: 'advanced' });
 
 //  Views
 
-App.NewIssueView = Ember.View.extend({
+App.IssueView = Ember.View.extend({
   tagName: "form",
+  edit: false,
+  attributeBindings: ['draggable'],
+  draggable: 'true',
 
+
+  submit: function(event){
+    event.preventDefault();
+    if (this.get('edit')){
+      this.get('controller').send('saveMessage', this.get("context"));
+    }
+    this.toggleProperty('edit');
+  },
+
+
+  dragStart: function(event) {
+    event.dataTransfer.setData('id', this.get('elementId'));
+  },
+
+  dragEnter: function(event) {
+    event.preventDefault();
+    event.target.style.opacity = '0.4';
+  },
+
+  dragOver: function(event) {
+    event.preventDefault();
+  },
+  dragLeave: function(event) {
+    event.preventDefault();
+    event.target.style.opacity = '1';
+  },
+
+  drop: function(event) {
+    var viewId = event.dataTransfer.getData('id');
+    var view = Ember.View.views[viewId];
+    var newModel = view.get('context');
+    var oldModel = this.get('context');
+    var position = this.get('controller.content').toArray().indexOf(oldModel)
+    view.get('controller.content').removeObject(newModel);
+    thisArray = this.get('controller.content').toArray().insertAt(position, newModel);
+    this.set('controller.content.content', thisArray.getEach('_reference'));
+    this.set('controller.position.issues.content', thisArray.getEach('_reference'));
+    this.get('controller.position').save();
+
+    if(view.get('controller.name') !== this.get('controller.name')){
+      newModel.set('board', this.get('controller.name'));
+      newModel.get('store').commit();
+      viewArray = view.get('controller.content').toArray();
+      view.set('controller.content.content', viewArray.getEach('_reference'));
+      view.set('controller.position.issues.content', viewArray.getEach('_reference'));
+      view.get('controller.position').save();
+    }
+    event.preventDefault();
+    event.target.style.opacity = '1';
+  }
+});
+
+App.NewIssueView = Ember.View.extend({
+
+  tagName: "form",
   create: false,
-  
   attributeBindings: ["style"],
-  
   style: "display:inline",
-  
-  _save:  function(event) {
+
+
+  submit: function(event){
+    this._save(event);
+  },
+
+  keyDown: function(event){
+    if(event.keyCode == 13){
+      this._save(event);
+    }
+  },
+
+
+  _save: function(event) {
     event.preventDefault();
     if (this.get('create')){
       this.get('controller').send("createIssue", {text: this.get("TextArea.value")});
     }
     this.toggleProperty('create');
-  },
-  
-  submit: function(event){
-    this._save(event);
-  },
-  
-  keyDown: function(event){
-    if(event.keyCode == 13){
-      this._save(event);
-    }
   }
 });
 
 
 App.FocusedTextArea = Ember.TextArea.extend({
   attributeBindings: ['autofocus'],
-  
   autofocus: 'autofocus'
 });
 
@@ -225,62 +282,3 @@ App.AttachmentView = Ember.TextField.extend({
 
   }
 });
-
-App.IssueView = Ember.View.extend({
-  tagName: "form",
-  
-  edit: false,
-  
-  submit: function(event){
-    event.preventDefault();
-    if (this.get('edit')){
-      this.get('controller').send('saveMessage', this.get("context"));
-    }
-    this.toggleProperty('edit');
-  },
-  
-  attributeBindings: ['draggable'],
-  
-  draggable: 'true',
-
-  dragStart: function(event) {
-    event.dataTransfer.setData('id', this.get('elementId'));
-  },
-  
-  dragEnter: function(event) {
-    event.preventDefault();
-    event.target.style.opacity = '0.4';
-  },
-  
-  dragOver: function(event) {
-    event.preventDefault();
-  },
-  dragLeave: function(event) {
-    event.preventDefault();
-    event.target.style.opacity = '1';
-  },
-  
-  drop: function(event) {
-    var viewId = event.dataTransfer.getData('id');
-    var view = Ember.View.views[viewId];
-    var newModel = view.get('context');
-    var oldModel = this.get('context');
-    var position = this.get('controller.content').toArray().indexOf(oldModel)
-    view.get('controller.content').removeObject(newModel);
-    thisArray = this.get('controller.content').toArray().insertAt(position, newModel);
-    this.set('controller.content.content', thisArray.getEach('_reference'));
-    this.set('controller.position.issues.content', thisArray.getEach('_reference'));
-    this.get('controller.position').save();
-
-    if(view.get('controller.name') !== this.get('controller.name')){
-      newModel.set('board', this.get('controller.name'));
-      newModel.get('store').commit();
-      viewArray = view.get('controller.content').toArray();
-      view.set('controller.content.content', viewArray.getEach('_reference'));
-      view.set('controller.position.issues.content', viewArray.getEach('_reference'));
-      view.get('controller.position').save();
-    }
-    event.preventDefault();
-    event.target.style.opacity = '1';
-  }
-});  
