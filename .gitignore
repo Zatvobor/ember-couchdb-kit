@@ -3,4 +3,3 @@ vendor/bundle
 .bundle
 .rvmrc
 bin/
-spec/javascripts/*.js
