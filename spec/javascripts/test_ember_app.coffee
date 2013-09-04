@@ -22,6 +22,7 @@ class @TestEmberApp
 
     App.Person = DS.Model.extend
       name: DS.attr('string')
+      history: DS.belongsTo('App.History')
 
     App.Comment = DS.Model.extend
       text: DS.attr('string')
@@ -30,6 +31,10 @@ class @TestEmberApp
       label: DS.attr('string')
       person: DS.belongsTo(App.Person),
       comments: DS.hasMany(App.Comment)
+
+    App.History = DS.Model.extend()
+
+    App.Store.registerAdapter('App.History', EmberCouchDBKit.RevsAdapter.extend({db: 'doc'}))
 
   createPerson: (params) ->
     TestEmberApp.createAbstract(App.Person.createRecord(params))
@@ -42,7 +47,6 @@ class @TestEmberApp
 
   createComment: (params) ->
     TestEmberApp.createAbstract(App.Comment.createRecord(params))
-
 
   @createAbstract: (model) ->
 
