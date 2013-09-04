@@ -1,10 +1,12 @@
-src_files:
-    - vendor/assets/javascripts/jquery.js
-    - vendor/assets/javascripts/handlebars.js
-    - vendor/assets/javascripts/ember.js
-    - vendor/assets/javascripts/**/*.js
-    - dist/ember-couchdb-kit.js
-    - dist/*.js
+#src_files:
+#    - vendor/assets/javascripts/jquery.js
+#    - vendor/assets/javascripts/handlebars.js
+#    - vendor/assets/javascripts/ember.js
+#    - vendor/assets/javascripts/**/*.js
+#    - dist/ember-couchdb-kit.js
+#    - dist/*.js
+#    - '**/database_cleaner.js'
+#    - '**/test_ember_app.js'
 
 spec_files:
   - '**/*[sS]pec.js'
