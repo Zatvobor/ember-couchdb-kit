@@ -37,6 +37,9 @@ class @TestEmberApp
   createArticle: (params) ->
     TestEmberApp.createAbstract(App.Article.createRecord(params))
 
+  createMessage: (params) ->
+    TestEmberApp.createAbstract(App.Message.createRecord(params))
+
   createComment: (params) ->
     TestEmberApp.createAbstract(App.Comment.createRecord(params))
 
