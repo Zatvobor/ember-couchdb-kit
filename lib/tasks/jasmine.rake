@@ -2,9 +2,7 @@ namespace :jasmine do
   require 'rubygems'
   require 'rack'
   require 'excon'
-
   require 'jasmine/config'
-  require_relative '../../lib/rack/jasmine/couch_db'
 
   Jasmine.load_configuration_from_yaml
 
