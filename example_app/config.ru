@@ -19,7 +19,13 @@ builder = Rack::Builder.new do
   map '/boards' do
     app = Proc.new { |env|
       con = Excon.new('http://geemus.com', :proxy => 'http://localhost:5984')
-      resp = con.request(:method => env["REQUEST_METHOD"], :body => env["rack.input"], :path => env["REQUEST_URI"], headers: {"Content-Type" => "application/json"})
+
+      resp = con.request(
+        :method => env["REQUEST_METHOD"],
+        :body => env["rack.input"],
+        :path => env["REQUEST_URI"],
+        headers: {"Content-Type" => env["CONTENT_TYPE"]}
+      )
 
       if resp.headers['Transfer-Encoding'] == 'chunked'
         body = Rack::Chunked::Body.new([resp.body])
