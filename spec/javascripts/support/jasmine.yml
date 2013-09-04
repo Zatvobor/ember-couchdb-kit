@@ -3,6 +3,7 @@ src_files:
     - vendor/assets/javascripts/handlebars.js
     - vendor/assets/javascripts/ember.js
     - vendor/assets/javascripts/**/*.js
+    - dist/ember-couchdb-kit.js
     - dist/*.js
 
 spec_files:

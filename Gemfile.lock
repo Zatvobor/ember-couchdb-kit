@@ -9,6 +9,7 @@ GEM
       execjs
     coffee-script-source (1.6.2)
     diff-lcs (1.2.4)
+    excon (0.25.3)
     execjs (1.4.0)
       multi_json (~> 1.0)
     ffi (1.9.0)
@@ -74,6 +75,7 @@ PLATFORMS
 
 DEPENDENCIES
   coffee-script
+  excon
   guard
   guard-coffeescript
   jasmine

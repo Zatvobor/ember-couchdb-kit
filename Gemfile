@@ -8,3 +8,5 @@ gem 'guard-coffeescript'
 
 gem 'jasmine'
 gem 'therubyracer'
+
+gem 'excon'

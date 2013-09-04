@@ -12,9 +12,9 @@ window.expectUrl = (url) ->
 
 describe "DS.CouchDBSerializer", ->
   beforeEach ->
-    @klass = new DS.CouchDBSerializer()
+    @klass = new EmberCouchDBKit.DocumentSerializer()
   it "has been defined", ->
-    expect(DS.CouchDBSerializer).toBeDefined()
+    expect(EmberCouchDBKit.DocumentSerializer).toBeDefined()
 
   it "returns typeAttribute", ->
     expect(@klass.typeAttribute).toBe('ember_type')
@@ -29,7 +29,7 @@ describe "DS.CouchDBSerializer", ->
 describe "DS.CouchDBAdapter" , ->
   beforeEach ->
     self = @
-    window.adapter = DS.CouchDBAdapter.create({
+    window.adapter = EmberCouchDBKit.DocumentAdapter.create({
       db: 'DB_NAME',
       designDoc: 'DESIGN_DOC',
       _ajax: (url, type, hash) ->
