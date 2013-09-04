@@ -4,17 +4,31 @@ Ember.ENV.TESTING = true
 
 describe 'EmberCouchDBKit.DocumentAdapter' , ->
   beforeEach ->
-    DatabaseCleaner.reset()
-    @subject = new TestEmberApp()
+    @subject = new TestEnv()
 
   describe 'Create', ->
 
-    it 'creates single record', ->
-      ['Dummy name', 'Test'].forEach (name) =>
-        person = @subject.createPerson.call(@, {name: name})
-        runs ->
-          expect(person.id).not.toBeNull()
-          expect(person.get('name')).toBe(name)
+    it 'saves a model with specific id', ->
+      person = @subject.create.call(@, Fixture.Person, {id: 'john@example.com'})
+
+      runs ->
+        expect(person.id).toBe('john@example.com')
+
+
+    it 'saves a model with generated id', ->
+      person = @subject.create.call(@, Fixture.Person, {})
+
+      runs ->
+        expect(person.id).not.toBeNull()
+
+
+    it 'saves a simple model', ->
+      person = @subject.create.call(@, Fixture.Person, {a: 'a', b: 'b'})
+
+      runs ->
+        expect(person.get('a')).toBe('a')
+        expect(person.get('b')).toBe('b')
+
 
     it 'setups raw json into record', ->
       person = @subject.createPerson.call(@, {name: 'Boddy'})

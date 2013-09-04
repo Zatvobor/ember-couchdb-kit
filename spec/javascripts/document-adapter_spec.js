@@ -3,23 +3,37 @@
 
   describe('EmberCouchDBKit.DocumentAdapter', function() {
     beforeEach(function() {
-      DatabaseCleaner.reset();
-      return this.subject = new TestEmberApp();
+      return this.subject = new TestEnv();
     });
     describe('Create', function() {
-      it('creates single record', function() {
-        var _this = this;
+      it('saves a model with specific id', function() {
+        var person;
 
-        return ['Dummy name', 'Test'].forEach(function(name) {
-          var person;
+        person = this.subject.create.call(this, Fixture.Person, {
+          id: 'john@example.com'
+        });
+        return runs(function() {
+          return expect(person.id).toBe('john@example.com');
+        });
+      });
+      it('saves a model with generated id', function() {
+        var person;
 
-          person = _this.subject.createPerson.call(_this, {
-            name: name
-          });
-          return runs(function() {
-            expect(person.id).not.toBeNull();
-            return expect(person.get('name')).toBe(name);
-          });
+        person = this.subject.create.call(this, Fixture.Person, {});
+        return runs(function() {
+          return expect(person.id).not.toBeNull();
+        });
+      });
+      it('saves a simple model', function() {
+        var person;
+
+        person = this.subject.create.call(this, Fixture.Person, {
+          a: 'a',
+          b: 'b'
+        });
+        return runs(function() {
+          expect(person.get('a')).toBe('a');
+          return expect(person.get('b')).toBe('b');
         });
       });
       it('setups raw json into record', function() {

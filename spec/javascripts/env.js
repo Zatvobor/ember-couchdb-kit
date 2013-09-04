@@ -30,12 +30,14 @@
 
   })();
 
-  this.TestEmberApp = (function() {
-    function TestEmberApp() {
+  this.TestEnv = (function() {
+    function TestEnv() {
+      DatabaseCleaner.reset();
       if (!window.App) {
         window.App = Ember.Application.create({
           rootElement: "body"
         });
+        window.Fixture = window.App;
         this.adapter();
         this.store();
         this.models();
@@ -43,19 +45,19 @@
       this;
     }
 
-    TestEmberApp.prototype.adapter = function() {
+    TestEnv.prototype.adapter = function() {
       return App.Adapter = EmberCouchDBKit.DocumentAdapter.extend({
         db: 'doc'
       });
     };
 
-    TestEmberApp.prototype.store = function() {
+    TestEnv.prototype.store = function() {
       return App.Store = DS.Store.extend({
         adapter: App.Adapter.create()
       });
     };
 
-    TestEmberApp.prototype.models = function() {
+    TestEnv.prototype.models = function() {
       App.Person = DS.Model.extend({
         name: DS.attr('string'),
         history: DS.belongsTo('App.History')
@@ -74,23 +76,27 @@
       }));
     };
 
-    TestEmberApp.prototype.createPerson = function(params) {
+    TestEnv.prototype.create = function(model, params) {
+      return TestEnv.createAbstract(model.createRecord(params));
+    };
+
+    TestEnv.prototype.createPerson = function(params) {
       return TestEmberApp.createAbstract(App.Person.createRecord(params));
     };
 
-    TestEmberApp.prototype.createArticle = function(params) {
+    TestEnv.prototype.createArticle = function(params) {
       return TestEmberApp.createAbstract(App.Article.createRecord(params));
     };
 
-    TestEmberApp.prototype.createMessage = function(params) {
+    TestEnv.prototype.createMessage = function(params) {
       return TestEmberApp.createAbstract(App.Message.createRecord(params));
     };
 
-    TestEmberApp.prototype.createComment = function(params) {
+    TestEnv.prototype.createComment = function(params) {
       return TestEmberApp.createAbstract(App.Comment.createRecord(params));
     };
 
-    TestEmberApp.createAbstract = function(model) {
+    TestEnv.createAbstract = function(model) {
       runs(function() {
         return model.save();
       });
@@ -100,7 +106,7 @@
       return model;
     };
 
-    return TestEmberApp;
+    return TestEnv;
 
   })();
 

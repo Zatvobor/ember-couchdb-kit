@@ -20,11 +20,15 @@ class @DatabaseCleaner
     })
 
 
-class @TestEmberApp
+class @TestEnv
 
   constructor: ->
+    DatabaseCleaner.reset()
+
     unless window.App
       window.App = Ember.Application.create({rootElement: "body"})
+      window.Fixture = window.App
+
       @adapter()
       @store()
       @models()
@@ -57,6 +61,11 @@ class @TestEmberApp
     App.History = DS.Model.extend()
 
     App.Store.registerAdapter('App.History', EmberCouchDBKit.RevsAdapter.extend({db: 'doc'}))
+
+
+  create: (model, params) ->
+    TestEnv.createAbstract(model.createRecord(params))
+
 
   createPerson: (params) ->
     TestEmberApp.createAbstract(App.Person.createRecord(params))
