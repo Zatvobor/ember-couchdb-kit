@@ -5,8 +5,7 @@ src_files:
   - vendor/assets/javascripts/**/*.js
   - dist/ember-couchdb-kit.js
   - dist/*.js
-  - '**/database_cleaner.js'
-  - '**/test_ember_app.js'
+  - '**/env.js'
 
 spec_files:
   - '**/*[sS]pec.js'
