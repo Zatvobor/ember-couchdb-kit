@@ -1,14 +1,11 @@
 Ember.ENV.TESTING = true
 
-#TODO: update strings in waitFor
-
 describe 'EmberCouchDBKit.RevsAdapter', ->
   beforeEach ->
-#    DatabaseCleaner.reset()
-    @subject = new TestEmberApp()
+    @subject = new TestEnv()
 
   it "finds by revision", ->
-    person = @subject.createPerson.call(@, {name: 'Person'})
+    person = @subject.create.call(@, Fixture.Person, {name: 'Person'})
 
     prevRev = undefined
     id = undefined

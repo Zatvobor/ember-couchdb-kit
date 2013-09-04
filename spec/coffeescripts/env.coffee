@@ -26,60 +26,45 @@ class @TestEnv
     DatabaseCleaner.reset()
 
     unless window.App
-      window.App = Ember.Application.create({rootElement: "body"})
-      window.Fixture = window.App
+      window.Fixture = Ember.Application.create({rootElement: "body"})
 
       @adapter()
       @store()
       @models()
+
     @
 
   adapter: ->
-    App.Adapter = EmberCouchDBKit.DocumentAdapter.extend({
+    Fixture.Adapter = EmberCouchDBKit.DocumentAdapter.extend({
       db: 'doc'
     })
 
   store: ->
-    App.Store = DS.Store.extend({
-      adapter: App.Adapter.create()
+    Fixture.Store = DS.Store.extend({
+      adapter: Fixture.Adapter.create()
     })
 
   models: ->
 
-    App.Person = DS.Model.extend
+    Fixture.Person = DS.Model.extend
       name: DS.attr('string')
-      history: DS.belongsTo('App.History')
+      history: DS.belongsTo('Fixture.History')
 
-    App.Comment = DS.Model.extend
+    Fixture.Comment = DS.Model.extend
       text: DS.attr('string')
 
-    App.Article = DS.Model.extend
+    Fixture.Article = DS.Model.extend
       label: DS.attr('string')
-      person: DS.belongsTo(App.Person),
-      comments: DS.hasMany(App.Comment)
+      person: DS.belongsTo(Fixture.Person),
+      comments: DS.hasMany(Fixture.Comment)
 
-    App.History = DS.Model.extend()
+    Fixture.History = DS.Model.extend()
 
-    App.Store.registerAdapter('App.History', EmberCouchDBKit.RevsAdapter.extend({db: 'doc'}))
+    Fixture.Store.registerAdapter('Fixture.History', EmberCouchDBKit.RevsAdapter.extend({db: 'doc'}))
 
 
   create: (model, params) ->
-    TestEnv.createAbstract(model.createRecord(params))
-
-
-  createPerson: (params) ->
-    TestEmberApp.createAbstract(App.Person.createRecord(params))
-
-  createArticle: (params) ->
-    TestEmberApp.createAbstract(App.Article.createRecord(params))
-
-  createMessage: (params) ->
-    TestEmberApp.createAbstract(App.Message.createRecord(params))
-
-  createComment: (params) ->
-    TestEmberApp.createAbstract(App.Comment.createRecord(params))
-
-  @createAbstract: (model) ->
+    model = model.createRecord(params)
 
     runs ->
       model.save()

@@ -1,28 +1,26 @@
 Ember.ENV.TESTING = true
 
-#TODO: update strings in waitFor
-
 describe 'EmberCouchDBKit.DocumentAdapter' , ->
   beforeEach ->
     @subject = new TestEnv()
 
-  describe 'Create', ->
+  describe 'model creation', ->
 
-    it 'saves a model with specific id', ->
+    it 'record with specific id', ->
       person = @subject.create.call(@, Fixture.Person, {id: 'john@example.com'})
 
       runs ->
         expect(person.id).toBe('john@example.com')
 
 
-    it 'saves a model with generated id', ->
+    it 'record with generated id', ->
       person = @subject.create.call(@, Fixture.Person, {})
 
       runs ->
         expect(person.id).not.toBeNull()
 
 
-    it 'saves a simple model', ->
+    it 'simple {a:"a", b:"b"} model', ->
       person = @subject.create.call(@, Fixture.Person, {a: 'a', b: 'b'})
 
       runs ->
@@ -30,44 +28,39 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
         expect(person.get('b')).toBe('b')
 
 
-    it 'setups raw json into record', ->
-      person = @subject.createPerson.call(@, {name: 'Boddy'})
-      runs ->
-        expect(person.get('_data.raw').name).toEqual('Boddy')
-
-    it 'creates record with belongsTo relation', ->
-      name = 'Vpupkin'
-      person = @subject.createPerson.call(@, {name: name})
+    it 'always available as a raw json object', ->
+      person = @subject.create.call(@, Fixture.Person, {name: 'john'})
 
       runs ->
-        article = @subject.createArticle.call(@, {label: 'Label', person: person})
+        expect(person.get('_data.raw').name).toBe('john')
+
+    it 'belongsTo relation', ->
+      person = @subject.create.call(@, Fixture.Person, {name: 'john'})
+
+      runs ->
+        article = @subject.create.call(@, Fixture.Article, {person: person})
         runs ->
-          expect(article.get('person.name')).toBe(name)
+          expect(article.get('person.name')).toBe('john')
 
-    it 'creates record with belongsTo field', ->
-      App.Message = DS.Model.extend
-        label: DS.attr('string')
-        person: DS.belongsTo(App.Person),
-        comments: DS.hasMany(App.Comment)
-
+    it 'belongsTo field avilable as a raw js object', ->
+      Fixture.Message = DS.Model.extend
+        person: DS.belongsTo(Fixture.Person),
         person_key: "name"
 
-      name = 'Vpupkin'
-      person = @subject.createPerson.call(@, {name: name})
+      person = @subject.create.call(@, Fixture.Person, {name: 'john'})
 
       runs ->
-        message = @subject.createMessage.call(@, {label: 'Label', person: person})
+        message = @subject.create.call(@, Fixture.Message, {person: person})
         runs ->
-          expect(message.get('_data.raw').person).toBe(name)
+          expect(message.get('_data.raw').person).toBe('john')
 
 
-    it 'creates record with hasMany', ->
-      comment = @subject.createComment.call(@, {text: 'Text'})
-
+    it 'with hasMany', ->
+      comment = @subject.create.call(@, Fixture.Comment, {text: 'text'})
       article = undefined
 
       runs ->
-        article = @subject.createArticle.call(@, {label: 'Label', comments: []})
+        article = @subject.create.call(@, Fixture.Article, {label: 'Label', comments: []})
 
       runs ->
         article.get('comments').pushObject(comment)
@@ -78,12 +71,12 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       ,"", 3000
 
       runs ->
-        expect(article.get('_data.raw').comments[0]).toBe comment.id
+        expect(article.get('_data.raw').comments[0]).toBe(comment.id)
 
-  describe 'Update', ->
-    it 'updates single record', ->
-      person = @subject.createPerson.call(@, {name: "Vpupkin"})
+  describe 'model updating', ->
 
+    it 'in general', ->
+      person = @subject.create.call(@, Fixture.Person, {name: "John"})
       prevRev = undefined
 
       runs ->
@@ -98,22 +91,22 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       runs ->
         expect(prevRev).not.toEqual(person.get("_data._rev"))
 
-    it 'updates update belongsTo relation', ->
+    it 'belongsTo relation', ->
       name = 'Vpupkin'
       newName = 'Bobby'
 
-      person1 = @subject.createPerson.call(@, {name: name})
+      person1 = @subject.create.call(@, Fixture.Person, {name: name})
 
       article = undefined
       prevRev = undefined
       person2 = undefined
 
       runs ->
-        article = @subject.createArticle.call(@, {label: 'Label', person: person1})
+        article = @subject.create.call(@, Fixture.Article, {label: 'Label', person: person1})
 
       runs ->
         prevRev =  article.get("_data._rev")
-        person2 = @subject.createPerson.call(@, {name: newName})
+        person2 = @subject.create.call(@, Fixture.Person, {name: newName})
 
       runs ->
         article.set('person', person2)
@@ -128,13 +121,13 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
         expect(article.get('person.name')).toEqual(newName)
 
     it 'updates hasMany relation', ->
-      comment = @subject.createComment.call(@, {text: 'Text'})
+      comment = @subject.create.call(@, Fixture.Comment, {text: 'Text'})
 
       article = undefined
       comment2 = undefined
 
       runs ->
-        article = @subject.createArticle.call(@, {label: 'Label', comments: []})
+        article = @subject.create.call(@, Fixture.Article, {label: 'Label', comments: []})
 
       runs ->
         article.get('comments').pushObject(comment)
@@ -146,7 +139,7 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
 
       runs ->
         expect(article.get('comments').toArray().length).toEqual(1)
-        comment2 = @subject.createComment.call(@, {text: 'Text2'})
+        comment2 = @subject.create.call(@, Fixture.Comment, {text: 'Text2'})
 
       runs ->
         article.get('comments').pushObject(comment2)
@@ -159,10 +152,11 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       runs ->
         expect(article.get('comments').toArray().length).toEqual(2)
 
-  describe "deletes", ->
 
-    it "deletes Record", ->
-      person = @subject.createPerson.call(@, {name: 'Vpupkin'})
+  describe "deletion", ->
+
+    it "in general", ->
+      person = @subject.create.call(@, Fixture.Person, {name: 'Vpupkin'})
 
       runs ->
         person.deleteRecord()

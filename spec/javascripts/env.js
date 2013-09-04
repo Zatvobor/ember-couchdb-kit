@@ -34,10 +34,9 @@
     function TestEnv() {
       DatabaseCleaner.reset();
       if (!window.App) {
-        window.App = Ember.Application.create({
+        window.Fixture = Ember.Application.create({
           rootElement: "body"
         });
-        window.Fixture = window.App;
         this.adapter();
         this.store();
         this.models();
@@ -46,57 +45,38 @@
     }
 
     TestEnv.prototype.adapter = function() {
-      return App.Adapter = EmberCouchDBKit.DocumentAdapter.extend({
+      return Fixture.Adapter = EmberCouchDBKit.DocumentAdapter.extend({
         db: 'doc'
       });
     };
 
     TestEnv.prototype.store = function() {
-      return App.Store = DS.Store.extend({
-        adapter: App.Adapter.create()
+      return Fixture.Store = DS.Store.extend({
+        adapter: Fixture.Adapter.create()
       });
     };
 
     TestEnv.prototype.models = function() {
-      App.Person = DS.Model.extend({
+      Fixture.Person = DS.Model.extend({
         name: DS.attr('string'),
-        history: DS.belongsTo('App.History')
+        history: DS.belongsTo('Fixture.History')
       });
-      App.Comment = DS.Model.extend({
+      Fixture.Comment = DS.Model.extend({
         text: DS.attr('string')
       });
-      App.Article = DS.Model.extend({
+      Fixture.Article = DS.Model.extend({
         label: DS.attr('string'),
-        person: DS.belongsTo(App.Person),
-        comments: DS.hasMany(App.Comment)
+        person: DS.belongsTo(Fixture.Person),
+        comments: DS.hasMany(Fixture.Comment)
       });
-      App.History = DS.Model.extend();
-      return App.Store.registerAdapter('App.History', EmberCouchDBKit.RevsAdapter.extend({
+      Fixture.History = DS.Model.extend();
+      return Fixture.Store.registerAdapter('Fixture.History', EmberCouchDBKit.RevsAdapter.extend({
         db: 'doc'
       }));
     };
 
     TestEnv.prototype.create = function(model, params) {
-      return TestEnv.createAbstract(model.createRecord(params));
-    };
-
-    TestEnv.prototype.createPerson = function(params) {
-      return TestEmberApp.createAbstract(App.Person.createRecord(params));
-    };
-
-    TestEnv.prototype.createArticle = function(params) {
-      return TestEmberApp.createAbstract(App.Article.createRecord(params));
-    };
-
-    TestEnv.prototype.createMessage = function(params) {
-      return TestEmberApp.createAbstract(App.Message.createRecord(params));
-    };
-
-    TestEnv.prototype.createComment = function(params) {
-      return TestEmberApp.createAbstract(App.Comment.createRecord(params));
-    };
-
-    TestEnv.createAbstract = function(model) {
+      model = model.createRecord(params);
       runs(function() {
         return model.save();
       });

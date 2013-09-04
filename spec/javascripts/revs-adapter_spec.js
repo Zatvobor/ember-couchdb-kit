@@ -3,12 +3,12 @@
 
   describe('EmberCouchDBKit.RevsAdapter', function() {
     beforeEach(function() {
-      return this.subject = new TestEmberApp();
+      return this.subject = new TestEnv();
     });
     return it("finds by revision", function() {
       var id, person, prevRev;
 
-      person = this.subject.createPerson.call(this, {
+      person = this.subject.create.call(this, Fixture.Person, {
         name: 'Person'
       });
       prevRev = void 0;
