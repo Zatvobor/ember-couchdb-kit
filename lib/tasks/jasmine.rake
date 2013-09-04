@@ -28,7 +28,8 @@ namespace :jasmine do
 
     app.map('/doc'){run Proc.new { |env|
       con = Excon.new('http://geemus.com', :proxy => 'http://localhost:5984')
-      resp = con.request(:method => env["REQUEST_METHOD"], :body => env["rack.input"], :path => env["REQUEST_URI"], headers: {"Content-Type" => "application/json"})
+      uri = env["REQUEST_URI"].sub("http://localhost:8888/",'')
+      resp = con.request(:method => env["REQUEST_METHOD"], :body => env["rack.input"], :path => uri, headers: {"Content-Type" => "application/json"})
 
       if resp.headers['Transfer-Encoding'] == 'chunked'
         body = Rack::Chunked::Body.new([resp.body])
