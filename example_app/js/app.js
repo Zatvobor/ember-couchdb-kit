@@ -132,9 +132,13 @@ App.IndexController = Ember.Controller.extend({
   saveMessage: function(model) {
     model.save();
   },
-  deleteMessage: function(message) {
-    message.deleteRecord();
-    message.get('store').commit();
+  deleteMessage: function(issue) {
+    issue.deleteRecord();
+    issue.get('store').commit();
+  },
+  deleteAttachment: function(attachment){
+    // attachment.deleteRecord();
+    // attachment.get('store').commit();
   },
   browseFile: function(viewId) {
     document.getElementById(viewId).click();
@@ -258,7 +262,7 @@ App.CancelView = Ember.View.extend({
   }
 });
 
-App.DeleteView = Ember.View.extend({
+App.DeleteIssueView = Ember.View.extend({
   tagName: "span",
 
   click: function(event){
@@ -266,6 +270,16 @@ App.DeleteView = Ember.View.extend({
     this.get('controller').send('deleteMessage', this.get('context'));
   }
 });
+
+App.DeleteAttachmentView = Ember.View.extend({
+  tagName: "span",
+  classNames: ['badge'],
+  click: function(event){
+    event.preventDefault();
+    this.get('controller').send('deleteAttachment', this.get('context'));
+  }
+});
+
 
 App.AttachmentView = Ember.View.extend({
   

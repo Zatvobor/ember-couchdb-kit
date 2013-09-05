@@ -38,7 +38,6 @@
     
   </script>
   
-  
   <script type="text/x-handlebars" data-template-name="board">
     <div class="thumbnail">
       <div class="alert alert-success">
@@ -60,6 +59,13 @@
               
               {{textarea class="form-control" viewName="TextAreaEdit" value=view.context.text}}
               
+              {{#if attachments}}
+                {{#each attachments}}
+                  {{file_name}}
+                  {{#view App.DeleteAttachmentView contextBinding=this}} &times; {{/view}}
+                {{/each}}
+              {{/if}}
+              
               <button type="submit" class="btn btn-xs btn-default"> Ok </button>
 
               {{#view App.AttachmentView contextBinding=this}}
@@ -71,7 +77,7 @@
               {{text}}
 
               {{#if attachments}}
-                <span>, attachments:</span> 
+                <span>, attachments:</span>
                 {{#each attachments}}
                   {{linkToAttachment this}}
                 {{/each}}
@@ -79,7 +85,7 @@
            
               <button type="submit" class="btn btn-xs btn-default"> Edit </button>
               
-              {{#view App.DeleteView contextBinding=this}}
+              {{#view App.DeleteIssueView contextBinding=this}}
                 <button class="btn btn-xs btn-default"> &times; </button>
               {{/view}}
 
