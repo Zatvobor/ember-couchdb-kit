@@ -6,7 +6,6 @@ App.Boards = ['common', 'intermediate', 'advanced'];
 // Models
 
 App.Store = DS.Store.extend({
-  revision: 13,
   adapter: EmberCouchDBKit.DocumentAdapter.create({db: 'boards'})
 });
 
@@ -23,7 +22,7 @@ App.Attachment = DS.Model.extend({
   content_type: DS.attr('string'),
   length: DS.attr('number'),
   file_name: DS.attr('string'),
-  db: DS.attr('string')
+  db: DS.attr('string', {defaultValue: 'boards'})
 });
 
 App.Position = DS.Model.extend({
@@ -73,7 +72,10 @@ App.IndexRoute = Ember.Route.extend({
     position = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: params });
 
     // all upcoming changes are passed to `_handlePositionChanges` callback through `longpoll` strategy
-    position.longpoll(this._handlePositionChanges, this);
+    self = this;
+    position.fromTail(function(){
+      position.longpoll(self._handlePositionChanges, self);
+    });
   },
 
   _handlePositionChanges: function(data) {
@@ -103,7 +105,9 @@ App.IndexRoute = Ember.Route.extend({
     // apply received updates
     data.forEach(function(obj){
       issue = App.Issue.find(obj.doc._id);
-      if(issue.get('isLoaded')) issue.reload();
+      if(issue.get('isLoaded')){
+        issue.reload();
+      }
     });
   }
 });
@@ -117,9 +121,7 @@ App.IndexController = Ember.Controller.extend({
   content: Ember.computed.alias('position.issues'),
 
   createIssue: function(fields) {
-    fields.board = App.Position.find(this.get('name'));
     issue = App.Issue.createRecord(fields);
-    //issue.set('board', App.Position.find(this.get('name')));
     issue.get('store').commit();
 
     //issue.on('didCreate', function() {
@@ -133,12 +135,25 @@ App.IndexController = Ember.Controller.extend({
   deleteMessage: function(message) {
     message.deleteRecord();
     message.get('store').commit();
-
-    this.get('content').removeObject(message);
   },
-  browseFile: function(view) {
-    viewId = view.get('elementId');
+  browseFile: function(viewId) {
     document.getElementById(viewId).click();
+  },
+  addAttachment: function(file, model){
+    issue = model.get('_data.raw');
+    attachmentId = "%@/%@".fmt(model.id, file.name);
+    params = {
+      doc_id: model.id,
+      doc_type: App.Issue,
+      rev: issue._rev,
+      id: attachmentId,
+      file: file,
+      content_type: file.type,
+      length: file.size,
+      file_name: file.name
+    }
+    attachment = App.Attachment.createRecord(params);
+    attachment.get('store').commit();
   },
   needs: App.Boards
 });
@@ -157,15 +172,13 @@ App.IssueView = Ember.View.extend({
   attributeBindings: ['draggable'],
   draggable: 'true',
 
-
   submit: function(event){
     event.preventDefault();
     if (this.get('edit')){
-      this.get('controller').send('saveMessage', this.get("context"));
+      this.get('controller').send("saveMessage", this.get('context') );
     }
     this.toggleProperty('edit');
   },
-
 
   dragStart: function(event) {
     event.dataTransfer.setData('id', this.get('elementId'));
@@ -179,6 +192,7 @@ App.IssueView = Ember.View.extend({
   dragOver: function(event) {
     event.preventDefault();
   },
+
   dragLeave: function(event) {
     event.preventDefault();
     event.target.style.opacity = '1';
@@ -216,7 +230,6 @@ App.NewIssueView = Ember.View.extend({
   attributeBindings: ["style"],
   style: "display:inline",
 
-
   submit: function(event){
     this._save(event);
   },
@@ -227,22 +240,14 @@ App.NewIssueView = Ember.View.extend({
     }
   },
 
-
   _save: function(event) {
     event.preventDefault();
     if (this.get('create')){
-      this.get('controller').send("createIssue", {text: this.get("TextArea.value")});
+      this.get('controller').send("createIssue", {text: this.get("TextArea.value"), board: App.Position.find(this.get('controller.name')) });
     }
     this.toggleProperty('create');
   }
 });
-
-
-App.FocusedTextArea = Ember.TextArea.extend({
-  attributeBindings: ['autofocus'],
-  autofocus: 'autofocus'
-});
-
 
 App.CancelView = Ember.View.extend({
   tagName: "span",
@@ -253,7 +258,6 @@ App.CancelView = Ember.View.extend({
   }
 });
 
-
 App.DeleteView = Ember.View.extend({
   tagName: "span",
 
@@ -263,22 +267,26 @@ App.DeleteView = Ember.View.extend({
   }
 });
 
-
-App.AttachmentView = Ember.TextField.extend({
-  type: 'file',
-  attributeBindings: ["style"],
+App.AttachmentView = Ember.View.extend({
+  
+  tagName: "input",
+  attributeBindings: ["style", "type", "multiple"],
   style: "display:none",
+  type: 'file',
+  multiple: true,
+  
   change: function(event) {
-    id = this.get('elementId')
-    console.log(event.target.files);
     var files = event.target.files;
-
-    for (var i = 0, f; f = files[i]; i++) {
-      if (!f.type.match('image.*')) {
+    for (var i = 0, file; file = files[i]; i++) {
+      if (!file.type.match('image.*')) {
         continue;
       }
-      console.log( f.name, f.type, f.size || 'n/a', f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a');
+      this.get('controller').send('addAttachment', file, this.get('context'));
     }
-
   }
+});
+
+Ember.TextArea.reopen({
+  attributeBindings: ['autofocus','viewName'],
+  autofocus: 'autofocus'
 });

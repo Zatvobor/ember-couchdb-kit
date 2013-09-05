@@ -31,9 +31,9 @@
     </div>
   
     <div class="row">
-      <div class="col-lg-3">{{outlet 'common'}}</div>
-      <div class="col-lg-3">{{outlet 'intermediate'}}</div>
-      <div class="col-lg-3">{{outlet 'advanced'}}</div>
+      <div class="col-lg-4">{{outlet 'common'}}</div>
+      <div class="col-lg-4">{{outlet 'intermediate'}}</div>
+      <div class="col-lg-4">{{outlet 'advanced'}}</div>
     </div>
     
   </script>
@@ -52,32 +52,48 @@
   <script type="text/x-handlebars" data-template-name="_issueList">
     <div>    
       {{#each controller.content}}
-        {{#view App.IssueView contextBinding=this }}
+
+        {{#view App.IssueView contextBinding=this}}
           <div class="thumbnail">
+            
             {{#if view.edit}}
-              {{#view App.FocusedTextArea class="form-control" viewName="TextAreaEdit" valueBinding=view.context.text}}
-              {{/view}}
+              
+              {{textarea class="form-control" viewName="TextAreaEdit" value=view.context.text}}
+              
               <button type="submit" class="btn btn-xs btn-default"> Ok </button>
+
+              {{#view App.AttachmentView contextBinding=this}}
+                <button {{action 'browseFile' view.elementId}} class="btn btn-xs btn-default"> Attach </button>
+              {{/view}}
+
             {{else}}
+
               {{text}}
 
+              {{#if attachments}}
+                <span>, attachments:</span> 
+                {{#each attachments }}
+                  <a href="/{{_data.db}}/{{id}}" target="_blank">{{file_name}};</a>
+                {{/each}}
+              {{/if}}
+           
               <button type="submit" class="btn btn-xs btn-default"> Edit </button>
               
               {{#view App.DeleteView contextBinding=this}}
                 <button class="btn btn-xs btn-default"> &times; </button>
               {{/view}}
 
-              {{#view App.AttachmentView contextBinding=this}}
-                <button {{action 'browseFile' view}} class="btn btn-xs btn-default">Attach</button>
-              {{/view}}
-
             {{/if}}
+
           </div>
         {{/view}}
+
       {{else}}
+        
         {{#view App.IssueView draggable=false}}
           <font> Empty board...</font>
         {{/view}}
+      
       {{/each}}
     </div>
   </script>
@@ -87,12 +103,14 @@
       {{#if view.create}}
         <p style="display:inline;">
           <button type="submit" class="btn btn-default"> Save </button>
+
           {{#view App.CancelView}}
             <button class="btn btn-default"> &times; </button>
           {{/view}}
         </p>
-        {{#view App.FocusedTextArea viewName="TextArea" class="form-control"}}
-        {{/view}}
+        
+        {{textarea viewName="TextArea" class="form-control"}}
+
       {{else}}
         <button type="submit" class="btn btn-default"> Add new issue &#9998; </button>
       {{/if}}
