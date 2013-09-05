@@ -290,3 +290,9 @@ Ember.TextArea.reopen({
   attributeBindings: ['autofocus','viewName'],
   autofocus: 'autofocus'
 });
+
+Ember.Handlebars.helper('linkToAttachment', function(attachment) {
+  return new Handlebars.SafeString(
+    "<a href='" + "/%@/%@".fmt( attachment.get('_data.db'), attachment.get('id') + "' target='_blank'>" + attachment.get('file_name') + ";</a>"
+  ));
+});

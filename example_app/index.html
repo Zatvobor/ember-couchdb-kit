@@ -72,8 +72,8 @@
 
               {{#if attachments}}
                 <span>, attachments:</span> 
-                {{#each attachments }}
-                  <a href="/{{_data.db}}/{{id}}" target="_blank">{{file_name}};</a>
+                {{#each attachments}}
+                  {{linkToAttachment this}}
                 {{/each}}
               {{/if}}
            
