@@ -20,7 +20,6 @@
     },
     serialize: function(record, options) {
       var json;
-
       json = this._super.apply(this, arguments);
       this.addRevision(json, record, options);
       this.addTypeAttribute(json, record);
@@ -45,7 +44,6 @@
     },
     extractAttachments: function(attachments, type, hash) {
       var attachment, k, key, v, _attachments;
-
       _attachments = [];
       for (k in attachments) {
         v = attachments[k];
@@ -73,7 +71,6 @@
     },
     stringForType: function(type) {
       var pattern, reg_array;
-
       type = type.toString();
       if (type.search(".") < 0) {
         return type;
@@ -91,7 +88,6 @@
     },
     addRevision: function(json, record, options) {
       var rev;
-
       if (options && options.includeId) {
         rev = this.getRecordRevision(record);
         if (rev) {
@@ -101,7 +97,6 @@
     },
     addTypeAttribute: function(json, record) {
       var typeAttribute;
-
       if (this.get('add_type_attribute')) {
         typeAttribute = this.get('typeAttribute');
         return json[typeAttribute] = this.stringForType(record.constructor);
@@ -112,7 +107,6 @@
     },
     _addHasMany: function(data, record, key, relationship) {
       var attr_key, value, values;
-
       value = record.get(key);
       attr_key = record.get("" + relationship.key + "_key") || "id";
       if (this.get('addEmptyHasMany') || !Ember.isEmpty(value)) {
@@ -131,7 +125,6 @@
     },
     addBelongsTo: function(hash, record, key, relationship) {
       var id, id_key;
-
       if (key === "history") {
         return;
       }
@@ -270,7 +263,6 @@
     },
     head: function(h) {
       var docId;
-
       docId = typeof h === "object" ? h.get('id') : h;
       return this.ajax(docId, 'HEAD', {
         async: false
@@ -313,7 +305,6 @@
     },
     findWithRev: function(store, type, id) {
       var _id, _ref, _rev;
-
       _ref = id.split("/").slice(0, 2), _id = _ref[0], _rev = _ref[1];
       return this.ajax("%@?rev=%@".fmt(_id, _rev), 'GET', {
         context: this,
@@ -324,14 +315,12 @@
     },
     findManyWithRev: function(store, type, ids) {
       var _this = this;
-
       return ids.forEach(function(id) {
         return _this.findWithRev(store, type, id);
       });
     },
     findMany: function(store, type, ids) {
       var data;
-
       if (this._checkForRevision(ids[0])) {
         return this.findManyWithRev(store, type, ids);
       } else {
@@ -350,7 +339,6 @@
     },
     findQuery: function(store, type, query, modelArray) {
       var designDoc;
-
       if (query.type === 'view') {
         designDoc = query.designDoc || this.get('designDoc');
         return this.ajax('_design/%@/_view/%@'.fmt(designDoc, query.viewName), 'GET', {
@@ -358,7 +346,6 @@
           data: query.options,
           success: function(data) {
             var recordDef;
-
             recordDef = {};
             recordDef[designDoc] = data.rows.getEach('doc');
             return this.didFindQuery(store, type, recordDef, modelArray);
@@ -368,7 +355,6 @@
     },
     findAll: function(store, type) {
       var data, designDoc, params, typeString, typeViewName, viewName;
-
       designDoc = this.get('designDoc');
       if (this.get('customTypeLookup') && this.viewForType) {
         params = {};
@@ -399,13 +385,11 @@
     },
     createRecord: function(store, type, record) {
       var json;
-
       json = this.serialize(record);
       return this._push(store, type, record, json);
     },
     updateRecord: function(store, type, record) {
       var json;
-
       json = this.serialize(record, {
         associations: false,
         includeId: true
@@ -425,11 +409,9 @@
     },
     _updateAttachmnets: function(record, json) {
       var _attachments;
-
       _attachments = {};
       record.get('attachments').forEach(function(item) {
         var attachment;
-
         attachment = EmberCouchDBKit.AttachmentStore.get(item.get('id'));
         return _attachments[item.get('file_name')] = {
           content_type: attachment.content_type,
@@ -447,7 +429,6 @@
     },
     _push: function(store, type, record, json) {
       var id, method;
-
       id = record.get('id') || '';
       method = record.get('id') ? 'PUT' : 'POST';
       return this.ajax(id, method, {

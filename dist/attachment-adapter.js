@@ -12,7 +12,6 @@
   EmberCouchDBKit.AttachmentSerializer = DS.JSONSerializer.extend({
     materialize: function(record, hash) {
       var document, document_class, rev;
-
       this._super.apply(this, arguments);
       rev = hash._rev || hash.rev;
       document_class = eval("" + hash.doc_type);
@@ -44,7 +43,6 @@
     },
     addRevision: function(json, record, options) {
       var rev;
-
       if (options && options.includeId) {
         rev = this.getRecordRevision(record);
         if (rev) {
@@ -115,14 +113,12 @@
     },
     find: function(store, type, id) {
       var data;
-
       data = EmberCouchDBKit.AttachmentStore.get(id);
       return this.didFindRecord(store, type, data, id);
     },
     findMany: function(store, type, ids) {
       var docs,
         _this = this;
-
       docs = ids.map(function(item) {
         item = EmberCouchDBKit.AttachmentStore.get(item);
         item.db = _this.get('db');
@@ -133,7 +129,6 @@
     createRecord: function(store, type, record) {
       var path, request,
         _this = this;
-
       request = new XMLHttpRequest();
       path = "/%@/%@?rev=%@".fmt(this.get('db'), record.get('id'), record.get('rev'));
       request.open('PUT', path, true);
@@ -141,7 +136,6 @@
       this._updateUploadState(record, request);
       request.onreadystatechange = function() {
         var data, json;
-
         if (request.readyState === 4 && (request.status === 201 || request.status === 200)) {
           data = JSON.parse(request.response);
           data.doc_type = record.get('doc_type');
@@ -159,13 +153,11 @@
     _updateUploadState: function(record, request) {
       var view,
         _this = this;
-
       view = record.get('view');
       if (view) {
         view.start_upload();
         return request.onprogress = function(oEvent) {
           var percentComplete;
-
           if (oEvent.lengthComputable) {
             percentComplete = (oEvent.loaded / oEvent.total) * 100;
             return view.update_upload(percentComplete);
