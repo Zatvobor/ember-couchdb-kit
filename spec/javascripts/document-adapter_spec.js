@@ -84,7 +84,7 @@
           });
         });
       });
-      return it('with hasMany', function() {
+      it('with hasMany', function() {
         var article, comment;
 
         comment = this.subject.create.call(this, Fixture.Comment, {
@@ -105,6 +105,25 @@
         }, "", 3000);
         return runs(function() {
           return expect(article.get('comments').toArray()[0]).toBe(comment);
+        });
+      });
+      return it('with unsaved model in hasMany', function() {
+        var article, comment;
+
+        article = this.subject.create.call(this, Fixture.Article, {
+          label: 'label'
+        });
+        comment = Fixture.Comment.createRecord({
+          text: 'text'
+        });
+        runs(function() {
+          article.get('comments').pushObject(comment);
+          comment.save();
+          return article.save();
+        });
+        return runs(function() {
+          expect(comment.id).not.toBeUndefined();
+          return expect(article.get('comments').objectAt(0)).toBe(comment);
         });
       });
     });
@@ -163,7 +182,7 @@
           return expect(article.get('person.name')).toEqual(newName);
         });
       });
-      return it('hasMany relation', function() {
+      it('hasMany relation', function() {
         var article, comment, comment1;
 
         article = this.subject.create.call(this, Fixture.Article, {
@@ -189,6 +208,39 @@
         }, "Article saving with comments", 3000);
         return runs(function() {
           return expect(article.get('comments').toArray().length).toEqual(2);
+        });
+      });
+      return it('with null in hasMany relation', function() {
+        var article, comment;
+
+        article = this.subject.create.call(this, Fixture.Article, {
+          label: 'label'
+        });
+        article.save();
+        comment = void 0;
+        runs(function() {
+          return comment = this.subject.create.call(this, Fixture.Comment, {
+            text: 'text'
+          });
+        });
+        runs(function() {
+          article.get('comments').pushObjects([comment]);
+          return article.save();
+        });
+        waitsFor(function() {
+          return article.get('_data.raw').comments !== void 0 && article.get('_data.raw').comments.length > 0;
+        }, "Article saving with comments", 3000);
+        runs(function() {
+          comment = Fixture.Comment.createRecord({
+            text: 'text'
+          });
+          article.get('comments').pushObject(comment);
+          comment.save();
+          return article.save();
+        });
+        return runs(function() {
+          expect(comment.id).not.toBeUndefined();
+          return expect(article.get('comments').objectAt(1)).toBe(comment);
         });
       });
     });

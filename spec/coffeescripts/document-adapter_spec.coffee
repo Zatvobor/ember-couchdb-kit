@@ -73,6 +73,19 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       runs ->
         expect(article.get('comments').toArray()[0]).toBe(comment)
 
+    it 'with unsaved model in hasMany', ->
+      article = @subject.create.call(@, Fixture.Article, {label: 'label'})
+      comment = Fixture.Comment.createRecord({text: 'text'})
+
+      runs ->
+        article.get('comments').pushObject(comment)
+        comment.save()
+        article.save()
+
+      runs ->
+        expect(comment.id).not.toBeUndefined()
+        expect(article.get('comments').objectAt(0)).toBe(comment)
+
   describe 'model updating', ->
 
     it 'in general', ->
@@ -142,6 +155,32 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       runs ->
         expect(article.get('comments').toArray().length).toEqual(2)
 
+    it 'with null in hasMany relation', ->
+      article = @subject.create.call(@, Fixture.Article, {label: 'label'})
+      article.save()
+
+      comment  = undefined
+
+      runs ->
+        comment  = @subject.create.call(@, Fixture.Comment, {text: 'text'})
+
+      runs ->
+        article.get('comments').pushObjects([comment])
+        article.save()
+
+      waitsFor ->
+        article.get('_data.raw').comments != undefined && article.get('_data.raw').comments.length > 0
+      , "Article saving with comments", 3000
+
+      runs ->
+        comment = Fixture.Comment.createRecord({text: 'text'})
+        article.get('comments').pushObject(comment)
+        comment.save()
+        article.save()
+
+      runs ->
+        expect(comment.id).not.toBeUndefined()
+        expect(article.get('comments').objectAt(1)).toBe(comment)
 
   describe "deletion", ->
 
