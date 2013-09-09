@@ -375,7 +375,6 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
 
   _checkForRevision: (id) ->
     id?.split("/").length > 1
-    id.split("/").length > 1
 
   _push: (store, type, record, json) ->
     id     = record.get('id') || ''

@@ -57,10 +57,7 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
 
     it 'with hasMany', ->
       comment = @subject.create.call(@, Fixture.Comment, {text: 'text'})
-      article = undefined
-
-      runs ->
-        article = @subject.create.call(@, Fixture.Article, {label: 'label'})
+      article = @subject.create.call(@, Fixture.Article, {label: 'label'})
 
       runs ->
         article.get('comments').pushObject(comment)
@@ -80,10 +77,19 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       runs ->
         article.get('comments').pushObject(comment)
         comment.save()
-        article.save()
+
+      waitsFor ->
+        comment.id != null 
+      , "saving commment", 3000
 
       runs ->
-        expect(comment.id).not.toBeUndefined()
+        article.save()
+
+      waitsFor ->
+        article.get('_data.raw').comments != undefined
+      , "saving article", 3000
+
+      runs ->
         expect(article.get('comments').objectAt(0)).toBe(comment)
 
   describe 'model updating', ->
@@ -135,7 +141,6 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
 
     it 'hasMany relation', ->
       article = @subject.create.call(@, Fixture.Article, {label: 'label'})
-      article.save()
 
       comment  = undefined
       comment1 = undefined
@@ -155,14 +160,9 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       runs ->
         expect(article.get('comments').toArray().length).toEqual(2)
 
-    it 'with null in hasMany relation', ->
+    it 'with unsaved model in hasMany relation', ->
       article = @subject.create.call(@, Fixture.Article, {label: 'label'})
-      article.save()
-
-      comment  = undefined
-
-      runs ->
-        comment  = @subject.create.call(@, Fixture.Comment, {text: 'text'})
+      comment = @subject.create.call(@, Fixture.Comment, {text: 'text'})
 
       runs ->
         article.get('comments').pushObjects([comment])
@@ -175,11 +175,10 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       runs ->
         comment = Fixture.Comment.createRecord({text: 'text'})
         article.get('comments').pushObject(comment)
-        comment.save()
         article.save()
 
       runs ->
-        expect(comment.id).not.toBeUndefined()
+        expect(comment.id).toBeNull()
         expect(article.get('comments').objectAt(1)).toBe(comment)
 
   describe "deletion", ->

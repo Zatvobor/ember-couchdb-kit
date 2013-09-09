@@ -443,8 +443,7 @@
       return delete json.attachments;
     },
     _checkForRevision: function(id) {
-      (id != null ? id.split("/").length : void 0) > 1;
-      return id.split("/").length > 1;
+      return (id != null ? id.split("/").length : void 0) > 1;
     },
     _push: function(store, type, record, json) {
       var id, method;

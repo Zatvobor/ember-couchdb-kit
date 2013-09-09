@@ -90,11 +90,8 @@
         comment = this.subject.create.call(this, Fixture.Comment, {
           text: 'text'
         });
-        article = void 0;
-        runs(function() {
-          return article = this.subject.create.call(this, Fixture.Article, {
-            label: 'label'
-          });
+        article = this.subject.create.call(this, Fixture.Article, {
+          label: 'label'
         });
         runs(function() {
           article.get('comments').pushObject(comment);
@@ -118,11 +115,18 @@
         });
         runs(function() {
           article.get('comments').pushObject(comment);
-          comment.save();
+          return comment.save();
+        });
+        waitsFor(function() {
+          return comment.id !== null;
+        }, "saving commment", 3000);
+        runs(function() {
           return article.save();
         });
+        waitsFor(function() {
+          return article.get('_data.raw').comments !== void 0;
+        }, "saving article", 3000);
         return runs(function() {
-          expect(comment.id).not.toBeUndefined();
           return expect(article.get('comments').objectAt(0)).toBe(comment);
         });
       });
@@ -188,7 +192,6 @@
         article = this.subject.create.call(this, Fixture.Article, {
           label: 'label'
         });
-        article.save();
         comment = void 0;
         comment1 = void 0;
         runs(function() {
@@ -210,18 +213,14 @@
           return expect(article.get('comments').toArray().length).toEqual(2);
         });
       });
-      return it('with null in hasMany relation', function() {
+      return it('with unsaved model in hasMany relation', function() {
         var article, comment;
 
         article = this.subject.create.call(this, Fixture.Article, {
           label: 'label'
         });
-        article.save();
-        comment = void 0;
-        runs(function() {
-          return comment = this.subject.create.call(this, Fixture.Comment, {
-            text: 'text'
-          });
+        comment = this.subject.create.call(this, Fixture.Comment, {
+          text: 'text'
         });
         runs(function() {
           article.get('comments').pushObjects([comment]);
@@ -235,11 +234,10 @@
             text: 'text'
           });
           article.get('comments').pushObject(comment);
-          comment.save();
           return article.save();
         });
         return runs(function() {
-          expect(comment.id).not.toBeUndefined();
+          expect(comment.id).toBeNull();
           return expect(article.get('comments').objectAt(1)).toBe(comment);
         });
       });
