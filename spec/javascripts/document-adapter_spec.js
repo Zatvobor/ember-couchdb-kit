@@ -93,8 +93,7 @@
         article = void 0;
         runs(function() {
           return article = this.subject.create.call(this, Fixture.Article, {
-            label: 'Label',
-            comments: []
+            label: 'label'
           });
         });
         runs(function() {
@@ -105,7 +104,7 @@
           return article.get('_data.raw').comments !== void 0;
         }, "", 3000);
         return runs(function() {
-          return expect(article.get('_data.raw').comments[0]).toBe(comment.id);
+          return expect(article.get('comments').toArray()[0]).toBe(comment);
         });
       });
     });
@@ -164,40 +163,30 @@
           return expect(article.get('person.name')).toEqual(newName);
         });
       });
-      return it('updates hasMany relation', function() {
-        var article, comment, comment2;
+      return it('hasMany relation', function() {
+        var article, comment, comment1;
 
-        comment = this.subject.create.call(this, Fixture.Comment, {
-          text: 'Text'
+        article = this.subject.create.call(this, Fixture.Article, {
+          label: 'label'
         });
-        article = void 0;
-        comment2 = void 0;
+        article.save();
+        comment = void 0;
+        comment1 = void 0;
         runs(function() {
-          return article = this.subject.create.call(this, Fixture.Article, {
-            label: 'Label',
-            comments: []
+          comment = this.subject.create.call(this, Fixture.Comment, {
+            text: 'text'
+          });
+          return comment1 = this.subject.create.call(this, Fixture.Comment, {
+            text: 'text 1'
           });
         });
         runs(function() {
-          article.get('comments').pushObject(comment);
-          return article.save();
-        });
-        waitsFor(function() {
-          return article.get('_data.raw').comments !== void 0;
-        }, "", 3000);
-        runs(function() {
-          expect(article.get('comments').toArray().length).toEqual(1);
-          return comment2 = this.subject.create.call(this, Fixture.Comment, {
-            text: 'Text2'
-          });
-        });
-        runs(function() {
-          article.get('comments').pushObject(comment2);
+          article.get('comments').pushObjects([comment, comment1]);
           return article.save();
         });
         waitsFor(function() {
           return article.get('_data.raw').comments !== void 0 && article.get('_data.raw').comments.length === 2;
-        }, "", 3000);
+        }, "Article saving with comments", 3000);
         return runs(function() {
           return expect(article.get('comments').toArray().length).toEqual(2);
         });

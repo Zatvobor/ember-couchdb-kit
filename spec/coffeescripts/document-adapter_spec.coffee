@@ -60,7 +60,7 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       article = undefined
 
       runs ->
-        article = @subject.create.call(@, Fixture.Article, {label: 'Label', comments: []})
+        article = @subject.create.call(@, Fixture.Article, {label: 'label'})
 
       runs ->
         article.get('comments').pushObject(comment)
@@ -71,7 +71,7 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       ,"", 3000
 
       runs ->
-        expect(article.get('_data.raw').comments[0]).toBe(comment.id)
+        expect(article.get('comments').toArray()[0]).toBe(comment)
 
   describe 'model updating', ->
 
@@ -120,34 +120,24 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
         expect(prevRev).not.toEqual(article.get("_data._rev"))
         expect(article.get('person.name')).toEqual(newName)
 
-    it 'updates hasMany relation', ->
-      comment = @subject.create.call(@, Fixture.Comment, {text: 'Text'})
+    it 'hasMany relation', ->
+      article = @subject.create.call(@, Fixture.Article, {label: 'label'})
+      article.save()
 
-      article = undefined
-      comment2 = undefined
-
-      runs ->
-        article = @subject.create.call(@, Fixture.Article, {label: 'Label', comments: []})
+      comment  = undefined
+      comment1 = undefined
 
       runs ->
-        article.get('comments').pushObject(comment)
-        article.save()
-
-      waitsFor ->
-        article.get('_data.raw').comments != undefined
-      ,"", 3000
+        comment  = @subject.create.call(@, Fixture.Comment, {text: 'text'})
+        comment1 = @subject.create.call(@, Fixture.Comment, {text: 'text 1'})
 
       runs ->
-        expect(article.get('comments').toArray().length).toEqual(1)
-        comment2 = @subject.create.call(@, Fixture.Comment, {text: 'Text2'})
-
-      runs ->
-        article.get('comments').pushObject(comment2)
+        article.get('comments').pushObjects([comment, comment1])
         article.save()
 
       waitsFor ->
         article.get('_data.raw').comments != undefined && article.get('_data.raw').comments.length == 2
-      ,"", 3000
+      , "Article saving with comments", 3000
 
       runs ->
         expect(article.get('comments').toArray().length).toEqual(2)

@@ -82,7 +82,7 @@
       });
       waitsFor(function() {
         return model.id !== null;
-      }, "Article id should have NOT be null", 3000);
+      }, "model's should be saved", 3000);
       return model;
     };
 
