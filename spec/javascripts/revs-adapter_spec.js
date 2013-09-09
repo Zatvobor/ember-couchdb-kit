@@ -7,7 +7,6 @@
     });
     return it("finds by revision", function() {
       var id, person, prevRev;
-
       person = this.subject.create.call(this, Fixture.Person, {
         name: 'Person'
       });

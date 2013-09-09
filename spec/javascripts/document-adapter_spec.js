@@ -8,7 +8,6 @@
     describe('model creation', function() {
       it('record with specific id', function() {
         var person;
-
         person = this.subject.create.call(this, Fixture.Person, {
           id: 'john@example.com'
         });
@@ -18,7 +17,6 @@
       });
       it('record with generated id', function() {
         var person;
-
         person = this.subject.create.call(this, Fixture.Person, {});
         return runs(function() {
           return expect(person.id).not.toBeNull();
@@ -26,7 +24,6 @@
       });
       it('simple {a:"a", b:"b"} model', function() {
         var person;
-
         person = this.subject.create.call(this, Fixture.Person, {
           a: 'a',
           b: 'b'
@@ -38,7 +35,6 @@
       });
       it('always available as a raw json object', function() {
         var person;
-
         person = this.subject.create.call(this, Fixture.Person, {
           name: 'john'
         });
@@ -47,25 +43,19 @@
         });
       });
       it('belongsTo relation', function() {
-        var person;
-
+        var article, person;
         person = this.subject.create.call(this, Fixture.Person, {
           name: 'john'
         });
+        article = this.subject.create.call(this, Fixture.Article, {
+          person: person
+        });
         return runs(function() {
-          var article;
-
-          article = this.subject.create.call(this, Fixture.Article, {
-            person: person
-          });
-          return runs(function() {
-            return expect(article.get('person.name')).toBe('john');
-          });
+          return expect(article.get('person.name')).toBe('john');
         });
       });
       it('belongsTo field avilable as a raw js object', function() {
-        var person;
-
+        var message, person;
         Fixture.Message = DS.Model.extend({
           person: DS.belongsTo(Fixture.Person),
           person_key: "name"
@@ -73,20 +63,15 @@
         person = this.subject.create.call(this, Fixture.Person, {
           name: 'john'
         });
+        message = this.subject.create.call(this, Fixture.Message, {
+          person: person
+        });
         return runs(function() {
-          var message;
-
-          message = this.subject.create.call(this, Fixture.Message, {
-            person: person
-          });
-          return runs(function() {
-            return expect(message.get('_data.raw').person).toBe('john');
-          });
+          return expect(message.get('_data.raw').person).toBe('john');
         });
       });
-      it('with hasMany', function() {
+      it('with unsaved entity in hasMany', function() {
         var article, comment;
-
         comment = this.subject.create.call(this, Fixture.Comment, {
           text: 'text'
         });
@@ -99,14 +84,13 @@
         });
         waitsFor(function() {
           return article.get('_data.raw').comments !== void 0;
-        }, "", 3000);
+        }, "article saving", 3000);
         return runs(function() {
           return expect(article.get('comments').toArray()[0]).toBe(comment);
         });
       });
-      return it('with unsaved model in hasMany', function() {
+      return it('with hasMany pushObject', function() {
         var article, comment;
-
         article = this.subject.create.call(this, Fixture.Article, {
           label: 'label'
         });
@@ -119,7 +103,7 @@
         });
         waitsFor(function() {
           return comment.id !== null;
-        }, "saving commment", 3000);
+        }, "commment saving", 3000);
         runs(function() {
           return article.save();
         });
@@ -134,7 +118,6 @@
     describe('model updating', function() {
       it('in general', function() {
         var person, prevRev;
-
         person = this.subject.create.call(this, Fixture.Person, {
           name: "John"
         });
@@ -146,14 +129,13 @@
         });
         waitsFor(function() {
           return prevRev !== person.get("_data._rev");
-        }, "", 3000);
+        }, "saving person", 3000);
         return runs(function() {
           return expect(prevRev).not.toEqual(person.get("_data._rev"));
         });
       });
       it('with belongsTo', function() {
         var article, name, newName, person1, person2, prevRev;
-
         name = 'Vpupkin';
         newName = 'Bobby';
         person1 = this.subject.create.call(this, Fixture.Person, {
@@ -162,11 +144,9 @@
         article = void 0;
         prevRev = void 0;
         person2 = void 0;
-        runs(function() {
-          return article = this.subject.create.call(this, Fixture.Article, {
-            label: 'Label',
-            person: person1
-          });
+        article = this.subject.create.call(this, Fixture.Article, {
+          label: 'Label',
+          person: person1
         });
         runs(function() {
           prevRev = article.get("_data._rev");
@@ -180,7 +160,7 @@
         });
         waitsFor(function() {
           return prevRev !== article.get("_data._rev");
-        }, "", 3000);
+        }, "saving article", 3000);
         return runs(function() {
           expect(prevRev).not.toEqual(article.get("_data._rev"));
           return expect(article.get('person.name')).toEqual(newName);
@@ -188,7 +168,6 @@
       });
       return it('with hasMany', function() {
         var article, comment, comment1;
-
         article = this.subject.create.call(this, Fixture.Article, {
           label: 'label'
         });
@@ -208,7 +187,7 @@
         });
         waitsFor(function() {
           return article.get('_data.raw').comments !== void 0 && article.get('_data.raw').comments.length === 2;
-        }, "Article saving with comments", 3000);
+        }, "article saving with comments", 3000);
         return runs(function() {
           return expect(article.get('comments').toArray().length).toEqual(2);
         });
@@ -217,7 +196,6 @@
     return describe("deletion", function() {
       return it("in general", function() {
         var person;
-
         person = this.subject.create.call(this, Fixture.Person, {
           name: 'Vpupkin'
         });

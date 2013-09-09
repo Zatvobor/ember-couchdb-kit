@@ -36,11 +36,10 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
 
     it 'belongsTo relation', ->
       person = @subject.create.call(@, Fixture.Person, {name: 'john'})
+      article = @subject.create.call(@, Fixture.Article, {person: person})
 
       runs ->
-        article = @subject.create.call(@, Fixture.Article, {person: person})
-        runs ->
-          expect(article.get('person.name')).toBe('john')
+        expect(article.get('person.name')).toBe('john')
 
     it 'belongsTo field avilable as a raw js object', ->
       Fixture.Message = DS.Model.extend
@@ -48,14 +47,13 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
         person_key: "name"
 
       person = @subject.create.call(@, Fixture.Person, {name: 'john'})
+      message = @subject.create.call(@, Fixture.Message, {person: person})
 
       runs ->
-        message = @subject.create.call(@, Fixture.Message, {person: person})
-        runs ->
-          expect(message.get('_data.raw').person).toBe('john')
+        expect(message.get('_data.raw').person).toBe('john')
 
 
-    it 'with hasMany', ->
+    it 'with unsaved entity in hasMany', ->
       comment = @subject.create.call(@, Fixture.Comment, {text: 'text'})
       article = @subject.create.call(@, Fixture.Article, {label: 'label'})
 
@@ -65,12 +63,12 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
 
       waitsFor ->
         article.get('_data.raw').comments != undefined
-      ,"", 3000
+      , "article saving", 3000
 
       runs ->
         expect(article.get('comments').toArray()[0]).toBe(comment)
 
-    it 'with unsaved model in hasMany', ->
+    it 'with hasMany pushObject', ->
       article = @subject.create.call(@, Fixture.Article, {label: 'label'})
       comment = Fixture.Comment.createRecord({text: 'text'})
 
@@ -80,7 +78,7 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
 
       waitsFor ->
         comment.id != null 
-      , "saving commment", 3000
+      , "commment saving", 3000
 
       runs ->
         article.save()
@@ -105,7 +103,7 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
 
       waitsFor ->
         prevRev != person.get("_data._rev")
-      ,"", 3000
+      , "saving person", 3000
 
       runs ->
         expect(prevRev).not.toEqual(person.get("_data._rev"))
@@ -120,8 +118,7 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       prevRev = undefined
       person2 = undefined
 
-      runs ->
-        article = @subject.create.call(@, Fixture.Article, {label: 'Label', person: person1})
+      article = @subject.create.call(@, Fixture.Article, {label: 'Label', person: person1})
 
       runs ->
         prevRev =  article.get("_data._rev")
@@ -133,7 +130,7 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
 
       waitsFor ->
         prevRev != article.get("_data._rev")
-      ,"", 3000
+      , "saving article", 3000
 
       runs ->
         expect(prevRev).not.toEqual(article.get("_data._rev"))
@@ -155,7 +152,7 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
 
       waitsFor ->
         article.get('_data.raw').comments != undefined && article.get('_data.raw').comments.length == 2
-      , "Article saving with comments", 3000
+      , "article saving with comments", 3000
 
       runs ->
         expect(article.get('comments').toArray().length).toEqual(2)
