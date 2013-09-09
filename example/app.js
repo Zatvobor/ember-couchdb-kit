@@ -207,9 +207,10 @@ App.IssueView = Ember.View.extend({
     var newModel = view.get('context');
     var oldModel = this.get('context');
     var position = this.get('controller.content').toArray().indexOf(oldModel)
+
     view.get('controller.content').removeObject(newModel);
     thisArray = this.get('controller.content').toArray().insertAt(position, newModel);
-    this.set('controller.content.content', thisArray.getEach('_reference'));
+
     this.set('controller.position.issues.content', thisArray.getEach('_reference'));
     this.get('controller.position').save();
 
@@ -218,9 +219,9 @@ App.IssueView = Ember.View.extend({
       newModel.get('store').commit();
       viewArray = view.get('controller.content').toArray();
       view.set('controller.content.content', viewArray.getEach('_reference'));
-      view.set('controller.position.issues.content', viewArray.getEach('_reference'));
       view.get('controller.position').save();
     }
+
     event.preventDefault();
     event.target.style.opacity = '1';
   }
