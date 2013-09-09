@@ -25,7 +25,7 @@ class @TestEnv
   constructor: ->
     DatabaseCleaner.reset()
 
-    unless window.App
+    unless window.Fixture
       window.Fixture = Ember.Application.create({rootElement: "body"})
 
       @adapter()

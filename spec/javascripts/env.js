@@ -33,7 +33,7 @@
   this.TestEnv = (function() {
     function TestEnv() {
       DatabaseCleaner.reset();
-      if (!window.App) {
+      if (!window.Fixture) {
         window.Fixture = Ember.Application.create({
           rootElement: "body"
         });
