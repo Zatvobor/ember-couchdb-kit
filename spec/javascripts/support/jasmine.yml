@@ -1,9 +1,11 @@
 src_files:
-    - vendor/assets/javascripts/jquery.js
-    - vendor/assets/javascripts/handlebars.js
-    - vendor/assets/javascripts/ember.js
-    - vendor/assets/javascripts/**/*.js
-    - dist/*.js
+  - vendor/assets/javascripts/jquery.js
+  - vendor/assets/javascripts/handlebars.js
+  - vendor/assets/javascripts/ember.js
+  - vendor/assets/javascripts/**/*.js
+  - dist/ember-couchdb-kit.js
+  - dist/*.js
+  - '**/env.js'
 
 spec_files:
   - '**/*[sS]pec.js'

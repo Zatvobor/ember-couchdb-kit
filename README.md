@@ -44,6 +44,18 @@ Add into your application.js
 //= require ember-couchdb-kit
 ```
 
+
+Learn through specs
+-------------------
+
+```
+rake jasmine
+```
+
+```
+open -a safari http://localhost:8888
+```
+
 License
 -------
 
