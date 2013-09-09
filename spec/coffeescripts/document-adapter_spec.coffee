@@ -110,7 +110,7 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       runs ->
         expect(prevRev).not.toEqual(person.get("_data._rev"))
 
-    it 'belongsTo relation', ->
+    it 'with belongsTo', ->
       name = 'Vpupkin'
       newName = 'Bobby'
 
@@ -139,7 +139,7 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
         expect(prevRev).not.toEqual(article.get("_data._rev"))
         expect(article.get('person.name')).toEqual(newName)
 
-    it 'hasMany relation', ->
+    it 'with hasMany', ->
       article = @subject.create.call(@, Fixture.Article, {label: 'label'})
 
       comment  = undefined
@@ -160,26 +160,6 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       runs ->
         expect(article.get('comments').toArray().length).toEqual(2)
 
-    it 'with unsaved model in hasMany relation', ->
-      article = @subject.create.call(@, Fixture.Article, {label: 'label'})
-      comment = @subject.create.call(@, Fixture.Comment, {text: 'text'})
-
-      runs ->
-        article.get('comments').pushObjects([comment])
-        article.save()
-
-      waitsFor ->
-        article.get('_data.raw').comments != undefined && article.get('_data.raw').comments.length > 0
-      , "Article saving with comments", 3000
-
-      runs ->
-        comment = Fixture.Comment.createRecord({text: 'text'})
-        article.get('comments').pushObject(comment)
-        article.save()
-
-      runs ->
-        expect(comment.id).toBeNull()
-        expect(article.get('comments').objectAt(1)).toBe(comment)
 
   describe "deletion", ->
 

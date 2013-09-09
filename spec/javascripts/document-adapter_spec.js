@@ -151,7 +151,7 @@
           return expect(prevRev).not.toEqual(person.get("_data._rev"));
         });
       });
-      it('belongsTo relation', function() {
+      it('with belongsTo', function() {
         var article, name, newName, person1, person2, prevRev;
 
         name = 'Vpupkin';
@@ -186,7 +186,7 @@
           return expect(article.get('person.name')).toEqual(newName);
         });
       });
-      it('hasMany relation', function() {
+      return it('with hasMany', function() {
         var article, comment, comment1;
 
         article = this.subject.create.call(this, Fixture.Article, {
@@ -211,34 +211,6 @@
         }, "Article saving with comments", 3000);
         return runs(function() {
           return expect(article.get('comments').toArray().length).toEqual(2);
-        });
-      });
-      return it('with unsaved model in hasMany relation', function() {
-        var article, comment;
-
-        article = this.subject.create.call(this, Fixture.Article, {
-          label: 'label'
-        });
-        comment = this.subject.create.call(this, Fixture.Comment, {
-          text: 'text'
-        });
-        runs(function() {
-          article.get('comments').pushObjects([comment]);
-          return article.save();
-        });
-        waitsFor(function() {
-          return article.get('_data.raw').comments !== void 0 && article.get('_data.raw').comments.length > 0;
-        }, "Article saving with comments", 3000);
-        runs(function() {
-          comment = Fixture.Comment.createRecord({
-            text: 'text'
-          });
-          article.get('comments').pushObject(comment);
-          return article.save();
-        });
-        return runs(function() {
-          expect(comment.id).toBeNull();
-          return expect(article.get('comments').objectAt(1)).toBe(comment);
         });
       });
     });
