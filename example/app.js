@@ -14,7 +14,6 @@ App.Store.registerAdapter('App.Attachment', EmberCouchDBKit.AttachmentAdapter.ex
 App.Issue = DS.Model.extend({
   text: DS.attr('string'),
   type: DS.attr('string', {defaultValue: 'issue'}),
-  board: DS.belongsTo('App.Position'),
   attachments: DS.hasMany('App.Attachment', {embedded: true})
 });
 
@@ -37,7 +36,6 @@ App.IndexRoute = Ember.Route.extend({
 
   setupController: function(controller, model) {
     this._setupPositionHolders();
-
     this._position();
     this._issue();
   },
@@ -120,14 +118,15 @@ App.IndexController = Ember.Controller.extend({
 
   content: Ember.computed.alias('position.issues'),
 
-  createIssue: function(fields) {
-    issue = App.Issue.createRecord(fields);
-    issue.get('store').commit();
+  createIssue: function(text) {
+    issue = App.Issue.createRecord({text: text});
+    issue.save();
 
-    //issue.on('didCreate', function() {
-    //issue.addObserver('id', function(sender, key, value, context, rev) {
-    //  this.get('board.issues').pushObject(this);
-    //});
+    self = this;
+    issue.addObserver('id', function(sender, key, value, context, rev) {
+      self.get('position.issues').pushObject(this);
+      self.get('position').save();
+    });
   },
   saveMessage: function(model) {
     model.save();
@@ -247,7 +246,7 @@ App.NewIssueView = Ember.View.extend({
   _save: function(event) {
     event.preventDefault();
     if (this.get('create')){
-      this.get('controller').send("createIssue", {text: this.get("TextArea.value"), board: App.Position.find(this.get('controller.name')) });
+      this.get('controller').send("createIssue", this.get("TextArea.value"));
     }
     this.toggleProperty('create');
   }
