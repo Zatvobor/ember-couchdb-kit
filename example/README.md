@@ -52,5 +52,5 @@ Run
 rackup
 curl http://localhost:3000/version
 # => 200, ember-couchdb-kit example app
-open -a safari http://localhost:3000/example_app/index.html
+open -a safari http://localhost:3000/example/index.html
 ```
