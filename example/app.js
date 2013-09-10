@@ -141,9 +141,6 @@ App.IndexController = Ember.Controller.extend({
     // attachment.deleteRecord();
     // attachment.get('store').commit();
   },
-  browseFile: function(viewId) {
-    Ember.View.views[viewId].$().click();
-  },
   addAttachment: function(file, model){
     issue = model.get('_data.raw');
     attachmentId = "%@/%@".fmt(model.id, file.name);
@@ -291,7 +288,7 @@ App.AttachmentView = Ember.View.extend({
   style: "display:none",
   type: 'file',
   multiple: true,
-  
+
   change: function(event) {
     var files = event.target.files;
     for (var i = 0, file; file = files[i]; i++) {
@@ -300,6 +297,10 @@ App.AttachmentView = Ember.View.extend({
       }
       this.get('controller').send('addAttachment', file, this.get('context'));
     }
+  },
+
+  browseFile: function(event) {
+    this.$().click();
   }
 });
 
@@ -309,7 +310,8 @@ Ember.TextArea.reopen({
 });
 
 Ember.Handlebars.helper('linkToAttachment', function(attachment) {
-  return new Handlebars.SafeString(
-    "<a href='" + "/%@/%@".fmt( attachment.get('_data.db'), attachment.get('id') + "' target='_blank'>" + attachment.get('file_name') + ";</a>"
-  ));
+  return new Handlebars.SafeString('/%@/%@'.fmt( attachment.get('_data.db'), attachment.get('id')));
 });
+
+
+

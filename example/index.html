@@ -69,7 +69,7 @@
               <button type="submit" class="btn btn-xs btn-default"> Ok </button>
 
               {{#view App.AttachmentView contextBinding=this}}
-                <button {{action 'browseFile' view.elementId}} class="btn btn-xs btn-default"> Attach </button>
+                <button {{action browseFile target="view"}} class="btn btn-xs btn-default"> Attach </button>
               {{/view}}
 
             {{else}}
@@ -79,10 +79,10 @@
               {{#if attachments}}
                 <span>, attachments:</span>
                 {{#each attachments}}
-                  {{linkToAttachment this}}
+                  <a href="{{unbound linkToAttachment this}}" target="_blank">{{file_name}};</a>
                 {{/each}}
               {{/if}}
-           
+
               <button type="submit" class="btn btn-xs btn-default"> Edit </button>
               
               {{#view App.DeleteIssueView contextBinding=this}}
