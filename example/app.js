@@ -21,7 +21,9 @@ App.Attachment = DS.Model.extend({
   content_type: DS.attr('string'),
   length: DS.attr('number'),
   file_name: DS.attr('string'),
+  _rev: DS.attr('string'),
   db: DS.attr('string', {defaultValue: 'boards'})
+
 });
 
 App.Position = DS.Model.extend({
@@ -128,36 +130,55 @@ App.IndexController = Ember.Controller.extend({
       self.get('position').save();
     });
   },
+
   saveIssue: function(model) {
     model.save();
   },
+
   deleteIssue: function(issue) {
     issue.deleteRecord();
     issue.get('store').commit();
     this.get('position.issues').removeObject(issue);
     this.get('position').save();
   },
+
   deleteAttachment: function(attachment){
-    // attachment.deleteRecord();
-    // attachment.get('store').commit();
+    attachment.get('_data.document.attachments').removeObject(attachment)
+    attachment.get('_data.document').save();
+    attachment.deleteRecord();
   },
-  addAttachment: function(file, model){
-    issue = model.get('_data.raw');
+
+  addAttachment: function(files, model){
+    this._addAttachment(0, files, files.length, model)
+  },
+
+  _addAttachment: function(count, files, size, model){
+    file = files[count];
     attachmentId = "%@/%@".fmt(model.id, file.name);
+
     params = {
       doc_id: model.id,
       doc_type: App.Issue,
-      rev: issue._rev,
+      rev: model._data._rev,
       id: attachmentId,
       file: file,
       content_type: file.type,
       length: file.size,
       file_name: file.name
     }
+
+    var self = this;
     attachment = App.Attachment.createRecord(params);
     attachment.get('store').commit();
-  },
-  needs: App.Boards
+    attachment.one('didCreate', function() {
+      Ember.run.next(function() {
+        count = count + 1;
+        if(count < size){
+          self._addAttachment(count, files, size, model);
+        }
+      });
+    });
+  }
 });
 
 App.CommonController       = App.IndexController.extend({ name: 'common' });
@@ -201,26 +222,28 @@ App.IssueView = Ember.View.extend({
   },
 
   drop: function(event) {
-    var viewId = event.dataTransfer.getData('id');
-    var view = Ember.View.views[viewId];
+    var view = Ember.View.views[event.dataTransfer.getData('id')];
     var newModel = view.get('context');
-    var oldModel = this.get('context');
-    var position = this.get('controller.content').toArray().indexOf(oldModel)
+    var position = this.get('controller.content').toArray().indexOf(this.get('context'))
+
     view.get('controller.content').removeObject(newModel);
     thisArray = this.get('controller.content').toArray().insertAt(position, newModel);
-    this.set('controller.position.issues.content', thisArray.getEach('_reference'));
-    this.get('controller.position').save();
+    this._insert(this, thisArray)
 
     if(view.get('controller.name') !== this.get('controller.name')){
       newModel.set('board', this.get('controller.name'));
       newModel.get('store').commit();
       viewArray = view.get('controller.content').toArray();
-      view.set('controller.position.issues.content', viewArray.getEach('_reference'));
-      view.get('controller.position').save();
+      this._insert(view, viewArray)
     }
 
     event.preventDefault();
     event.target.style.opacity = '1';
+  },
+
+  _insert: function(view, array){
+    view.set('controller.content.content', array.getEach('_reference'));
+    view.get('controller.position').save();
   }
 });
 
@@ -255,7 +278,7 @@ App.NewIssueView = Ember.View.extend({
 
 App.CancelView = Ember.View.extend({
   tagName: "span",
-  
+
   click: function(event){
     event.preventDefault();
     this.set('parentView.create',false);
@@ -267,7 +290,9 @@ App.DeleteIssueView = Ember.View.extend({
 
   click: function(event){
     event.preventDefault();
+    this.$().attr('disabled', true);
     this.get('controller').send('deleteIssue', this.get('context'));
+   
   }
 });
 
@@ -280,7 +305,6 @@ App.DeleteAttachmentView = Ember.View.extend({
   }
 });
 
-
 App.AttachmentView = Ember.View.extend({
   
   tagName: "input",
@@ -290,13 +314,7 @@ App.AttachmentView = Ember.View.extend({
   multiple: true,
 
   change: function(event) {
-    var files = event.target.files;
-    for (var i = 0, file; file = files[i]; i++) {
-      if (!file.type.match('image.*')) {
-        continue;
-      }
-      this.get('controller').send('addAttachment', file, this.get('context'));
-    }
+    this.get('controller').send('addAttachment', event.target.files, this.get('context'));
   },
 
   browseFile: function(event) {
@@ -312,6 +330,3 @@ Ember.TextArea.reopen({
 Ember.Handlebars.helper('linkToAttachment', function(attachment) {
   return new Handlebars.SafeString('/%@/%@'.fmt( attachment.get('_data.db'), attachment.get('id')));
 });
-
-
-
