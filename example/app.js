@@ -128,19 +128,21 @@ App.IndexController = Ember.Controller.extend({
       self.get('position').save();
     });
   },
-  saveMessage: function(model) {
+  saveIssue: function(model) {
     model.save();
   },
-  deleteMessage: function(issue) {
+  deleteIssue: function(issue) {
     issue.deleteRecord();
     issue.get('store').commit();
+    this.get('position.issues').removeObject(issue);
+    this.get('position').save();
   },
   deleteAttachment: function(attachment){
     // attachment.deleteRecord();
     // attachment.get('store').commit();
   },
   browseFile: function(viewId) {
-    document.getElementById(viewId).click();
+    Ember.View.views[viewId].$().click();
   },
   addAttachment: function(file, model){
     issue = model.get('_data.raw');
@@ -178,7 +180,7 @@ App.IssueView = Ember.View.extend({
   submit: function(event){
     event.preventDefault();
     if (this.get('edit')){
-      this.get('controller').send("saveMessage", this.get('context') );
+      this.get('controller').send("saveIssue", this.get('context') );
     }
     this.toggleProperty('edit');
   },
@@ -207,10 +209,8 @@ App.IssueView = Ember.View.extend({
     var newModel = view.get('context');
     var oldModel = this.get('context');
     var position = this.get('controller.content').toArray().indexOf(oldModel)
-
     view.get('controller.content').removeObject(newModel);
     thisArray = this.get('controller.content').toArray().insertAt(position, newModel);
-
     this.set('controller.position.issues.content', thisArray.getEach('_reference'));
     this.get('controller.position').save();
 
@@ -218,7 +218,7 @@ App.IssueView = Ember.View.extend({
       newModel.set('board', this.get('controller.name'));
       newModel.get('store').commit();
       viewArray = view.get('controller.content').toArray();
-      view.set('controller.content.content', viewArray.getEach('_reference'));
+      view.set('controller.position.issues.content', viewArray.getEach('_reference'));
       view.get('controller.position').save();
     }
 
@@ -247,7 +247,10 @@ App.NewIssueView = Ember.View.extend({
   _save: function(event) {
     event.preventDefault();
     if (this.get('create')){
-      this.get('controller').send("createIssue", this.get("TextArea.value"));
+      text = this.get("TextArea.value");
+      if(!Ember.isEmpty(text)){
+        this.get('controller').send("createIssue", text);
+      }
     }
     this.toggleProperty('create');
   }
@@ -267,7 +270,7 @@ App.DeleteIssueView = Ember.View.extend({
 
   click: function(event){
     event.preventDefault();
-    this.get('controller').send('deleteMessage', this.get('context'));
+    this.get('controller').send('deleteIssue', this.get('context'));
   }
 });
 
