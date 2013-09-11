@@ -321,8 +321,10 @@ App.AttachmentView = Ember.View.extend({
 });
 
 Ember.TextArea.reopen({
-  attributeBindings: ['autofocus','viewName'],
-  autofocus: 'autofocus'
+  attributeBindings: ['viewName'],
+  elementDidChange: function() {
+    this.$().focus();
+  }.observes('element')
 });
 
 Ember.Handlebars.helper('linkToAttachment', function(attachment) {
