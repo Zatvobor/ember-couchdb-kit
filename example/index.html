@@ -28,15 +28,15 @@
     <div class="alert alert-success">
       <h1>Issue boards</h1>
     </div>
-  
+
     <div class="row">
       <div class="col-lg-4">{{outlet 'common'}}</div>
       <div class="col-lg-4">{{outlet 'intermediate'}}</div>
       <div class="col-lg-4">{{outlet 'advanced'}}</div>
     </div>
-    
+
   </script>
-  
+
   <script type="text/x-handlebars" data-template-name="board">
     <div class="thumbnail">
       <div class="alert alert-success">
@@ -46,25 +46,25 @@
       </div>
     </div>
   </script>
-  
+
   <script type="text/x-handlebars" data-template-name="_issueList">
-    <div>    
+    <div>
       {{#each controller.content}}
 
         {{#view App.IssueView contextBinding=this}}
           <div class="thumbnail">
-            
+
             {{#if view.edit}}
-              
+
               {{textarea class="form-control" viewName="TextAreaEdit" value=view.context.text}}
-              
+
               {{#if attachments}}
                 {{#each attachments}}
                   {{file_name}}
                   {{#view App.DeleteAttachmentView contextBinding=this}} &times; {{/view}}
                 {{/each}}
               {{/if}}
-              
+
               <button type="submit" class="btn btn-xs btn-default"> Ok </button>
 
               {{#view App.AttachmentView contextBinding=this}}
@@ -83,7 +83,7 @@
               {{/if}}
 
               <button type="submit" class="btn btn-xs btn-default"> Edit </button>
-              
+
               {{#view App.DeleteIssueView contextBinding=this}}
                 <button class="btn btn-xs btn-default"> &times; </button>
               {{/view}}
@@ -94,11 +94,11 @@
         {{/view}}
 
       {{else}}
-        
+
         {{#view App.IssueView draggable=false}}
           <font> Empty board...</font>
         {{/view}}
-      
+
       {{/each}}
     </div>
   </script>
@@ -113,7 +113,7 @@
             <button class="btn btn-default"> &times; </button>
           {{/view}}
         </p>
-        
+
         {{textarea viewName="TextArea" class="form-control"}}
 
       {{else}}

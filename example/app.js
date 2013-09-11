@@ -45,14 +45,14 @@ App.IndexRoute = Ember.Route.extend({
   renderTemplate: function() {
     this.render();
     // link particular controller with its outlet
-    self = this;
+    var self = this;
     App.Boards.forEach(function(label) {
        self.render('board',{outlet: label, into: 'index', controller: label});
     });
   },
 
   _setupPositionHolders: function() {
-    self = this;
+    var self = this;
     App.Boards.forEach(function(type) {
       // set issues into appropriate controller through position model
       position = App.Position.find(type);
@@ -72,14 +72,14 @@ App.IndexRoute = Ember.Route.extend({
     position = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: params });
 
     // all upcoming changes are passed to `_handlePositionChanges` callback through `longpoll` strategy
-    self = this;
+    var self = this;
     position.fromTail(function(){
       position.longpoll(self._handlePositionChanges, self);
     });
   },
 
   _handlePositionChanges: function(data) {
-    self = this;
+    var self = this;
     data.forEach(function(obj){
       position = self.controllerFor(obj.doc._id).get('position');
       // we should reload particular postion model in case of update is received from another user
@@ -94,14 +94,13 @@ App.IndexRoute = Ember.Route.extend({
     issue = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: params });
 
     // all upcoming changes are passed to `_handleIssueChanges` callback through `fromTail` strategy
-    self = this;
+    var self = this;
     issue.fromTail(function(){
       issue.longpoll(self._handleIssueChanges, self);
     });
   },
 
   _handleIssueChanges: function(data) {
-    self = this;
     // apply received updates
     data.forEach(function(obj){
       issue = App.Issue.find(obj.doc._id);
@@ -124,9 +123,9 @@ App.IndexController = Ember.Controller.extend({
     issue = App.Issue.createRecord({text: text});
     issue.save();
 
-    self = this;
+    var self = this;
     issue.addObserver('id', function(sender, key, value, context, rev) {
-      self.get('position.issues').pushObject(this);
+      self.get('content').pushObject(this);
       self.get('position').save();
     });
   },
@@ -136,10 +135,10 @@ App.IndexController = Ember.Controller.extend({
   },
 
   deleteIssue: function(issue) {
-    issue.deleteRecord();
-    issue.get('store').commit();
-    this.get('position.issues').removeObject(issue);
+    this.get('content').removeObject(issue);
     this.get('position').save();
+    issue.deleteRecord();
+    issue.save();
   },
 
   deleteAttachment: function(attachment){
@@ -292,7 +291,6 @@ App.DeleteIssueView = Ember.View.extend({
     event.preventDefault();
     this.$().attr('disabled', true);
     this.get('controller').send('deleteIssue', this.get('context'));
-   
   }
 });
 
