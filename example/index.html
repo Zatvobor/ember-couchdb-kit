@@ -20,6 +20,16 @@
   <script src="/dist/revs-adapter.js"></script>
 
   <script src="/example/app.js"></script>
+  <style>
+    .unselectable {
+        -webkit-user-select: none; /* Safari, Chrome */
+        -khtml-user-select: none; /* Konqueror */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE */
+        user-select: none; /* CSS3 */
+    }
+  </style>
+
 </head>
 <body>
 
@@ -40,7 +50,7 @@
   <script type="text/x-handlebars" data-template-name="board">
     <div class="thumbnail">
       <div class="alert alert-success">
-        <h4 style="text-transform:capitalize; display:inline;">{{name}}</h4>
+        <h4 class="unselectable" style="text-transform:capitalize; display:inline;">{{name}}</h4>
         {{partial "createIssue"}}
         {{partial "issueList"}}
       </div>
@@ -96,7 +106,7 @@
       {{else}}
 
         {{#view App.IssueView draggable=false}}
-          <font> Empty board...</font>
+          <font class="unselectable"> Empty board...</font>
         {{/view}}
 
       {{/each}}

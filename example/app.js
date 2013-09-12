@@ -21,7 +21,6 @@ App.Attachment = DS.Model.extend({
   content_type: DS.attr('string'),
   length: DS.attr('number'),
   file_name: DS.attr('string'),
-  _rev: DS.attr('string'),
   db: DS.attr('string', {defaultValue: 'boards'})
 
 });
@@ -230,8 +229,6 @@ App.IssueView = Ember.View.extend({
     this._insert(this, thisArray)
 
     if(view.get('controller.name') !== this.get('controller.name')){
-      newModel.set('board', this.get('controller.name'));
-      newModel.get('store').commit();
       viewArray = view.get('controller.content').toArray();
       this._insert(view, viewArray)
     }
