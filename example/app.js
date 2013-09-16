@@ -286,7 +286,6 @@ App.DeleteIssueView = Ember.View.extend({
 
   click: function(event){
     event.preventDefault();
-    this.$().attr('disabled', true);
     this.get('controller').send('deleteIssue', this.get('context'));
   }
 });
@@ -294,6 +293,7 @@ App.DeleteIssueView = Ember.View.extend({
 App.DeleteAttachmentView = Ember.View.extend({
   tagName: "span",
   classNames: ['badge'],
+
   click: function(event){
     event.preventDefault();
     this.get('controller').send('deleteAttachment', this.get('context'));
@@ -319,10 +319,14 @@ App.AttachmentView = Ember.View.extend({
 
 Ember.TextArea.reopen({
   attributeBindings: ['viewName'],
+
   elementDidChange: function() {
     this.$().focus();
   }.observes('element')
 });
+
+
+// Helpers
 
 Ember.Handlebars.helper('linkToAttachment', function(attachment) {
   return new Handlebars.SafeString('/%@/%@'.fmt( attachment.get('_data.db'), attachment.get('id')));
