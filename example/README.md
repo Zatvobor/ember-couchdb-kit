@@ -1,3 +1,5 @@
+Simple application which brings together all features and shows on practice how to use `ember-couchdb-kit`
+
 Installation
 ============
 

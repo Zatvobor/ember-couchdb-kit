@@ -1,6 +1,10 @@
 ember-couchdb-kit
 =================
 
+Versions:
+
+* `v0.7` works with (`ember rc.6.1` and `ember-data 0.13`)
+
 An `ember-data` kit for Apache CouchDB.
 
 We love a CouchDB and its RESTful and many other core things such as MVCC, attachments and /_changes. These all brings your data and application flow together as well.
@@ -16,7 +20,7 @@ There are some of these:
 * ability to work with `/_changes`;
 
 
-Check source docs for more examples and details.
+Check source code for more details. In additional, you could find more in `/example` application and find out how to use `ember-couchdb-kit` on practice.
 
 
 Ready to use as a regular JS assets
