@@ -82,21 +82,22 @@
               {{/view}}
 
             {{else}}
+              {{#if text}} <!-- `else if` like expression -->
+                {{text}}
 
-              {{text}}
+                {{#if attachments}}
+                  <span>, attachments:</span>
+                  {{#each attachments}}
+                    <a href="{{unbound linkToAttachment this}}" target="_blank">{{file_name}};</a>
+                  {{/each}}
+                {{/if}}
 
-              {{#if attachments}}
-                <span>, attachments:</span>
-                {{#each attachments}}
-                  <a href="{{unbound linkToAttachment this}}" target="_blank">{{file_name}};</a>
-                {{/each}}
+                <button type="submit" class="btn btn-xs btn-default"> Edit </button>
+
+                {{#view App.DeleteIssueView contextBinding=this}}
+                  <button class="btn btn-xs btn-default"> &times; </button>
+                {{/view}}
               {{/if}}
-
-              <button type="submit" class="btn btn-xs btn-default"> Edit </button>
-
-              {{#view App.DeleteIssueView contextBinding=this}}
-                <button class="btn btn-xs btn-default"> &times; </button>
-              {{/view}}
 
             {{/if}}
 
