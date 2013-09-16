@@ -67,7 +67,9 @@
       return _attachments;
     },
     extractId: function(type, hash) {
-      return hash._id || hash.id;
+      if (hash) {
+        return hash._id || hash.id;
+      }
     },
     stringForType: function(type) {
       var pattern, reg_array;
@@ -320,16 +322,14 @@
       });
     },
     findMany: function(store, type, ids) {
-      var data;
       if (this._checkForRevision(ids[0])) {
         return this.findManyWithRev(store, type, ids);
       } else {
-        data = {
-          include_docs: true,
-          keys: ids
-        };
         return this.ajax('_all_docs?include_docs=true', 'POST', {
-          data: data,
+          data: {
+            include_docs: true,
+            keys: ids
+          },
           context: this,
           success: function(data) {
             return store.loadMany(type, data.rows.getEach('doc'));

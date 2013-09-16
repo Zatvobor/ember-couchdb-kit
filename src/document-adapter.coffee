@@ -63,7 +63,7 @@ EmberCouchDBKit.DocumentSerializer = DS.JSONSerializer.extend
     _attachments
 
   extractId: (type, hash) ->
-    hash._id || hash.id
+    (hash._id || hash.id) if hash
 
   stringForType: (type) ->
     type = type.toString()
@@ -287,12 +287,8 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     if @_checkForRevision(ids[0])
       @findManyWithRev(store, type, ids)
     else
-      data =
-        include_docs: true
-        keys: ids
-
       @ajax('_all_docs?include_docs=true', 'POST', {
-        data: data
+        data: {include_docs: true, keys: ids}
         context: this
 
         success: (data) ->

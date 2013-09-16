@@ -4,11 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width" />
 
-  <title>Board</title>
+  <title>Ember CouchDB Kit In Action</title>
   <link href="/example/assets/bootstrap.css" rel="stylesheet" media="screen">
 
-  <script src="/example/assets/jquery.js"></script>
-
+  <script src="/vendor/assets/javascripts/jquery.js"></script>
   <script src="/vendor/assets/javascripts/handlebars.js"></script>
   <script src="/vendor/assets/javascripts/ember.js"></script>
   <script src="/vendor/assets/javascripts/ember-data.js"></script>
@@ -21,73 +20,84 @@
   <script src="/dist/revs-adapter.js"></script>
 
   <script src="/example/app.js"></script>
+  <style>
+    .unselectable {
+        -webkit-user-select: none; /* Safari, Chrome */
+        -khtml-user-select: none; /* Konqueror */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE */
+        user-select: none; /* CSS3 */
+    }
+  </style>
+
 </head>
 <body>
 
   <script type="text/x-handlebars" data-template-name="index">
   
     <div class="alert alert-success">
-      <h1>Issue boards</h1>
+      <h1>Ember CouchDB Kit In Action</h1>
     </div>
-  
+
     <div class="row">
       <div class="col-lg-4">{{outlet 'common'}}</div>
       <div class="col-lg-4">{{outlet 'intermediate'}}</div>
       <div class="col-lg-4">{{outlet 'advanced'}}</div>
     </div>
-    
+
   </script>
-  
+
   <script type="text/x-handlebars" data-template-name="board">
     <div class="thumbnail">
       <div class="alert alert-success">
-        <h4 style="text-transform:capitalize; display:inline;">{{name}}</h4>
+        <h4 class="unselectable" style="text-transform:capitalize; display:inline;">{{name}}</h4>
         {{partial "createIssue"}}
         {{partial "issueList"}}
       </div>
     </div>
   </script>
-  
+
   <script type="text/x-handlebars" data-template-name="_issueList">
-    <div>    
+    <div>
       {{#each controller.content}}
 
         {{#view App.IssueView contextBinding=this}}
           <div class="thumbnail">
-            
+
             {{#if view.edit}}
-              
+
               {{textarea class="form-control" viewName="TextAreaEdit" value=view.context.text}}
-              
+
               {{#if attachments}}
                 {{#each attachments}}
                   {{file_name}}
                   {{#view App.DeleteAttachmentView contextBinding=this}} &times; {{/view}}
                 {{/each}}
               {{/if}}
-              
+
               <button type="submit" class="btn btn-xs btn-default"> Ok </button>
 
               {{#view App.AttachmentView contextBinding=this}}
-                <button {{action 'browseFile' view.elementId}} class="btn btn-xs btn-default"> Attach </button>
+                <button {{action browseFile target="view"}} class="btn btn-xs btn-default"> Attach </button>
               {{/view}}
 
             {{else}}
+              {{#if text}} <!-- `else if` like expression -->
+                {{text}}
 
-              {{text}}
+                {{#if attachments}}
+                  <span>, attachments:</span>
+                  {{#each attachments}}
+                    <a href="{{unbound linkToAttachment this}}" target="_blank">{{file_name}};</a>
+                  {{/each}}
+                {{/if}}
 
-              {{#if attachments}}
-                <span>, attachments:</span>
-                {{#each attachments}}
-                  {{linkToAttachment this}}
-                {{/each}}
+                <button type="submit" class="btn btn-xs btn-default"> Edit </button>
+
+                {{#view App.DeleteIssueView contextBinding=this}}
+                  <button class="btn btn-xs btn-default"> &times; </button>
+                {{/view}}
               {{/if}}
-           
-              <button type="submit" class="btn btn-xs btn-default"> Edit </button>
-              
-              {{#view App.DeleteIssueView contextBinding=this}}
-                <button class="btn btn-xs btn-default"> &times; </button>
-              {{/view}}
 
             {{/if}}
 
@@ -95,11 +105,11 @@
         {{/view}}
 
       {{else}}
-        
+
         {{#view App.IssueView draggable=false}}
-          <font> Empty board...</font>
+          <font class="unselectable"> Empty board...</font>
         {{/view}}
-      
+
       {{/each}}
     </div>
   </script>
@@ -114,7 +124,7 @@
             <button class="btn btn-default"> &times; </button>
           {{/view}}
         </p>
-        
+
         {{textarea viewName="TextArea" class="form-control"}}
 
       {{else}}
