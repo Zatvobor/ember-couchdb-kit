@@ -6,44 +6,24 @@
 @class AttachmentSerializer
 @extends DS.JSONSerializer
 ###
-EmberCouchDBKit.AttachmentSerializer = DS.JSONSerializer.extend
+EmberCouchDBKit.AttachmentSerializer = DS.RESTSerializer.extend
 
-  materialize: (record, hash) ->
-    @_super.apply(@, arguments)
+  primaryKey: 'id'
 
+  normalize: (type, hash) ->
+    self = this
     rev = (hash._rev || hash.rev)
-    document_class = eval("#{hash.doc_type}")
-    document = document_class.find(hash.doc_id)
-
-    unless document.get('_data._rev') == rev
-      if @getIntRevision(document.get('_data._rev')) < @getIntRevision(rev)
-        document.set('_data._rev', rev)
-
-    record.materializeAttribute("document", document)
-
-  serialize: (record, options) ->
-    @_super.apply(@, arguments)
-
+    @store.find(hash.model_name, hash.doc_id).then (document) ->
+      unless document.get('_data.rev') == rev
+        if self.getIntRevision(document.get('_data.rev')) < self.getIntRevision(rev)
+          document.set('_data.rev', rev)
+    @_super(type, hash)
 
   getIntRevision: (revision) ->
     parseInt(revision.split("-")[0])
 
-  extract: (loader, json, type) ->
-    @extractRecordRepresentation(loader, type, json)
-
-  extractId: (type, hash) ->
-    hash._id || hash.id
-
-  getRecordRevision: (record) ->
-    record.get('_data.rev')
-
-  addId: (json, key, id) ->
-    json._id = id
-
-  addRevision: (json, record, options) ->
-    if options && options.includeId
-      rev = @getRecordRevision(record)
-      json._rev = rev if rev
+  normalizeId: (hash) ->
+    hash.id = (hash["_id"] || hash["id"])
 
 ###
   An `AttachmentAdapter` is an object which manages document's attachements and used
@@ -97,54 +77,71 @@ EmberCouchDBKit.AttachmentSerializer = DS.JSONSerializer.extend
 @class AttachmentAdapter
 @extends DS.Adapter
 ###
+
 EmberCouchDBKit.AttachmentAdapter = DS.Adapter.extend
 
-  serializer: EmberCouchDBKit.AttachmentSerializer
-
-  shouldCommit: (record, relationships) ->
-    @_super.apply(arguments)
-
   find: (store, type, id) ->
-    data = EmberCouchDBKit.AttachmentStore.get(id)
-    @didFindRecord(store, type, data, id)
+    return new Ember.RSVP.Promise((resolve, reject) ->
+      Ember.run(null, resolve, {attachment: EmberCouchDBKit.AttachmentStore.get(id)})
+    )
 
   findMany: (store, type, ids) ->
     docs = ids.map (item) =>
       item = EmberCouchDBKit.AttachmentStore.get(item)
       item.db = @get('db')
       item
-    store.loadMany(type, docs)
+
+    return new Ember.RSVP.Promise((resolve, reject) ->
+      Ember.run(null, resolve, {attachments: docs})
+    )
 
   createRecord: (store, type, record) ->
-    request = new XMLHttpRequest()
-    path = "/%@/%@?rev=%@".fmt(@get('db'), record.get('id'), record.get('rev'))
-    request.open('PUT', path, true)
-    request.setRequestHeader('Content-Type', record.get('content_type'))
+    url = "%@/%@?rev=%@".fmt(@buildURL(), record.get('id'), record.get('rev'))
+    adapter = this
 
-    @_updateUploadState(record, request)
+    return new Ember.RSVP.Promise((resolve, reject) ->
+      data = {}
+      data.context = adapter
+      request = new XMLHttpRequest()
+      request.open('PUT', url, true)
+      request.setRequestHeader('Content-Type', record.get('content_type'))
+      adapter._updateUploadState(record, request)
 
-    request.onreadystatechange =  =>
-      if request.readyState == 4 && (request.status == 201 || request.status == 200)
-        data = JSON.parse(request.response)
-        data.doc_type = record.get('doc_type')
-        data.doc_id = record.get('doc_id')
-        json = @serialize(record, includeId: true)
-        store.didSaveRecord(record, $.extend(json, data))
-
-    request.send(record.get('file'))
+      request.onreadystatechange =  =>
+        if request.readyState == 4 && (request.status == 201 || request.status == 200)
+          data = JSON.parse(request.response)
+          data.model_name = record.get('model_name')
+          data.doc_id = record.get('doc_id')
+          json = adapter.serialize(record, includeId: true)
+          delete data.id
+          Ember.run(null, resolve, {attachment: $.extend(json, data)})
+      request.send(record.get('file'))
+    )
 
   updateRecord: (store, type, record) ->
     # just for stubbing purpose which should be defined by default
 
   deleteRecord: (store, type, record) ->
-    # just for stubbing purpose which should be defined by default
-
+    return new Ember.RSVP.Promise((resolve, reject) ->
+      Ember.run(null, resolve, {})
+    )
 
   _updateUploadState: (record, request) ->
     view = record.get('view')
     if view
-      view.start_upload()
+      view.startUpload()
       request.onprogress = (oEvent) =>
         if oEvent.lengthComputable
           percentComplete = (oEvent.loaded / oEvent.total) * 100
-          view.update_upload(percentComplete)
+          view.updateUpload(percentComplete)
+
+  buildURL: ->
+    host = Ember.get(this, "host")
+    namespace = Ember.get(this, "namespace")
+    url = []
+    url.push host  if host
+    url.push namespace  if namespace
+    url.push @get('db')
+    url = url.join("/")
+    url = "/" + url  unless host
+    url

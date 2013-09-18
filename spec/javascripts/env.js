@@ -34,60 +34,89 @@
     function TestEnv() {
       DatabaseCleaner.reset();
       if (!window.Fixture) {
-        window.Fixture = Ember.Application.create({
-          rootElement: "body"
-        });
-        this.adapter();
-        this.store();
         this.models();
+        window.Fixture = window.setupStore({
+          user: User,
+          article: Article,
+          comment: Comment,
+          message: Message,
+          adapter: EmberCouchDBKit.DocumentAdapter.extend({
+            db: 'doc'
+          })
+        });
       }
       this;
     }
 
-    TestEnv.prototype.adapter = function() {
-      return Fixture.Adapter = EmberCouchDBKit.DocumentAdapter.extend({
-        db: 'doc'
-      });
-    };
-
-    TestEnv.prototype.store = function() {
-      return Fixture.Store = DS.Store.extend({
-        adapter: Fixture.Adapter.create()
-      });
-    };
-
     TestEnv.prototype.models = function() {
-      Fixture.Person = DS.Model.extend({
-        name: DS.attr('string'),
-        history: DS.belongsTo('Fixture.History')
+      var History;
+      window.User = DS.Model.extend({
+        name: DS.attr('string')
       });
-      Fixture.Comment = DS.Model.extend({
+      window.Comment = DS.Model.extend({
         text: DS.attr('string')
       });
-      Fixture.Article = DS.Model.extend({
+      window.Article = DS.Model.extend({
         label: DS.attr('string'),
-        person: DS.belongsTo(Fixture.Person),
-        comments: DS.hasMany(Fixture.Comment)
+        user: DS.belongsTo('user', {
+          inverse: null
+        }),
+        comments: DS.hasMany('comment', {
+          async: true,
+          inverse: null
+        })
       });
-      Fixture.History = DS.Model.extend();
-      return Fixture.Store.registerAdapter('Fixture.History', EmberCouchDBKit.RevsAdapter.extend({
-        db: 'doc'
-      }));
+      window.Message = DS.Model.extend({
+        user: DS.belongsTo('user', {
+          attribute: "name"
+        })
+      });
+      return History = DS.Model.extend();
     };
 
-    TestEnv.prototype.create = function(model, params) {
-      model = model.createRecord(params);
+    TestEnv.prototype.create = function(type, params) {
+      var model;
+      model = window.Fixture.store.createRecord(type, params);
       runs(function() {
         return model.save();
       });
       waitsFor(function() {
-        return model.id !== null;
-      }, "model's should be saved", 3000);
+        return model.get('_data.rev') !== void 0;
+      }, "id should have NOT be null", 3000);
       return model;
     };
 
     return TestEnv;
 
   })();
+
+  window.setupStore = function(options) {
+    var adapter, container, env, prop;
+    env = {};
+    options = options || {};
+    container = env.container = new Ember.Container();
+    adapter = env.adapter = options.adapter || DS.Adapter;
+    delete options.adapter;
+    for (prop in options) {
+      container.register("model:" + prop, options[prop]);
+    }
+    container.register("store:main", DS.Store.extend({
+      adapter: adapter
+    }));
+    container.register("serializer:_default", EmberCouchDBKit.DocumentSerializer);
+    container.register("serializer:_couch", EmberCouchDBKit.DocumentSerializer);
+    container.register("serializer:_rest", DS.RESTSerializer);
+    container.register("adapter:_rest", DS.RESTAdapter);
+    container.register('transform:boolean', DS.BooleanTransform);
+    container.register('transform:date', DS.DateTransform);
+    container.register('transform:number', DS.NumberTransform);
+    container.register('transform:string', DS.StringTransform);
+    container.injection("serializer", "store", "store:main");
+    env.serializer = container.lookup("serializer:_default");
+    env.restSerializer = container.lookup("serializer:_rest");
+    env.store = container.lookup("store:main");
+    env.adapter = env.store.get("defaultAdapter");
+    return env;
+  };
 
 }).call(this);

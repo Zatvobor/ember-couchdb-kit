@@ -3,36 +3,26 @@
   extracting all document's revisions and prepare them for further loading.
 
 @namespace EmberCouchDBKit 
-@class RevsSerializer
-@extends DS.JSONSerializer
+@class RevSerializer
+@extends DS.RESTSerializer
 ###
-EmberCouchDBKit.RevsSerializer = DS.JSONSerializer.extend
+EmberCouchDBKit.RevSerializer = DS.RESTSerializer.extend
 
-  materialize: (record, hash) ->
-    @_super.apply(@, arguments)
+  primaryKey: 'id'
 
-  serialize: (record, options) ->
-    @_super.apply(@, arguments)
-
-  extract: (loader, json, type) ->
-    @extractRecordRepresentation(loader, type, json)
+  normalize: (type, hash, prop) ->
+    @normalizeHistories(hash, type.typeKey, hash)
+    @_super(type, hash, prop)
 
   extractId: (type, hash) ->
     hash._id || hash.id
 
-  addId: (json, key, id) ->
-    json._id = id
-
-  extractHasMany: (type, hash, key) ->
-    hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(@extractId(type, hash))
-
-  extractBelongsTo: (type, hash, key) ->
-    if key.match("prev_")
-      hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(@extractId(type, hash))[1]
-
+  normalizeHistories: (hash, type) ->
+    hash["histories"] = EmberCouchDBKit.RevsStore.mapRevIds(@extractId(type, hash))
+    hash["prev_history"] = EmberCouchDBKit.RevsStore.mapRevIds(@extractId(type, hash))[1]
 
 ###
-  An `RevsAdapter` is an object which gets revisions info by distinct document and used
+  An `RevAdapter` is an object which gets revisions info by distinct document and used
   as a main adapter for `Revision` models.
 
   Let's consider an usual use case:
@@ -42,14 +32,12 @@ EmberCouchDBKit.RevsSerializer = DS.JSONSerializer.extend
       title: DS.attr('string')
       history: DS.belongsTo('App.History')
 
-    App.Store.registerAdapter('App.Task', EmberCouchDBKit.DocumentAdapter.extend({db: 'docs'}))
 
     App.History = DS.Model.extend
       tasks: DS.hasMany('App.Task', {key: "tasks", embedded: true})
       prev_task: DS.belongsTo('App.Task', {key: "prev_task", embedded: true})
 
 
-    App.Store.registerAdapter('App.History', EmberCouchDBKit.RevsAdapter.extend({db: 'docs'}))
     ```
 
   So, the `App.Task` model is able to load its revisions as a regular `App.Task` models.
@@ -62,22 +50,14 @@ EmberCouchDBKit.RevsSerializer = DS.JSONSerializer.extend
     ```
 
 @namespace EmberCouchDBKit
-@class RevsAdapter
+@class RevAdapter
 @extends DS.Adapter
 ###
-EmberCouchDBKit.RevsAdapter = DS.Adapter.extend
-  serializer: EmberCouchDBKit.RevsSerializer
-
-  shouldCommit: (record, relationships) ->
-    @_super.apply(arguments)
+EmberCouchDBKit.RevAdapter = DS.Adapter.extend
 
   find: (store, type, id) ->
-    @ajax("%@?revs_info=true".fmt(id.split("/")[0]), 'GET', {
+    @ajax("%@?revs_info=true".fmt(id.split("/")[0]), 'GET', id, {
       context: this
-
-      success: (data) ->
-        EmberCouchDBKit.RevsStore.add(id, data)
-        this.didFindRecord(store, type, {_id: id}, id)
     })
 
   updateRecord: (store, type, record) ->
@@ -86,11 +66,12 @@ EmberCouchDBKit.RevsAdapter = DS.Adapter.extend
   deleteRecord: (store, type, record) ->
     # just for stubbing purpose which should be defined by default
 
-  ajax: (url, type, hash) ->
-    @_ajax('/%@/%@'.fmt(@get('db'), url || ''), type, hash)
+  ajax: (url, type, hash, id) ->
+    @_ajax('/%@/%@'.fmt(@get('db'), url || ''), type, hash, id)
 
 
-  _ajax: (url, type, hash) ->
+  _ajax: (url, type, hash, id) ->
+
     if url.split("/").pop() == "" then url = url.substr(0, url.length - 1)
 
     hash.url = url
@@ -101,4 +82,10 @@ EmberCouchDBKit.RevsAdapter = DS.Adapter.extend
 
     hash.data = JSON.stringify(hash.data) if (hash.data && type != 'GET')
 
-    Ember.$.ajax(hash)
+    return new Ember.RSVP.Promise((resolve, reject) ->
+      hash.success = (data) ->
+        EmberCouchDBKit.RevsStore.add(id, data)
+        Ember.run(null, resolve, { rev: data })
+
+      Ember.$.ajax(hash)
+    )

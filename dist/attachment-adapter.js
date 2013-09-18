@@ -9,46 +9,26 @@
 
 
 (function() {
-  EmberCouchDBKit.AttachmentSerializer = DS.JSONSerializer.extend({
-    materialize: function(record, hash) {
-      var document, document_class, rev;
-      this._super.apply(this, arguments);
+  EmberCouchDBKit.AttachmentSerializer = DS.RESTSerializer.extend({
+    primaryKey: 'id',
+    normalize: function(type, hash) {
+      var rev, self;
+      self = this;
       rev = hash._rev || hash.rev;
-      document_class = eval("" + hash.doc_type);
-      document = document_class.find(hash.doc_id);
-      if (document.get('_data._rev') !== rev) {
-        if (this.getIntRevision(document.get('_data._rev')) < this.getIntRevision(rev)) {
-          document.set('_data._rev', rev);
+      this.store.find(hash.model_name, hash.doc_id).then(function(document) {
+        if (document.get('_data.rev') !== rev) {
+          if (self.getIntRevision(document.get('_data.rev')) < self.getIntRevision(rev)) {
+            return document.set('_data.rev', rev);
+          }
         }
-      }
-      return record.materializeAttribute("document", document);
-    },
-    serialize: function(record, options) {
-      return this._super.apply(this, arguments);
+      });
+      return this._super(type, hash);
     },
     getIntRevision: function(revision) {
       return parseInt(revision.split("-")[0]);
     },
-    extract: function(loader, json, type) {
-      return this.extractRecordRepresentation(loader, type, json);
-    },
-    extractId: function(type, hash) {
-      return hash._id || hash.id;
-    },
-    getRecordRevision: function(record) {
-      return record.get('_data.rev');
-    },
-    addId: function(json, key, id) {
-      return json._id = id;
-    },
-    addRevision: function(json, record, options) {
-      var rev;
-      if (options && options.includeId) {
-        rev = this.getRecordRevision(record);
-        if (rev) {
-          return json._rev = rev;
-        }
-      }
+    normalizeId: function(hash) {
+      return hash.id = hash["_id"] || hash["id"];
     }
   });
 
@@ -107,14 +87,12 @@
 
 
   EmberCouchDBKit.AttachmentAdapter = DS.Adapter.extend({
-    serializer: EmberCouchDBKit.AttachmentSerializer,
-    shouldCommit: function(record, relationships) {
-      return this._super.apply(arguments);
-    },
     find: function(store, type, id) {
-      var data;
-      data = EmberCouchDBKit.AttachmentStore.get(id);
-      return this.didFindRecord(store, type, data, id);
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        return Ember.run(null, resolve, {
+          attachment: EmberCouchDBKit.AttachmentStore.get(id)
+        });
+      });
     },
     findMany: function(store, type, ids) {
       var docs,
@@ -124,46 +102,81 @@
         item.db = _this.get('db');
         return item;
       });
-      return store.loadMany(type, docs);
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        return Ember.run(null, resolve, {
+          attachments: docs
+        });
+      });
     },
     createRecord: function(store, type, record) {
-      var path, request,
-        _this = this;
-      request = new XMLHttpRequest();
-      path = "/%@/%@?rev=%@".fmt(this.get('db'), record.get('id'), record.get('rev'));
-      request.open('PUT', path, true);
-      request.setRequestHeader('Content-Type', record.get('content_type'));
-      this._updateUploadState(record, request);
-      request.onreadystatechange = function() {
-        var data, json;
-        if (request.readyState === 4 && (request.status === 201 || request.status === 200)) {
-          data = JSON.parse(request.response);
-          data.doc_type = record.get('doc_type');
-          data.doc_id = record.get('doc_id');
-          json = _this.serialize(record, {
-            includeId: true
-          });
-          return store.didSaveRecord(record, $.extend(json, data));
-        }
-      };
-      return request.send(record.get('file'));
+      var adapter, url;
+      url = "%@/%@?rev=%@".fmt(this.buildURL(), record.get('id'), record.get('rev'));
+      adapter = this;
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        var data, request,
+          _this = this;
+        data = {};
+        data.context = adapter;
+        request = new XMLHttpRequest();
+        request.open('PUT', url, true);
+        request.setRequestHeader('Content-Type', record.get('content_type'));
+        adapter._updateUploadState(record, request);
+        request.onreadystatechange = function() {
+          var json;
+          if (request.readyState === 4 && (request.status === 201 || request.status === 200)) {
+            data = JSON.parse(request.response);
+            data.model_name = record.get('model_name');
+            data.doc_id = record.get('doc_id');
+            json = adapter.serialize(record, {
+              includeId: true
+            });
+            delete data.id;
+            return Ember.run(null, resolve, {
+              attachment: $.extend(json, data)
+            });
+          }
+        };
+        return request.send(record.get('file'));
+      });
     },
     updateRecord: function(store, type, record) {},
-    deleteRecord: function(store, type, record) {},
+    deleteRecord: function(store, type, record) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        return Ember.run(null, resolve, {});
+      });
+    },
     _updateUploadState: function(record, request) {
       var view,
         _this = this;
       view = record.get('view');
       if (view) {
-        view.start_upload();
+        view.startUpload();
         return request.onprogress = function(oEvent) {
           var percentComplete;
           if (oEvent.lengthComputable) {
             percentComplete = (oEvent.loaded / oEvent.total) * 100;
-            return view.update_upload(percentComplete);
+            return view.updateUpload(percentComplete);
           }
         };
       }
+    },
+    buildURL: function() {
+      var host, namespace, url;
+      host = Ember.get(this, "host");
+      namespace = Ember.get(this, "namespace");
+      url = [];
+      if (host) {
+        url.push(host);
+      }
+      if (namespace) {
+        url.push(namespace);
+      }
+      url.push(this.get('db'));
+      url = url.join("/");
+      if (!host) {
+        url = "/" + url;
+      }
+      return url;
     }
   });
 

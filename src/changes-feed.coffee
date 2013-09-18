@@ -45,7 +45,7 @@ EmberCouchDBKit.ChangesFeed = Ember.ObjectProxy.extend
 
   fromTail: (callback)->
     $.ajax({
-      url: "/%@/_changes?descending=true&limit=1".fmt(@get('db')),
+      url: "%@%@/_changes?descending=true&limit=1".fmt(@_buildUrl(), @get('db')),
       dataType: 'json',
       success: (data) =>
         @set('since', data.last_seq)
@@ -71,11 +71,16 @@ EmberCouchDBKit.ChangesFeed = Ember.ObjectProxy.extend
           @_ajax(callback, self)
      })
 
+  _buildUrl: ->
+    url = @get('host') || "/"
+    url +="/" unless url.substring(url.length-1) == "/"
+    url
+
   _makeRequestPath: ->
     feed   = @feed || 'longpool'
     params = @_makeFeedParams()
 
-    "/%@/_changes?feed=%@%@".fmt(@get('db'), feed, params)
+    "%@%@/_changes?feed=%@%@".fmt(@_buildUrl(), @get('db'), feed, params)
 
   _makeFeedParams: ->
     path = ''

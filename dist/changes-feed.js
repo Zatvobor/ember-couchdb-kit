@@ -46,7 +46,7 @@
     fromTail: function(callback) {
       var _this = this;
       return $.ajax({
-        url: "/%@/_changes?descending=true&limit=1".fmt(this.get('db')),
+        url: "%@%@/_changes?descending=true&limit=1".fmt(this._buildUrl(), this.get('db')),
         dataType: 'json',
         success: function(data) {
           _this.set('since', data.last_seq);
@@ -81,11 +81,19 @@
         }
       });
     },
+    _buildUrl: function() {
+      var url;
+      url = this.get('host') || "/";
+      if (url.substring(url.length - 1) !== "/") {
+        url += "/";
+      }
+      return url;
+    },
     _makeRequestPath: function() {
       var feed, params;
       feed = this.feed || 'longpool';
       params = this._makeFeedParams();
-      return "/%@/_changes?feed=%@%@".fmt(this.get('db'), feed, params);
+      return "%@%@/_changes?feed=%@%@".fmt(this._buildUrl(), this.get('db'), feed, params);
     },
     _makeFeedParams: function() {
       var path,
