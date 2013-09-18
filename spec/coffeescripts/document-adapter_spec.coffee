@@ -128,40 +128,39 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
         expect(article.get('user.id')).toEqual(person2.id)
 
 
-# see for this issue https://github.com/emberjs/data/issues/1228
 
-#    it 'updates hasMany relation', ->
-#      comment = @subject.create.call(@, 'comment', {text: 'Text'})
-#
-#      article = undefined
-#      comment2 = undefined
-#
-#      runs ->
-#        article = @subject.create.call(@, 'article', {label: 'Label', comments: []})
-#
-#      runs ->
-#        article.set('comments.content', [])
-#        article.get('comments').pushObject(comment)
-#        article.save()
-#
-#      waitsFor ->
-#        article.get('_data').comments != undefined
-#      ,"", 3000
-#
-#      runs ->
-#        expect(article.get('comments').toArray().length).toEqual(1)
-#        comment2 = @subject.create.call(@, 'comment', {text: 'Text2'})
-#
-#      runs ->
-#        article.get('comments').pushObject(comment2)
-#        article.save()
-#
-#      waitsFor ->
-#        article.get('_data').comments != undefined && article.get('_data').comments.length == 2
-#      ,"", 3000
-#
-#      runs ->
-#        expect(article.get('comments').toArray().length).toEqual(2)
+    it 'updates hasMany relation', ->
+      comment = @subject.create.call(@, 'comment', {text: 'Text'})
+
+      article = undefined
+      comment2 = undefined
+
+      runs ->
+        article = @subject.create.call(@, 'article', {label: 'Label', comments: []})
+
+      runs ->
+        article.set('comments.content', [])
+        article.get('comments').pushObject(comment)
+        article.save()
+
+      waitsFor ->
+        article.get('_data').comments != undefined
+      ,"", 3000
+
+      runs ->
+        expect(article.get('comments').toArray().length).toEqual(1)
+        comment2 = @subject.create.call(@, 'comment', {text: 'Text2'})
+
+      runs ->
+        article.get('comments').pushObject(comment2)
+        article.save()
+
+      waitsFor ->
+        article.get('_data').comments != undefined && article.get('_data').comments.length == 2
+      ,"", 3000
+
+      runs ->
+        expect(article.get('comments').toArray().length).toEqual(2)
 
 
   describe "deletion", ->

@@ -39,13 +39,11 @@ class @TestEnv
   models: ->
     window.User = DS.Model.extend
       name: DS.attr('string')
-
-#      history: DS.belongsTo('Fixture.History')
-
+      #history: DS.belongsTo('history')
 
     window.Comment = DS.Model.extend
       text: DS.attr('string')
-#
+
     window.Article = DS.Model.extend
       label: DS.attr('string')
       user: DS.belongsTo('user', {inverse: null}),
@@ -54,20 +52,18 @@ class @TestEnv
     window.Message = DS.Model.extend
       user: DS.belongsTo('user', {attribute: "name"})
 
-    History = DS.Model.extend()
+    window.History = DS.Model.extend()
 
 
   create: (type, params) ->
-
     model = window.Fixture.store.createRecord(type, params)
-
 
     runs ->
       model.save()
 
     waitsFor ->
       model.get('_data.rev') != undefined
-    , "id should have NOT be null", 3000
+    , "model should be saved", 3000
 
     model
 

@@ -49,7 +49,6 @@
     }
 
     TestEnv.prototype.models = function() {
-      var History;
       window.User = DS.Model.extend({
         name: DS.attr('string')
       });
@@ -71,7 +70,7 @@
           attribute: "name"
         })
       });
-      return History = DS.Model.extend();
+      return window.History = DS.Model.extend();
     };
 
     TestEnv.prototype.create = function(type, params) {
@@ -82,7 +81,7 @@
       });
       waitsFor(function() {
         return model.get('_data.rev') !== void 0;
-      }, "id should have NOT be null", 3000);
+      }, "model should be saved", 3000);
       return model;
     };
 
