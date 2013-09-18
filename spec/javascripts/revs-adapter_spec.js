@@ -6,21 +6,19 @@
       return this.subject = new TestEnv();
     });
     return it("finds by revision", function() {
-      var id, person, prevRev;
-      person = this.subject.create.call(this, Fixture.Person, {
-        name: 'Person'
+      var id, person, rev, _ref;
+      person = this.subject.create.call(this, 'user', {
+        name: 'name'
       });
-      prevRev = void 0;
-      id = void 0;
+      _ref = [void 0, void 0], rev = _ref[0], id = _ref[1];
       runs(function() {
-        id = person.id;
-        prevRev = person.get("_data._rev");
-        person.set('name', 'updatedName');
-        return person.save();
+        var _ref1;
+        _ref1 = [person.id, person.get("_data._rev")], id = _ref1[0], rev = _ref1[1];
+        return person.set('name', 'updated').save();
       });
       waitsFor(function() {
-        return prevRev !== person.get("_data._rev");
-      }, "", 3000);
+        return rev !== person.get("_data._rev");
+      }, "update", 3000);
       return runs(function() {
         person.reload();
         person.get('history');

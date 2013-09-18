@@ -1,24 +1,24 @@
 Ember.ENV.TESTING = true
 
 describe 'EmberCouchDBKit.RevsAdapter', ->
+
   beforeEach ->
     @subject = new TestEnv()
 
-  it "finds by revision", ->
-    person = @subject.create.call(@, Fixture.Person, {name: 'Person'})
 
-    prevRev = undefined
-    id = undefined
+  it "finds by revision", ->
+    person = @subject.create.call(@, 'user', {name: 'name'})
+
+    [rev,id] = [undefined,undefined]
 
     runs ->
-      id = person.id
-      prevRev = person.get("_data._rev")
-      person.set('name', 'updatedName')
-      person.save()
+      [id, rev] = [person.id, person.get("_data._rev")]
+
+      person.set('name', 'updated').save()
 
     waitsFor ->
-      prevRev != person.get("_data._rev")
-    ,"", 3000
+      rev != person.get("_data._rev")
+    ,"update", 3000
 
     runs ->
       person.reload()

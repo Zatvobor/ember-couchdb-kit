@@ -29,9 +29,8 @@ class @TestEnv
 
       @models()
 
-      window.Fixture = window.setupStore({user: User, article: Article, comment: Comment, message: Message, adapter: EmberCouchDBKit.DocumentAdapter.extend({
-        db: 'doc'
-      })})
+      mapping = {user: User, article: Article, comment: Comment, message: Message, history: History}
+      window.Fixture = window.setupStore(mapping)
 
     @
 
@@ -39,7 +38,7 @@ class @TestEnv
   models: ->
     window.User = DS.Model.extend
       name: DS.attr('string')
-      #history: DS.belongsTo('history')
+      history: DS.belongsTo('history')
 
     window.Comment = DS.Model.extend
       text: DS.attr('string')
@@ -70,25 +69,36 @@ class @TestEnv
 
 window.setupStore = (options) ->
   env = {}
+
   options = options or {}
   container = env.container = new Ember.Container()
-  adapter = env.adapter = (options.adapter or DS.Adapter)
+  adapter = env.adapter = EmberCouchDBKit.DocumentAdapter.extend({db:'doc'})
+
   delete options.adapter
 
   for prop of options
     container.register "model:" + prop, options[prop]
+
   container.register "store:main", DS.Store.extend(adapter: adapter)
+
   container.register "serializer:_default", EmberCouchDBKit.DocumentSerializer
   container.register "serializer:_couch", EmberCouchDBKit.DocumentSerializer
   container.register "serializer:_rest", DS.RESTSerializer
+  container.register "serializer:history", EmberCouchDBKit.RevSerializer
+
   container.register "adapter:_rest", DS.RESTAdapter
-  container.register('transform:boolean', DS.BooleanTransform)
-  container.register('transform:date', DS.DateTransform)
-  container.register('transform:number', DS.NumberTransform)
-  container.register('transform:string', DS.StringTransform)
+  container.register "adapter:history", EmberCouchDBKit.RevAdapter
+
+  container.register 'transform:boolean', DS.BooleanTransform
+  container.register 'transform:date', DS.DateTransform
+  container.register 'transform:number', DS.NumberTransform
+  container.register 'transform:string', DS.StringTransform
+
   container.injection "serializer", "store", "store:main"
+
   env.serializer = container.lookup("serializer:_default")
   env.restSerializer = container.lookup("serializer:_rest")
   env.store = container.lookup("store:main")
   env.adapter = env.store.get("defaultAdapter")
+
   env

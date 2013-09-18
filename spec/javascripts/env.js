@@ -32,25 +32,26 @@
 
   this.TestEnv = (function() {
     function TestEnv() {
+      var mapping;
       DatabaseCleaner.reset();
       if (!window.Fixture) {
         this.models();
-        window.Fixture = window.setupStore({
+        mapping = {
           user: User,
           article: Article,
           comment: Comment,
           message: Message,
-          adapter: EmberCouchDBKit.DocumentAdapter.extend({
-            db: 'doc'
-          })
-        });
+          history: History
+        };
+        window.Fixture = window.setupStore(mapping);
       }
       this;
     }
 
     TestEnv.prototype.models = function() {
       window.User = DS.Model.extend({
-        name: DS.attr('string')
+        name: DS.attr('string'),
+        history: DS.belongsTo('history')
       });
       window.Comment = DS.Model.extend({
         text: DS.attr('string')
@@ -94,7 +95,9 @@
     env = {};
     options = options || {};
     container = env.container = new Ember.Container();
-    adapter = env.adapter = options.adapter || DS.Adapter;
+    adapter = env.adapter = EmberCouchDBKit.DocumentAdapter.extend({
+      db: 'doc'
+    });
     delete options.adapter;
     for (prop in options) {
       container.register("model:" + prop, options[prop]);
@@ -105,7 +108,9 @@
     container.register("serializer:_default", EmberCouchDBKit.DocumentSerializer);
     container.register("serializer:_couch", EmberCouchDBKit.DocumentSerializer);
     container.register("serializer:_rest", DS.RESTSerializer);
+    container.register("serializer:history", EmberCouchDBKit.RevSerializer);
     container.register("adapter:_rest", DS.RESTAdapter);
+    container.register("adapter:history", EmberCouchDBKit.RevAdapter);
     container.register('transform:boolean', DS.BooleanTransform);
     container.register('transform:date', DS.DateTransform);
     container.register('transform:number', DS.NumberTransform);
