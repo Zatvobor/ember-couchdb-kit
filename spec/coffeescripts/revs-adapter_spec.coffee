@@ -12,7 +12,7 @@ describe 'EmberCouchDBKit.RevsAdapter', ->
     [rev,id] = [undefined,undefined]
 
     runs ->
-      [id, rev] = [person.id, person.get("_data._rev")]
+      [id, rev] = [person.id, person.get("_data.rev")]
 
       person.set('name', 'updated').save()
 

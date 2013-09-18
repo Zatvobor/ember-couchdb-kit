@@ -33,6 +33,7 @@
   this.TestEnv = (function() {
     function TestEnv() {
       var mapping;
+
       DatabaseCleaner.reset();
       if (!window.Fixture) {
         this.models();
@@ -76,6 +77,7 @@
 
     TestEnv.prototype.create = function(type, params) {
       var model;
+
       model = window.Fixture.store.createRecord(type, params);
       runs(function() {
         return model.save();
@@ -92,6 +94,7 @@
 
   window.setupStore = function(options) {
     var adapter, container, env, prop;
+
     env = {};
     options = options || {};
     container = env.container = new Ember.Container();
@@ -106,8 +109,6 @@
       adapter: adapter
     }));
     container.register("serializer:_default", EmberCouchDBKit.DocumentSerializer);
-    container.register("serializer:_couch", EmberCouchDBKit.DocumentSerializer);
-    container.register("serializer:_rest", DS.RESTSerializer);
     container.register("serializer:history", EmberCouchDBKit.RevSerializer);
     container.register("adapter:_rest", DS.RESTAdapter);
     container.register("adapter:history", EmberCouchDBKit.RevAdapter);

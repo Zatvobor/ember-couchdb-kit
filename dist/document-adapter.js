@@ -35,6 +35,7 @@
     },
     normalizeAttachments: function(attachments, type, hash) {
       var attachment, k, key, v, _attachments;
+
       _attachments = [];
       for (k in attachments) {
         v = attachments[k];
@@ -62,6 +63,7 @@
     },
     serializeBelongsTo: function(record, json, relationship) {
       var attribute, belongsTo, key;
+
       attribute = relationship.options.attribute || "id";
       key = relationship.key;
       belongsTo = Ember.get(record, key);
@@ -75,6 +77,7 @@
     },
     serializeHasMany: function(record, json, relationship) {
       var attribute, key, relationshipType;
+
       attribute = relationship.options.attribute || "id";
       key = relationship.key;
       relationshipType = DS.RelationshipChange.determineRelationshipType(record.constructor, relationship);
@@ -135,6 +138,7 @@
     },
     head: function(h) {
       var docId;
+
       docId = typeof h === "object" ? h.get('id') : h;
       return this.ajax(docId, 'HEAD', {
         async: false
@@ -142,6 +146,7 @@
     },
     buildURL: function() {
       var host, namespace, url;
+
       host = Ember.get(this, "host");
       namespace = Ember.get(this, "namespace");
       url = [];
@@ -163,12 +168,14 @@
     },
     _ajax: function(url, type, normalizeResponce, hash) {
       var adapter;
+
       if (hash == null) {
         hash = {};
       }
       adapter = this;
       return new Ember.RSVP.Promise(function(resolve, reject) {
         var headers;
+
         if (url.split("/").pop() === "") {
           url = url.substr(0, url.length - 1);
         }
@@ -191,6 +198,7 @@
         if (!hash.success) {
           hash.success = function(json) {
             var _modelJson;
+
             _modelJson = normalizeResponce.call(adapter, json);
             return Ember.run(null, resolve, _modelJson);
           };
@@ -219,11 +227,13 @@
     },
     find: function(store, type, id) {
       var normalizeResponce;
+
       if (this._checkForRevision(id)) {
         this.findWithRev(store, type, id);
       } else {
         normalizeResponce = function(data) {
           var _modelJson;
+
           this._normalizeRevision(data);
           _modelJson = {};
           _modelJson[type.typeKey] = data;
@@ -234,9 +244,11 @@
     },
     findWithRev: function(store, type, id) {
       var normalizeResponce, _id, _ref, _rev;
+
       _ref = id.split("/").slice(0, 2), _id = _ref[0], _rev = _ref[1];
       normalizeResponce = function(data) {
         var _modelJson;
+
         this._normalizeRevision(data);
         _modelJson = {};
         _modelJson[type.typeKey] = data;
@@ -246,12 +258,14 @@
     },
     findManyWithRev: function(store, type, ids) {
       var _this = this;
+
       return ids.forEach(function(id) {
         return _this.findWithRev(store, type, id);
       });
     },
     findMany: function(store, type, ids) {
       var data, normalizeResponce;
+
       if (this._checkForRevision(ids[0])) {
         return this.findManyWithRev(store, type, ids);
       } else {
@@ -262,6 +276,7 @@
         normalizeResponce = function(data) {
           var json,
             _this = this;
+
           json = {};
           json[Ember.String.pluralize(type.typeKey)] = data.rows.getEach('doc').map(function(doc) {
             return _this._normalizeRevision(doc);
@@ -275,11 +290,13 @@
     },
     findQuery: function(store, type, query, modelArray) {
       var designDoc, normalizeResponce;
+
       if (query.type === 'view') {
         designDoc = query.designDoc || this.get('designDoc');
         normalizeResponce = function(data) {
           var json,
             _this = this;
+
           json = {};
           json[designDoc] = data.rows.getEach('doc').map(function(doc) {
             return _this._normalizeRevision(doc);
@@ -294,10 +311,12 @@
     },
     findAll: function(store, type) {
       var data, designDoc, normalizeResponce, params, typeString, typeViewName, viewName;
+
       designDoc = this.get('designDoc');
       normalizeResponce = function(data) {
         var json,
           _this = this;
+
         json = {};
         json[[Ember.String.pluralize(type.typeKey)]] = data.rows.getEach('doc').map(function(doc) {
           return _this._normalizeRevision(doc);
@@ -325,11 +344,13 @@
     },
     createRecord: function(store, type, record) {
       var json;
+
       json = store.serializerFor(type.typeKey).serialize(record);
       return this._push(store, type, record, json);
     },
     updateRecord: function(store, type, record) {
       var json;
+
       json = this.serialize(record, {
         associations: true,
         includeId: true
@@ -344,9 +365,11 @@
     },
     _updateAttachmnets: function(record, json) {
       var _attachments;
+
       _attachments = {};
       record.get('attachments').forEach(function(item) {
         var attachment;
+
         attachment = EmberCouchDBKit.AttachmentStore.get(item.get('id'));
         return _attachments[item.get('file_name')] = {
           content_type: attachment.content_type,
@@ -365,6 +388,7 @@
     },
     _push: function(store, type, record, json) {
       var id, method, normalizeResponce;
+
       id = record.get('id') || '';
       method = record.get('id') ? 'PUT' : 'POST';
       if (record.get('_data.rev')) {
@@ -372,6 +396,7 @@
       }
       normalizeResponce = function(data) {
         var _data, _modelJson;
+
         _data = json || {};
         this._normalizeRevision(data);
         _modelJson = {};

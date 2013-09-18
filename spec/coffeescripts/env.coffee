@@ -82,8 +82,6 @@ window.setupStore = (options) ->
   container.register "store:main", DS.Store.extend(adapter: adapter)
 
   container.register "serializer:_default", EmberCouchDBKit.DocumentSerializer
-  container.register "serializer:_couch", EmberCouchDBKit.DocumentSerializer
-  container.register "serializer:_rest", DS.RESTSerializer
   container.register "serializer:history", EmberCouchDBKit.RevSerializer
 
   container.register "adapter:_rest", DS.RESTAdapter

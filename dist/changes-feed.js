@@ -40,6 +40,7 @@
     },
     fromTail: function(callback) {
       var _this = this;
+
       return $.ajax({
         url: "%@%@/_changes?descending=true&limit=1".fmt(this._buildUrl(), this.get('db')),
         dataType: 'json',
@@ -61,12 +62,14 @@
     },
     _ajax: function(callback, self) {
       var _this = this;
+
       return $.ajax({
         type: "GET",
         url: this._makeRequestPath(),
         dataType: 'json',
         success: function(data) {
           var _ref;
+
           if (!_this.get('stopTracking')) {
             if ((data != null ? (_ref = data.results) != null ? _ref.length : void 0 : void 0) && callback) {
               callback.call(self, data.results);
@@ -79,6 +82,7 @@
     },
     _buildUrl: function() {
       var url;
+
       url = this.get('host') || "/";
       if (url.substring(url.length - 1) !== "/") {
         url += "/";
@@ -87,6 +91,7 @@
     },
     _makeRequestPath: function() {
       var feed, params;
+
       feed = this.feed || 'longpool';
       params = this._makeFeedParams();
       return "%@%@/_changes?feed=%@%@".fmt(this._buildUrl(), this.get('db'), feed, params);
@@ -94,6 +99,7 @@
     _makeFeedParams: function() {
       var path,
         _this = this;
+
       path = '';
       ["include_docs", "limit", "descending", "heartbeat", "timeout", "filter", "filter_param", "style", "since"].forEach(function(param) {
         if (_this.get(param)) {

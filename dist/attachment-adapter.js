@@ -10,6 +10,7 @@
     primaryKey: 'id',
     normalize: function(type, hash) {
       var rev, self;
+
       self = this;
       rev = hash._rev || hash.rev;
       this.store.find(hash.model_name, hash.doc_id).then(function(document) {
@@ -95,6 +96,7 @@
     findMany: function(store, type, ids) {
       var docs,
         _this = this;
+
       docs = ids.map(function(item) {
         item = EmberCouchDBKit.AttachmentStore.get(item);
         item.db = _this.get('db');
@@ -108,11 +110,13 @@
     },
     createRecord: function(store, type, record) {
       var adapter, url;
+
       url = "%@/%@?rev=%@".fmt(this.buildURL(), record.get('id'), record.get('rev'));
       adapter = this;
       return new Ember.RSVP.Promise(function(resolve, reject) {
         var data, request,
           _this = this;
+
         data = {};
         data.context = adapter;
         request = new XMLHttpRequest();
@@ -121,6 +125,7 @@
         adapter._updateUploadState(record, request);
         request.onreadystatechange = function() {
           var json;
+
           if (request.readyState === 4 && (request.status === 201 || request.status === 200)) {
             data = JSON.parse(request.response);
             data.model_name = record.get('model_name');
@@ -146,11 +151,13 @@
     _updateUploadState: function(record, request) {
       var view,
         _this = this;
+
       view = record.get('view');
       if (view) {
         view.startUpload();
         return request.onprogress = function(oEvent) {
           var percentComplete;
+
           if (oEvent.lengthComputable) {
             percentComplete = (oEvent.loaded / oEvent.total) * 100;
             return view.updateUpload(percentComplete);
@@ -160,6 +167,7 @@
     },
     buildURL: function() {
       var host, namespace, url;
+
       host = Ember.get(this, "host");
       namespace = Ember.get(this, "namespace");
       url = [];

@@ -34,6 +34,7 @@
 
     RevsStoreClass.prototype.mapRevIds = function(key) {
       var _this = this;
+
       return this.get(key)._revs_info.map(function(_rev) {
         return "%@/%@".fmt(_this.get(key)._id, _rev.rev);
       });
@@ -69,6 +70,7 @@
 
     ChangesWorkersClass.prototype.stopAll = function() {
       var k, v, _ref3, _results;
+
       _ref3 = this.registiry;
       _results = [];
       for (k in _ref3) {
