@@ -1,8 +1,5 @@
 /*
-  This object is a simple json based serializer with advanced conviniences for
-  managing CouchDB entities.
-
-@namespace EmberCouchDBKit 
+@namespace EmberCouchDBKit
 @class DocumentSerializer
 @extends DS.RESTSerializer.extend
 */
@@ -31,9 +28,7 @@
       return this._super(store, type, payload, id, requestType);
     },
     serialize: function(record, options) {
-      var json;
-      json = this._super(record, options);
-      return json;
+      return this._super(record, options);
     },
     addHistoryId: function(hash) {
       return hash.history = "%@/history".fmt(hash.id);
@@ -91,106 +86,39 @@
 
   /*
   
-    TODO Remove old
+    A `DocumentAdapter` should be used as a main adapter for working with models as a CouchDB documents.
   
-    An `DocumentAdapter` is a main adapter for connecting your models with CouchDB documents.
+    Let's consider:
   
-    Let's consider a simple model:
+      ```coffee
+      EmberApp.DocumentAdapter = EmberCouchDBKit.DocumentAdapter.extend({db: db, host: host})
+      EmberApp.DocumentSerializer = EmberCouchDBKit.DocumentSerializer.extend()
   
-      ```
-      EmberApp.CouchDBModel = DS.Model.extend
-         title: DS.attr('title')
-  
-      EmberApp.Store.registerAdapter('EmberApp.CouchDBModel', EmberCouchDBKit.DocumentAdapter.extend({db: 'my_couchdb'}))
+      EmberApp.Document = DS.Model.extend
+        title: DS.attr('title')
+        type: DS.attr('string', {defaultValue: 'document'})
       ```
   
     The following available operations:
   
-      ```
+      ```coffee
         # GET /my_couchdb/:id
-        EmberApp.CouchDBModel.find("id")
+        @get('store').find('document', id)
   
         # POST /my_couchdb
-        EmberApp.CouchDBModel.create({type: "my_type", title: "title"})
+        @get('store').createRecord('document', {title: "title"}).save()
   
-        # PUT /my_couchdb/:id
-        model = EmberApp.CouchDBModel.find("id")
-        model.set('title', 'new_title')
-        model.get('store').commit()
+        # update PUT /my_couchdb/:id
+        @get('store').find('document', id).then((document) ->
+          document.set('title', title)
+          document.save()
+        )
   
         # DELETE /my_couchdb/:id
-        model.deleteRecord()
+        @get('store').find('document', id).deleteRecord().save()
       ```
   
-    In additional, the following relations also available for getting and pushing related models:
-  
-      ```
-      EmberApp.Post = DS.Model.extend
-         type: DS.attr('string', defaultValue: 'post')
-         title: DS.attr('string')
-  
-         # {"owner": "person@example.com"}
-         owner:  DS.belongsTo('EmberApp.User', {key: 'owner', embeded: true, attribute: "email"})
-  
-         # {"people":["person1@example.com", "person2@example.com"]}
-         people: DS.hasMany('EmberApp.User', {key: 'people', embedded: true, attribute: "email"})
-      ```
-  
-    You can use `find` method for quering design views:
-  
-      ```
-      tasks = EmberApp.Task.find({type: "view", designDoc: 'tasks', viewName: "by_assignee", options: 'include_docs=true&key="%@"'.fmt(@get('email'))})
-      array = tasks.get('content')
-      # => Array[EmberApp.Task,..]
-      ```
-  
-    ## Tip and tricks
-  
-    Getting a raw document object
-  
-      ```
-      doc = EmberApp.CouchDBModel.find('myId')
-      raw_json = doc.get('_data.raw')
-      # => Object {_id: "...", _rev: "...", …}
-  
-    Creating a named document
-  
-      ```
-      myDoc = EmberApp.CouchDBModel.createRecord({id: 'myId'})
-      # …
-      myDoc = EmberApp.CouchDBModel.find('myId')
-      # => Object {id: "myId", …}
-  
-    If you wonder about `id` which could be missed in your db then, you should check its `isLoaded` state
-  
-      ```
-      myDoc = EmberApp.CouchDBModel.createRecord({id: 'myId'})
-      # …
-      myDoc = EmberApp.CouchDBModel.find('myId')
-      # => Object {id: "myId", …}
-  
-    If you wonder about some document which could be missed in your db, then you could use a simple `is` convenience
-  
-      ```
-      doc = EmberApp.CouchDBModel.find(myId)
-      doc.get('store.adapter').is(200, {for: doc})
-      # => true
-      doc.get('store.adapter').is(404, {for: doc})
-      # => undefined
-      ```
-  
-    You're able to fetch a `HEAD` for your document
-  
-      ```
-      doc = EmberApp.CouchDBModel.find(myId)
-      doc.get('store.adapter').head(doc).getAllResponseHeaders()
-      # => "Date: Sat, 31 Aug 2013 13:48:30 GMT
-      #    Cache-Control: must-revalidate
-      #    Server: CouchDB/1.3.1 (Erlang OTP/R15B03)
-      #    Connection: keep-alive
-      #    ..."
-      ```
-  
+    For more advanced tips and tricks, you should check available specs
   
   @namespace EmberCouchDBKit
   @class DocumentAdapter

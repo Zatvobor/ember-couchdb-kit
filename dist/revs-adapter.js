@@ -1,7 +1,4 @@
 /*
-  This object is a simple json based serializer with advanced `extractHasMany` convinience for
-  extracting all document's revisions and prepare them for further loading.
-
 @namespace EmberCouchDBKit 
 @class RevSerializer
 @extends DS.RESTSerializer
@@ -29,7 +26,7 @@
     as a main adapter for `Revision` models.
   
     Let's consider an usual use case:
-  
+    TODO update example snippets
       ```
       App.Task = DS.Model.extend
         title: DS.attr('string')

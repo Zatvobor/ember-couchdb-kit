@@ -1,7 +1,4 @@
 ###
-  This object is a simple json based serializer with advanced conviniences for
-  extracting all document's attachment metadata and prepare them for further extracting.
-
 @namespace EmberCouchDBKit
 @class AttachmentSerializer
 @extends DS.JSONSerializer
@@ -27,9 +24,10 @@ EmberCouchDBKit.AttachmentSerializer = DS.RESTSerializer.extend
 
 ###
   An `AttachmentAdapter` is an object which manages document's attachements and used
-  as a main adapter for `Attachment` models.
+  as a main adapter for `Attachment` able models.
 
   Let's consider an usual use case:
+  TODO update example snippets
 
     ```
     App.Task = DS.Model.extend

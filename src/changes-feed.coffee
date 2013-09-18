@@ -1,25 +1,20 @@
 ###
 
+  This module provides convinience for working with CouchDB's `/changes` feeds
+
   For instance:
 
-    ```
+    ```coffee
+    # Create feed with custom parameters
     feed = EmberCouchDBKit.ChangesFeed.create({ db: 'docs', content: params })
-    callback = (data) -> # here you're able to handle recent change
     feed.longpoll(callback)
-    ```
 
-  Start listening from the last sequence
-
-    ```
-    feed = EmberCouchDBKit.ChangesFeed.create({ db: 'docs', content: params})
+    # Start listening from the last sequence
     self = @
     feed.fromTail((=> feed.longpoll(self.filter, self)))
-    ```
 
-  Unsibscribe from listening
-
-    ```
-    feed.destroy()
+    # Destroy feed listening
+    feed.stop().destroy()
     ```
 
 @namespace EmberCouchDBKit
@@ -54,6 +49,7 @@ EmberCouchDBKit.ChangesFeed = Ember.ObjectProxy.extend
 
   stop: ->
     @set('stopTracking', true)
+    @
 
   start: (callback) ->
     @set('stopTracking', false)
