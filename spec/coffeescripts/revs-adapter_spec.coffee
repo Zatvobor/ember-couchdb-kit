@@ -17,16 +17,16 @@ describe 'EmberCouchDBKit.RevsAdapter', ->
       person.set('name', 'updated').save()
 
     waitsFor ->
-      rev != person.get("_data._rev")
+      rev != person.get("_data.rev")
     ,"update", 3000
 
     runs ->
-      person.reload()
-      person.get('history')
+      #person.reload()
+      #person.get('history')
 
       waitsFor ->
         EmberCouchDBKit.RevsStore.registiry["#{id}/history"] != undefined
-      , "", 4000
+      , "populate registry", 4000
 
       runs ->
         expect(EmberCouchDBKit.RevsStore.registiry["#{id}/history"]._revs_info.length).toBe(2)

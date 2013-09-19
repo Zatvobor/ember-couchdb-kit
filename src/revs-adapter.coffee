@@ -53,9 +53,7 @@ EmberCouchDBKit.RevSerializer = DS.RESTSerializer.extend
 EmberCouchDBKit.RevAdapter = DS.Adapter.extend
 
   find: (store, type, id) ->
-    @ajax("%@?revs_info=true".fmt(id.split("/")[0]), 'GET', id, {
-      context: this
-    })
+    @ajax("%@?revs_info=true".fmt(id.split("/")[0]), 'GET', {context: this}, id)
 
   updateRecord: (store, type, record) ->
     # just for stubbing purpose which should be defined by default

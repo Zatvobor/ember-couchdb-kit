@@ -57,9 +57,9 @@
 
   EmberCouchDBKit.RevAdapter = DS.Adapter.extend({
     find: function(store, type, id) {
-      return this.ajax("%@?revs_info=true".fmt(id.split("/")[0]), 'GET', id, {
+      return this.ajax("%@?revs_info=true".fmt(id.split("/")[0]), 'GET', {
         context: this
-      });
+      }, id);
     },
     updateRecord: function(store, type, record) {},
     deleteRecord: function(store, type, record) {},

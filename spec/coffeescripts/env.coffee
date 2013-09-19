@@ -85,7 +85,7 @@ window.setupStore = (options) ->
   container.register "serializer:history", EmberCouchDBKit.RevSerializer
 
   container.register "adapter:_rest", DS.RESTAdapter
-  container.register "adapter:history", EmberCouchDBKit.RevAdapter
+  container.register "adapter:history", EmberCouchDBKit.RevAdapter.extend({db:'doc'})
 
   container.register 'transform:boolean', DS.BooleanTransform
   container.register 'transform:date', DS.DateTransform
