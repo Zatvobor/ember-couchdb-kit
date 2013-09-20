@@ -56,11 +56,10 @@ EmberCouchDBKit.AttachmentSerializer = DS.RESTSerializer.extend
 
     ```
     params = {
-      doc_id: doc_id
       doc_type: doc_type
-
-      id: attachment_id
-      blob_data: blob_data
+      doc_id: document_id
+      id: document_id +/+ file_name
+      file: blob_data
       rev: doc_rev
       content_type: file_type
       length: file_size
