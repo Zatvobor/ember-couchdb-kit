@@ -55,6 +55,17 @@ EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend
   normalizeId: (hash) ->
     hash.id = (hash["_id"] || hash["id"])
 
+  normalizeRelationships: (type, hash) ->
+    payloadKey = undefined
+    key = undefined
+    if @keyForRelationship
+      type.eachRelationship ((key, relationship) ->
+        payloadKey = @keyForRelationship(key, relationship.kind)
+        return  if key is payloadKey
+        hash[key] = hash[payloadKey]
+        delete hash[payloadKey]
+      ), this
+
   serializeBelongsTo: (record, json, relationship) ->
     attribute = (relationship.options.attribute || "id")
     key = relationship.key
@@ -191,37 +202,32 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
         _modelJson[type.typeKey] = data
         _modelJson
 
-    @ajax(id, 'GET', normalizeResponce)
+      @ajax(id, 'GET', normalizeResponce)
 
   findWithRev: (store, type, id) ->
     [_id, _rev] = id.split("/")[0..1]
+    url = "%@?rev=%@".fmt(_id, _rev)
     normalizeResponce = (data) ->
       @_normalizeRevision(data)
       _modelJson = {}
+      data._id = id
       _modelJson[type.typeKey] = data
       _modelJson
-    @ajax("%@?rev=%@".fmt(_id, _rev), 'GET', normalizeResponce)
-
-  findManyWithRev:(store, type, ids) ->
-    ids.forEach (id) =>
-      @findWithRev(store, type, id)
+    @ajax(url, 'GET', normalizeResponce)
 
   findMany: (store, type, ids) ->
-    if @_checkForRevision(ids[0])
-      @findManyWithRev(store, type, ids)
-    else
-      data =
-        include_docs: true
-        keys: ids
+    data =
+      include_docs: true
+      keys: ids
 
-      normalizeResponce = (data) ->
-        json = {}
-        json[Ember.String.pluralize(type.typeKey)] = data.rows.getEach('doc').map((doc) => @_normalizeRevision(doc))
-        json
+    normalizeResponce = (data) ->
+      json = {}
+      json[Ember.String.pluralize(type.typeKey)] = data.rows.getEach('doc').map((doc) => @_normalizeRevision(doc))
+      json
 
-      @ajax('_all_docs?include_docs=true', 'POST', normalizeResponce, {
-        data: data
-      })
+    @ajax('_all_docs?include_docs=true', 'POST', normalizeResponce, {
+      data: data
+    })
 
   findQuery: (store, type, query, modelArray) ->
     designDoc = (query.designDoc || @get('designDoc'))
@@ -292,9 +298,9 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
 
     json._attachments = _attachments
     delete json.attachments
+    delete json.history
 
   _checkForRevision: (id) ->
-    id?.split("/").length > 1
     id.split("/").length > 1
 
   _push: (store, type, record, json) ->

@@ -81,7 +81,11 @@
         file_name: DS.attr('string'),
         db: DS.attr('string')
       });
-      return window.History = DS.Model.extend();
+      return window.History = DS.Model.extend({
+        user: DS.belongsTo('user', {
+          inverse: null
+        })
+      });
     };
 
     TestEnv.prototype.create = function(type, params) {

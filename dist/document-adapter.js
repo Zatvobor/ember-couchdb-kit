@@ -60,6 +60,21 @@
     normalizeId: function(hash) {
       return hash.id = hash["_id"] || hash["id"];
     },
+    normalizeRelationships: function(type, hash) {
+      var key, payloadKey;
+      payloadKey = void 0;
+      key = void 0;
+      if (this.keyForRelationship) {
+        return type.eachRelationship((function(key, relationship) {
+          payloadKey = this.keyForRelationship(key, relationship.kind);
+          if (key === payloadKey) {
+            return;
+          }
+          hash[key] = hash[payloadKey];
+          return delete hash[payloadKey];
+        }), this);
+      }
+    },
     serializeBelongsTo: function(record, json, relationship) {
       var attribute, belongsTo, key;
       attribute = relationship.options.attribute || "id";
@@ -221,7 +236,7 @@
     find: function(store, type, id) {
       var normalizeResponce;
       if (this._checkForRevision(id)) {
-        this.findWithRev(store, type, id);
+        return this.findWithRev(store, type, id);
       } else {
         normalizeResponce = function(data) {
           var _modelJson;
@@ -230,49 +245,41 @@
           _modelJson[type.typeKey] = data;
           return _modelJson;
         };
+        return this.ajax(id, 'GET', normalizeResponce);
       }
-      return this.ajax(id, 'GET', normalizeResponce);
     },
     findWithRev: function(store, type, id) {
-      var normalizeResponce, _id, _ref, _rev;
+      var normalizeResponce, url, _id, _ref, _rev;
       _ref = id.split("/").slice(0, 2), _id = _ref[0], _rev = _ref[1];
+      url = "%@?rev=%@".fmt(_id, _rev);
       normalizeResponce = function(data) {
         var _modelJson;
         this._normalizeRevision(data);
         _modelJson = {};
+        data._id = id;
         _modelJson[type.typeKey] = data;
         return _modelJson;
       };
-      return this.ajax("%@?rev=%@".fmt(_id, _rev), 'GET', normalizeResponce);
-    },
-    findManyWithRev: function(store, type, ids) {
-      var _this = this;
-      return ids.forEach(function(id) {
-        return _this.findWithRev(store, type, id);
-      });
+      return this.ajax(url, 'GET', normalizeResponce);
     },
     findMany: function(store, type, ids) {
       var data, normalizeResponce;
-      if (this._checkForRevision(ids[0])) {
-        return this.findManyWithRev(store, type, ids);
-      } else {
-        data = {
-          include_docs: true,
-          keys: ids
-        };
-        normalizeResponce = function(data) {
-          var json,
-            _this = this;
-          json = {};
-          json[Ember.String.pluralize(type.typeKey)] = data.rows.getEach('doc').map(function(doc) {
-            return _this._normalizeRevision(doc);
-          });
-          return json;
-        };
-        return this.ajax('_all_docs?include_docs=true', 'POST', normalizeResponce, {
-          data: data
+      data = {
+        include_docs: true,
+        keys: ids
+      };
+      normalizeResponce = function(data) {
+        var json,
+          _this = this;
+        json = {};
+        json[Ember.String.pluralize(type.typeKey)] = data.rows.getEach('doc').map(function(doc) {
+          return _this._normalizeRevision(doc);
         });
-      }
+        return json;
+      };
+      return this.ajax('_all_docs?include_docs=true', 'POST', normalizeResponce, {
+        data: data
+      });
     },
     findQuery: function(store, type, query, modelArray) {
       var designDoc, normalizeResponce;
@@ -360,10 +367,10 @@
         };
       });
       json._attachments = _attachments;
-      return delete json.attachments;
+      delete json.attachments;
+      return delete json.history;
     },
     _checkForRevision: function(id) {
-      (id != null ? id.split("/").length : void 0) > 1;
       return id.split("/").length > 1;
     },
     _push: function(store, type, record, json) {

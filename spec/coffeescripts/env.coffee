@@ -58,7 +58,9 @@ class @TestEnv
       file_name: DS.attr('string')
       db: DS.attr('string')
 
-    window.History = DS.Model.extend()
+    window.History = DS.Model.extend(
+      user: DS.belongsTo('user', {inverse: null})
+    )
 
 
   create: (type, params) ->

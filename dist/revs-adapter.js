@@ -9,21 +9,24 @@
   EmberCouchDBKit.RevSerializer = DS.RESTSerializer.extend({
     primaryKey: 'id',
     normalize: function(type, hash, prop) {
-      this.normalizeHistories(hash, type.typeKey, hash);
+      this.normalizeRelationships(type, hash);
       return this._super(type, hash, prop);
     },
     extractId: function(type, hash) {
       return hash._id || hash.id;
     },
-    normalizeHistories: function(hash, type) {
-      hash["histories"] = EmberCouchDBKit.RevsStore.mapRevIds(this.extractId(type, hash));
-      return hash["prev_history"] = EmberCouchDBKit.RevsStore.mapRevIds(this.extractId(type, hash))[1];
+    normalizeRelationships: function(type, hash) {
+      return type.eachRelationship((function(key, relationship) {
+        if (relationship.kind === "belongsTo") {
+          return hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(this.extractId(type, hash))[1];
+        }
+      }), this);
     }
   });
 
   /*
     An `RevAdapter` is an object which gets revisions info by distinct document and used
-    as a main adapter for `Revision` models.
+    as a main adapter for `Revision` models. Works only with belongsTo
   
     Let's consider an usual use case:
     TODO update example snippets
@@ -34,7 +37,6 @@
   
   
       App.History = DS.Model.extend
-        tasks: DS.hasMany('App.Task', {key: "tasks", embedded: true})
         prev_task: DS.belongsTo('App.Task', {key: "prev_task", embedded: true})
   
   
@@ -64,12 +66,9 @@
     updateRecord: function(store, type, record) {},
     deleteRecord: function(store, type, record) {},
     ajax: function(url, type, hash, id) {
-      return this._ajax('/%@/%@'.fmt(this.get('db'), url || ''), type, hash, id);
+      return this._ajax('%@/%@'.fmt(this.buildURL(), url || ''), type, hash, id);
     },
     _ajax: function(url, type, hash, id) {
-      if (url.split("/").pop() === "") {
-        url = url.substr(0, url.length - 1);
-      }
       hash.url = url;
       hash.type = type;
       hash.dataType = 'json';
@@ -82,11 +81,31 @@
         hash.success = function(data) {
           EmberCouchDBKit.RevsStore.add(id, data);
           return Ember.run(null, resolve, {
-            rev: data
+            history: {
+              id: id
+            }
           });
         };
         return Ember.$.ajax(hash);
       });
+    },
+    buildURL: function() {
+      var host, namespace, url;
+      host = Ember.get(this, "host");
+      namespace = Ember.get(this, "namespace");
+      url = [];
+      if (host) {
+        url.push(host);
+      }
+      if (namespace) {
+        url.push(namespace);
+      }
+      url.push(this.get('db'));
+      url = url.join("/");
+      if (!host) {
+        url = "/" + url;
+      }
+      return url;
     }
   });
 
