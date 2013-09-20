@@ -17,7 +17,7 @@
 
     DatabaseCleaner._ajax = function(type) {
       return jQuery.ajax({
-        url: "/doc",
+        url: "http://localhost:5984/doc",
         type: type,
         dataType: 'json',
         contentType: "application/json",
@@ -109,7 +109,7 @@
       this.rev = void 0;
       id = params.id || params._id;
       rev = params.rev;
-      url = "/doc/" + id;
+      url = "http://localhost:5984/doc/" + id;
       if (rev) {
         url += "?rev=" + rev;
       }
@@ -184,7 +184,8 @@
     options = options || {};
     container = env.container = new Ember.Container();
     adapter = env.adapter = EmberCouchDBKit.DocumentAdapter.extend({
-      db: 'doc'
+      db: 'doc',
+      host: "http://localhost:5984"
     });
     delete options.adapter;
     for (prop in options) {
@@ -198,10 +199,12 @@
     container.register("serializer:attachment", EmberCouchDBKit.AttachmentSerializer);
     container.register("adapter:_rest", DS.RESTAdapter);
     container.register("adapter:history", EmberCouchDBKit.RevAdapter.extend({
-      db: 'doc'
+      db: 'doc',
+      host: "http://localhost:5984"
     }));
     container.register("adapter:attachment", EmberCouchDBKit.AttachmentAdapter.extend({
-      db: 'doc'
+      db: 'doc',
+      host: "http://localhost:5984"
     }));
     container.register('transform:boolean', DS.BooleanTransform);
     container.register('transform:date', DS.DateTransform);
