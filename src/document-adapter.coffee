@@ -112,6 +112,7 @@ EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend
 EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
 
   customTypeLookup: false
+  typeViewName: "all"
 
   is: (status, h) ->
     return true if @head(h.for).status == status
@@ -223,18 +224,19 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
       })
 
   findQuery: (store, type, query, modelArray) ->
-    if query.type == 'view'
-      designDoc = (query.designDoc || @get('designDoc'))
+    designDoc = (query.designDoc || @get('designDoc'))
+    query.options = {} unless query.options
+    query.options.include_docs = true
 
-      normalizeResponce = (data) ->
-        json = {}
-        json[designDoc] = data.rows.getEach('doc').map((doc) => @_normalizeRevision(doc))
-        json
+    normalizeResponce = (data) ->
+      json = {}
+      json[designDoc] = data.rows.getEach('doc').map((doc) => @_normalizeRevision(doc))
+      json
 
-      @ajax('_design/%@/_view/%@'.fmt(designDoc, query.viewName), 'GET', normalizeResponce, {
-        context: this
-        data: query.options
-      })
+    @ajax('_design/%@/_view/%@'.fmt(designDoc, query.viewName), 'GET', normalizeResponce, {
+      context: this
+      data: query.options
+    })
 
   findAll: (store, type) ->
     designDoc = @get('designDoc')

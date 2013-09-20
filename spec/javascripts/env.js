@@ -86,6 +86,61 @@
       return model;
     };
 
+    TestEnv.prototype.createDocument = function(params, deleteID) {
+      var id;
+      if (deleteID == null) {
+        deleteID = true;
+      }
+      id = params.id || params._id;
+      if (deleteID) {
+        delete params.id;
+      }
+      return jQuery.ajax({
+        url: "/doc/" + id,
+        type: 'PUT',
+        dataType: 'json',
+        contentType: "application/json",
+        data: JSON.stringify(params),
+        cache: true,
+        async: false
+      });
+    };
+
+    TestEnv.prototype.find = function(type, id) {
+      var model;
+      model = window.Fixture.store.find(type, id);
+      waitsFor(function() {
+        return model.get('_data.rev') !== void 0;
+      }, "model should be fined", 3000);
+      return model;
+    };
+
+    TestEnv.prototype.createView = function(viewName) {
+      var doc;
+      switch (viewName) {
+        case "byComment":
+          doc = {
+            _id: "_design/comments",
+            language: "javascript",
+            views: {
+              all: {
+                map: "function(doc) { if (doc.type == \"comment\")  emit(null, {_id: doc._id}) }"
+              }
+            }
+          };
+          return this.createDocument(doc, false);
+      }
+    };
+
+    TestEnv.prototype.findQuery = function(type, params) {
+      var models;
+      models = window.Fixture.store.find(type, params);
+      waitsFor(function() {
+        return models.toArray().length !== void 0 && models.toArray().length !== 0;
+      }, "model should be fined", 3000);
+      return models;
+    };
+
     return TestEnv;
 
   })();

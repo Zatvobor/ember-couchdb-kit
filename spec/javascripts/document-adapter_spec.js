@@ -8,7 +8,6 @@
     describe('model creation', function() {
       it('record with specific id', function() {
         var person;
-
         person = this.subject.create.call(this, 'user', {
           id: 'john@example.com'
         });
@@ -20,7 +19,6 @@
       });
       it('record with generated id', function() {
         var person;
-
         person = this.subject.create.call(this, 'user', {});
         return runs(function() {
           return expect(person.id).not.toBeNull();
@@ -28,7 +26,6 @@
       });
       it('simple {a:"a", b:"b"} model', function() {
         var person;
-
         person = this.subject.create.call(this, 'user', {
           a: 'a',
           b: 'b'
@@ -40,7 +37,6 @@
       });
       it('always available as a raw json object', function() {
         var person;
-
         person = this.subject.create.call(this, 'user', {
           name: 'john'
         });
@@ -50,13 +46,11 @@
       });
       it('belongsTo relation', function() {
         var person;
-
         person = this.subject.create.call(this, 'user', {
           name: 'john'
         });
         return runs(function() {
           var article;
-
           article = this.subject.create.call(this, 'article', {});
           return runs(function() {
             article.set('user', person);
@@ -72,13 +66,11 @@
       });
       it('belongsTo field avilable as a raw js object', function() {
         var person;
-
         person = this.subject.create.call(this, 'user', {
           name: 'john'
         });
         return runs(function() {
           var message;
-
           message = this.subject.create.call(this, 'message', {
             user: person
           });
@@ -89,7 +81,6 @@
       });
       return it('with hasMany', function() {
         var article, comment, oldRev;
-
         comment = this.subject.create.call(this, 'comment', {
           text: 'text'
         });
@@ -118,7 +109,6 @@
     describe('model updating', function() {
       it('in general', function() {
         var person, prevRev;
-
         person = this.subject.create.call(this, 'user', {
           name: "John"
         });
@@ -137,7 +127,6 @@
       });
       it('belongsTo relation', function() {
         var article, name, newName, person1, person2, prevRev;
-
         name = 'Vpupkin';
         newName = 'Bobby';
         person1 = this.subject.create.call(this, 'user', {
@@ -172,7 +161,6 @@
       });
       return it('updates hasMany relation', function() {
         var article, comment, comment2;
-
         comment = this.subject.create.call(this, 'comment', {
           text: 'Text'
         });
@@ -210,10 +198,9 @@
         });
       });
     });
-    return describe("deletion", function() {
+    describe("deletion", function() {
       return it("in general", function() {
         var person;
-
         person = this.subject.create.call(this, 'user', {
           name: 'Vpupkin'
         });
@@ -221,6 +208,68 @@
           person.deleteRecord();
           person.save();
           return expect(person.get('isDeleted')).toBe(true);
+        });
+      });
+    });
+    return describe("find", function() {
+      it("by id", function() {
+        var user;
+        this.subject.createDocument({
+          id: "findId",
+          name: "Some Name"
+        });
+        user = this.subject.find('user', 'findId');
+        return runs(function() {
+          return expect(user.get('name')).toEqual('Some Name');
+        });
+      });
+      it('by ids', function() {
+        var article;
+        this.subject.createDocument({
+          id: "comment1",
+          text: "Some text"
+        });
+        this.subject.createDocument({
+          id: "comment2",
+          text: "Some text"
+        });
+        this.subject.createDocument({
+          id: "article",
+          comments: ["comment1", "comment2"],
+          label: "some label"
+        });
+        article = this.subject.find('article', 'article');
+        return runs(function() {
+          article.get('comments');
+          waitsFor(function() {
+            return article.get('comments.length') !== void 0 && article.get('comments.length') !== 0;
+          });
+          return runs(function() {
+            return article.get('comments').forEach(function(comment) {
+              return expect(comment.get('text')).toEqual('Some text');
+            });
+          });
+        });
+      });
+      return it("by query", function() {
+        var comments;
+        this.subject.createDocument({
+          id: "comment1",
+          text: "Some text",
+          type: "comment"
+        });
+        this.subject.createDocument({
+          id: "comment2",
+          text: "Some text",
+          type: "comment"
+        });
+        this.subject.createView("byComment");
+        comments = this.subject.findQuery('comment', {
+          designDoc: "comments",
+          viewName: "all"
+        });
+        return runs(function() {
+          return expect(comments.toArray().length).toEqual(2);
         });
       });
     });

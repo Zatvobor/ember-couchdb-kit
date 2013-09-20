@@ -172,3 +172,33 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
         person.deleteRecord()
         person.save()
         expect(person.get('isDeleted')).toBe(true)
+
+  describe "find", ->
+    it "by id", ->
+      @subject.createDocument({id: "findId", name: "Some Name"})
+      user = @subject.find('user', 'findId')
+      runs ->
+        expect(user.get('name')).toEqual('Some Name')
+
+    it 'by ids', ->
+      @subject.createDocument({id: "comment1", text: "Some text"})
+      @subject.createDocument({id: "comment2", text: "Some text"})
+      @subject.createDocument({id: "article", comments: ["comment1", "comment2"], label: "some label"})
+
+      article = @subject.find('article', 'article')
+      runs ->
+        article.get('comments')
+
+        waitsFor ->
+          article.get('comments.length') != undefined && article.get('comments.length') != 0
+        runs ->
+          article.get('comments').forEach (comment) ->
+            expect(comment.get('text')).toEqual('Some text')
+
+    it "by query", ->
+      @subject.createDocument({id: "comment1", text: "Some text", type: "comment"})
+      @subject.createDocument({id: "comment2", text: "Some text", type: "comment"})
+      @subject.createView("byComment")
+      comments = @subject.findQuery('comment', {designDoc: "comments", viewName: "all"})
+      runs ->
+        expect(comments.toArray().length).toEqual(2)

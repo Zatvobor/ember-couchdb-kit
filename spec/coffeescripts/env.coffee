@@ -66,6 +66,44 @@ class @TestEnv
 
     model
 
+  createDocument: (params, deleteID=true) ->
+    id = (params.id || params._id)
+    delete params.id if deleteID
+
+    jQuery.ajax({
+      url:  "/doc/#{id}",
+      type: 'PUT',
+      dataType:    'json',
+      contentType: "application/json"
+      data: JSON.stringify(params)
+      cache:       true,
+      async: false
+    })
+
+  find: (type, id) ->
+    model = window.Fixture.store.find(type, id)
+    waitsFor ->
+      model.get('_data.rev') != undefined
+    , "model should be fined", 3000
+    model
+
+  createView: (viewName) ->
+    switch viewName
+      when "byComment"
+        doc =
+          _id: "_design/comments"
+          language: "javascript"
+          views: {
+            all: {map: "function(doc) { if (doc.type == \"comment\")  emit(null, {_id: doc._id}) }"}
+          }
+        @createDocument(doc, false)
+
+  findQuery: (type, params) ->
+    models = window.Fixture.store.find(type, params)
+    waitsFor ->
+      models.toArray().length != undefined && models.toArray().length != 0
+    , "model should be fined", 3000
+    models
 
 window.setupStore = (options) ->
   env = {}
