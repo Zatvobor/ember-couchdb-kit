@@ -189,9 +189,6 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
   shouldCommit: (record, relationships) ->
     @_super.apply(arguments)
 
-  stringForType: (type) ->
-    @get('serializer').stringForType(type)
-
   find: (store, type, id) ->
     if @_checkForRevision(id)
       @findWithRev(store, type, id)

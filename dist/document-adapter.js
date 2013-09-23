@@ -230,9 +230,6 @@
     shouldCommit: function(record, relationships) {
       return this._super.apply(arguments);
     },
-    stringForType: function(type) {
-      return this.get('serializer').stringForType(type);
-    },
     find: function(store, type, id) {
       var normalizeResponce;
       if (this._checkForRevision(id)) {
