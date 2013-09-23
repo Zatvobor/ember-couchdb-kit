@@ -139,7 +139,7 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
         article = @subject.create.call(@, 'article', {label: 'Label', comments: []})
 
       runs ->
-        article.set('comments.content', [])
+
         article.get('comments').pushObject(comment)
         article.save()
 

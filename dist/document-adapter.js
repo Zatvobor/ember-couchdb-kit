@@ -93,8 +93,11 @@
       attribute = relationship.options.attribute || "id";
       key = relationship.key;
       relationshipType = DS.RelationshipChange.determineRelationshipType(record.constructor, relationship);
-      if (relationshipType === "manyToNone" || relationshipType === "manyToMany") {
-        return json[key] = Ember.get(record, key).mapBy(attribute);
+      switch (relationshipType) {
+        case "manyToNone":
+        case "manyToMany":
+        case "manyToOne":
+          return json[key] = Ember.get(record, key).mapBy(attribute);
       }
     }
   });

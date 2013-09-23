@@ -173,7 +173,6 @@
           });
         });
         runs(function() {
-          article.set('comments.content', []);
           article.get('comments').pushObject(comment);
           return article.save();
         });
