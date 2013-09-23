@@ -245,31 +245,25 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     })
 
   findAll: (store, type) ->
-    designDoc = @get('designDoc')
+
+    typeString = Ember.String.singularize(type.typeKey)
+
+    designDoc = @get('designDoc') || typeString
+
+    typeViewName = @get('typeViewName')
 
     normalizeResponce = (data) ->
       json = {}
       json[[Ember.String.pluralize(type.typeKey)]] = data.rows.getEach('doc').map((doc) => @_normalizeRevision(doc))
       json
 
-    if @get('customTypeLookup') && @viewForType
-      params = {}
-      viewName = @viewForType(type, params)
-      params.include_docs = true
+    data =
+      include_docs: true
+      key: '"' + typeString + '"'
 
-      @ajax('_design/%@/_view/%@'.fmt(designDoc, viewName), 'GET', normalizeResponce, {
-        data: params
-      })
-    else
-      typeViewName = @get('typeViewName')
-      typeString = @stringForType(type)
-      data =
-        include_docs: true
-        key: '"' + typeString + '"'
-
-      @ajax('_design/%@/_view/%@'.fmt(designDoc, typeViewName), 'GET', normalizeResponce, {
-        data: data
-      })
+    @ajax('_design/%@/_view/%@'.fmt(designDoc, typeViewName), 'GET', normalizeResponce, {
+      data: data
+    })
 
   createRecord: (store, type, record) ->
     json = store.serializerFor(type.typeKey).serialize(record);

@@ -303,8 +303,10 @@
       });
     },
     findAll: function(store, type) {
-      var data, designDoc, normalizeResponce, params, typeString, typeViewName, viewName;
-      designDoc = this.get('designDoc');
+      var data, designDoc, normalizeResponce, typeString, typeViewName;
+      typeString = Ember.String.singularize(type.typeKey);
+      designDoc = this.get('designDoc') || typeString;
+      typeViewName = this.get('typeViewName');
       normalizeResponce = function(data) {
         var json,
           _this = this;
@@ -314,24 +316,13 @@
         });
         return json;
       };
-      if (this.get('customTypeLookup') && this.viewForType) {
-        params = {};
-        viewName = this.viewForType(type, params);
-        params.include_docs = true;
-        return this.ajax('_design/%@/_view/%@'.fmt(designDoc, viewName), 'GET', normalizeResponce, {
-          data: params
-        });
-      } else {
-        typeViewName = this.get('typeViewName');
-        typeString = this.stringForType(type);
-        data = {
-          include_docs: true,
-          key: '"' + typeString + '"'
-        };
-        return this.ajax('_design/%@/_view/%@'.fmt(designDoc, typeViewName), 'GET', normalizeResponce, {
-          data: data
-        });
-      }
+      data = {
+        include_docs: true,
+        key: '"' + typeString + '"'
+      };
+      return this.ajax('_design/%@/_view/%@'.fmt(designDoc, typeViewName), 'GET', normalizeResponce, {
+        data: data
+      });
     },
     createRecord: function(store, type, record) {
       var json;
