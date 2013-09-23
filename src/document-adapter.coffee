@@ -67,7 +67,9 @@ EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend
     attribute = (relationship.options.attribute || "id")
     key = relationship.key
     relationshipType = DS.RelationshipChange.determineRelationshipType(record.constructor, relationship)
-    json[key] = Ember.get(record, key).mapBy(attribute)  if relationshipType is "manyToNone" or relationshipType is "manyToMany"
+    switch relationshipType
+      when "manyToNone", "manyToMany", "manyToOne"
+        json[key] = Ember.get(record, key).mapBy(attribute)
 
 ###
 
