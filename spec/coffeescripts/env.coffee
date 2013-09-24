@@ -100,7 +100,7 @@ class @TestEnv
   find: (type, id) ->
     model = window.Fixture.store.find(type, id)
     waitsFor ->
-      model.get('_data.rev') != undefined
+      model.get('_data.rev') != undefined && model.get('_data.rev') != null
     , "model should be fined", 3000
     model
 

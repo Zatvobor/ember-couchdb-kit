@@ -97,7 +97,11 @@
         case "manyToNone":
         case "manyToMany":
         case "manyToOne":
-          return json[key] = Ember.get(record, key).mapBy(attribute);
+          if (Ember.get(record, key).get('isLoaded')) {
+            return json[key] = Ember.get(record, key).mapBy(attribute);
+          } else {
+            return json[key] = record.get("_data.%@".fmt(key)).mapBy('id');
+          }
       }
     }
   });
@@ -224,7 +228,7 @@
       });
     },
     _normalizeRevision: function(json) {
-      if (json._rev) {
+      if (json && json._rev) {
         json.rev = json._rev;
         delete json._rev;
       }

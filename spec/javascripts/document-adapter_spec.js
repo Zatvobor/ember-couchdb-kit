@@ -159,7 +159,7 @@
           return expect(article.get('user.id')).toEqual(person2.id);
         });
       });
-      return it('updates hasMany relation', function() {
+      it('updates hasMany relation', function() {
         var article, comment, comment2;
         comment = this.subject.create.call(this, 'comment', {
           text: 'Text'
@@ -194,6 +194,41 @@
         }, "", 3000);
         return runs(function() {
           return expect(article.get('comments').toArray().length).toEqual(2);
+        });
+      });
+      return it("update hasMany without load", function() {
+        var article, rev,
+          _this = this;
+        rev = this.subject.createDocument({
+          id: "article8",
+          label: 'Label',
+          comments: ["comment1", "comment2"]
+        });
+        this.subject.createDocument({
+          id: "comment1"
+        });
+        this.subject.createDocument({
+          id: "comment2"
+        });
+        article = void 0;
+        return runs(function() {
+          window.Fixture.store.find('article', 'article8').then(function(m) {
+            return article = m;
+          });
+          waitsFor(function() {
+            return article !== void 0;
+          });
+          return runs(function() {
+            expect(article.get('_data').comments.length).toEqual(2);
+            article.set('label', 'updated label');
+            article.save();
+            waitsFor(function() {
+              return article.get('data._rev') !== rev;
+            });
+            return runs(function() {
+              return expect(article.get('_data').comments.length).toEqual(2);
+            });
+          });
         });
       });
     });

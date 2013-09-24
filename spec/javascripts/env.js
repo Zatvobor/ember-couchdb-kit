@@ -136,7 +136,7 @@
       var model;
       model = window.Fixture.store.find(type, id);
       waitsFor(function() {
-        return model.get('_data.rev') !== void 0;
+        return model.get('_data.rev') !== void 0 && model.get('_data.rev') !== null;
       }, "model should be fined", 3000);
       return model;
     };

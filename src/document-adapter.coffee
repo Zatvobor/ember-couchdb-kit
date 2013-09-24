@@ -80,8 +80,10 @@ EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend
     relationshipType = DS.RelationshipChange.determineRelationshipType(record.constructor, relationship)
     switch relationshipType
       when "manyToNone", "manyToMany", "manyToOne"
-        json[key] = Ember.get(record, key).mapBy(attribute)
-
+        if Ember.get(record, key).get('isLoaded')
+          json[key] = Ember.get(record, key).mapBy(attribute)
+        else
+          json[key] = record.get("_data.%@".fmt(key)).mapBy('id')
 ###
 
   A `DocumentAdapter` should be used as a main adapter for working with models as a CouchDB documents.
@@ -182,7 +184,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     )
 
   _normalizeRevision: (json) ->
-    if json._rev
+    if json && json._rev
       json.rev = json._rev
       delete json._rev
     json

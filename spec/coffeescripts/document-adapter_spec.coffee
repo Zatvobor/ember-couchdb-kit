@@ -162,6 +162,27 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       runs ->
         expect(article.get('comments').toArray().length).toEqual(2)
 
+    it "update hasMany without load" , ->
+      rev = @subject.createDocument({id: "article8", label: 'Label', comments: ["comment1", "comment2"]})
+      @subject.createDocument({id: "comment1"})
+      @subject.createDocument({id: "comment2"})
+      article = undefined
+      runs =>
+        window.Fixture.store.find('article', 'article8').then (m) ->
+          article = m
+
+        waitsFor =>
+          article != undefined
+
+        runs ->
+          expect(article.get('_data').comments.length).toEqual(2)
+          article.set('label', 'updated label')
+          article.save()
+          waitsFor ->
+            article.get('data._rev') != rev
+          runs ->
+            expect(article.get('_data').comments.length).toEqual(2)
+
 
   describe "deletion", ->
 
