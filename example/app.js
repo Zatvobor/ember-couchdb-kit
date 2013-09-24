@@ -35,8 +35,8 @@ App.IndexRoute = Ember.Route.extend({
 
   setupController: function(controller, model) {
     this._setupPositionHolders();
-//    this._position();
-//    this._issue();
+    this._position();
+    this._issue();
   },
 
   renderTemplate: function() {
@@ -70,7 +70,7 @@ App.IndexRoute = Ember.Route.extend({
 
   _position: function(){
     // create a CouchDB `/_change` listener which serves an position documents
-    params = { include_docs: true, filter: 'issues/only_positions'}
+    params = { include_docs: true, filter: 'issues/only_positions'};
     position = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', host: "http://localhost:5984", content: params });
 
     // all upcoming changes are passed to `_handlePositionChanges` callback through `fromTail` strategy
@@ -106,9 +106,12 @@ App.IndexRoute = Ember.Route.extend({
     var self = this;
     // apply received updates
     data.forEach(function(obj){
-      self.get('store').find('issue', obj.doc._id).then(function(issue){
+      issue = self.get('store').all('issue').toArray().find(function(i) {
+        return i.get('id') === obj.doc._id;
+      });
+      if(issue != undefined && issue.get('_data.rev') != obj.doc._rev){
         issue.reload();
-      })
+      }
     });
   }
 });
