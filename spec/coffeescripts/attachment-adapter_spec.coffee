@@ -7,7 +7,7 @@ describe 'EmberCouchDBKit.AttachmentAdapter' , ->
   describe 'model operations', ->
 
     it 'create', ->
-      user = @subject.create.call(@, 'user', {id: 'john@example.com'})
+      user = @subject.create.call(@, 'user', {id: 'john@example.com1'})
       runs ->
         rev = user.get('_data.rev')
         params = {

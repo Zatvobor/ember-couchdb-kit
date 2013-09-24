@@ -100,7 +100,9 @@
           if (Ember.get(record, key).get('isLoaded')) {
             return json[key] = Ember.get(record, key).mapBy(attribute);
           } else {
-            return json[key] = record.get("_data.%@".fmt(key)).mapBy('id');
+            if (record.get("_data.%@".fmt(key))) {
+              return json[key] = record.get("_data.%@".fmt(key)).mapBy('id');
+            }
           }
       }
     }

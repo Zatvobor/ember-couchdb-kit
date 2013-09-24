@@ -83,7 +83,8 @@ EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend
         if Ember.get(record, key).get('isLoaded')
           json[key] = Ember.get(record, key).mapBy(attribute)
         else
-          json[key] = record.get("_data.%@".fmt(key)).mapBy('id')
+          if record.get("_data.%@".fmt(key))
+            json[key] = record.get("_data.%@".fmt(key)).mapBy('id')
 ###
 
   A `DocumentAdapter` should be used as a main adapter for working with models as a CouchDB documents.

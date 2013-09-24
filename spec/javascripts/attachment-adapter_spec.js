@@ -9,7 +9,7 @@
       it('create', function() {
         var user;
         user = this.subject.create.call(this, 'user', {
-          id: 'john@example.com'
+          id: 'john@example.com1'
         });
         return runs(function() {
           var attachment, params, rev;
