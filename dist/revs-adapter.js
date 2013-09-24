@@ -19,37 +19,32 @@
       return type.eachRelationship((function(key, relationship) {
         if (relationship.kind === "belongsTo") {
           return hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(this.extractId(type, hash))[1];
+        } else {
+          throw "Unsupported relation. Not yet implemented";
         }
       }), this);
     }
   });
 
   /*
-    An `RevAdapter` is an object which gets revisions info by distinct document and used
-    as a main adapter for `Revision` models. Works only with belongsTo
+    `RevAdapter` is an adapter which gets revisions info by distinct document and used
+    as a main adapter for history enabled models.
   
-    Let's consider an usual use case:
-    TODO update example snippets
-      ```
+    Let's consider `belongsTo` relation:
+      ```coffee
       App.Task = DS.Model.extend
         title: DS.attr('string')
-        history: DS.belongsTo('App.History')
+        history: DS.belongsTo('history')
   
   
       App.History = DS.Model.extend
-        prev_task: DS.belongsTo('App.Task', {key: "prev_task", embedded: true})
+        task: DS.belongsTo('task', {inverse: null})
   
-  
+      task = @get('store').find('task', id).get('history').then (history) ->
+        history.get('task')
       ```
   
-    So, the `App.Task` model is able to load its revisions as a regular `App.Task` models.
-  
-      ```
-      task = App.Task.find("3bbf4b8c504134dd125e7b603b004b71")
-  
-      revs_tasks = task.history.tasks
-      # => Ember.Enumerable<App.Task>
-      ```
+    For getting more details check `spec/coffeescripts/revs-adapter_spec.coffee` file.
   
   @namespace EmberCouchDBKit
   @class RevAdapter
