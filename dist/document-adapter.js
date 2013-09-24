@@ -1,7 +1,7 @@
 /*
 @namespace EmberCouchDBKit
 @class DocumentSerializer
-@extends DS.RESTSerializer.extend
+@extends DS.RESTSerializer
 */
 
 

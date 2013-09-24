@@ -1,7 +1,7 @@
 ###
 @namespace EmberCouchDBKit
 @class AttachmentSerializer
-@extends DS.JSONSerializer
+@extends DS.RESTSerializer
 ###
 EmberCouchDBKit.AttachmentSerializer = DS.RESTSerializer.extend
 
@@ -24,17 +24,13 @@ EmberCouchDBKit.AttachmentSerializer = DS.RESTSerializer.extend
 
 ###
   An `AttachmentAdapter` is an object which manages document's attachements and used
-  as a main adapter for `Attachment` able models.
+  as a main adapter for `Attachment` enabled models.
 
   Let's consider an usual use case:
-  TODO update example snippets
-
-    ```
+    ```coffee
     App.Task = DS.Model.extend
       title: DS.attr('string')
-      attachments: DS.hasMany('App.Attachment', {embedded: true})
-
-    App.Store.registerAdapter('App.Task', EmberCouchDBKit.DocumentAdapter.extend({db: 'docs'}))
+      attachments: DS.hasMany('attachment', {async: true})
 
     App.Attachment = DS.Model.extend
       content_type: DS.attr('string')
@@ -42,33 +38,11 @@ EmberCouchDBKit.AttachmentSerializer = DS.RESTSerializer.extend
       file_name: DS.attr('string')
       db: DS.attr('string')
 
-    App.Store.registerAdapter('App.Attachment', EmberCouchDBKit.AttachmentAdapter.extend({db: 'docs'}))
+    task = @get('store').find('task', id)
+    attachments = task.get('attachments')
     ```
 
-  So, the `App.Task` model is able to load its attachments as many `App.Attachment` models.
-
-    ```
-    task = App.Task.find("3bbf4b8c504134dd125e7b603b004b71")
-    attachemnts = task.attachments # as an Ember.Enumerable instance
-    ```
-
-  In short, there is a simple example how to commit `App.Attachment` record
-
-    ```
-    params = {
-      doc_type: doc_type
-      doc_id: document_id
-      id: document_id +/+ file_name
-      file: blob_data
-      rev: doc_rev
-      content_type: file_type
-      length: file_size
-      file_name: name
-    }
-
-    attachment = TaskEmber.Attachment.createRecord(params)
-    attachment.get('store').commit()
-    ```
+    For getting more details check `spec/coffeescripts/attachment-adapter_spec.coffee` file.
 
 @namespace EmberCouchDBKit
 @class AttachmentAdapter
