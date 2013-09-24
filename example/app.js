@@ -5,16 +5,16 @@ App.Boards = ['common', 'intermediate', 'advanced'];
 
 // Models
 
-App.Store = DS.Store.extend({
-  adapter: EmberCouchDBKit.DocumentAdapter.create({db: 'boards'})
-});
+App.ApplicationAdapter =  EmberCouchDBKit.DocumentAdapter.extend({db: 'boards', host: "http://localhost:5984"});
+App.ApplicationSerializer = EmberCouchDBKit.DocumentSerializer.extend();
 
-App.Store.registerAdapter('App.Attachment', EmberCouchDBKit.AttachmentAdapter.extend({db: 'boards'}));
+App.AttachmentAdapter = EmberCouchDBKit.AttachmentAdapter.extend({db: 'boards', host: "http://localhost:5984"});
+App.AttachmentSerializer = EmberCouchDBKit.AttachmentSerializer.extend();
 
 App.Issue = DS.Model.extend({
   text: DS.attr('string'),
   type: DS.attr('string', {defaultValue: 'issue'}),
-  attachments: DS.hasMany('App.Attachment', {embedded: true})
+  attachments: DS.hasMany('attachment', {async: true})
 });
 
 App.Attachment = DS.Model.extend({
@@ -22,14 +22,12 @@ App.Attachment = DS.Model.extend({
   length: DS.attr('number'),
   file_name: DS.attr('string'),
   db: DS.attr('string', {defaultValue: 'boards'})
-
 });
 
 App.Position = DS.Model.extend({
-  issues: DS.hasMany('App.Issue'),
+  issues: DS.hasMany('issue', {async: true}),
   type: DS.attr('string', {defaultValue: 'position'})
 });
-
 
 // Routes
 
@@ -37,8 +35,8 @@ App.IndexRoute = Ember.Route.extend({
 
   setupController: function(controller, model) {
     this._setupPositionHolders();
-    this._position();
-    this._issue();
+//    this._position();
+//    this._issue();
   },
 
   renderTemplate: function() {
@@ -53,24 +51,29 @@ App.IndexRoute = Ember.Route.extend({
   _setupPositionHolders: function() {
     var self = this;
     App.Boards.forEach(function(type) {
-      // set issues into appropriate controller through position model
-      position = App.Position.find(type);
-      position.one('didLoad', function() {
-        self.controllerFor(type).set('position', this);
-      });
-      // create position documents (as a part of first time initialization)
-      if (position.get('store.adapter').is(404, {for: type})) {
-        App.Position.createRecord({ id: type }).get('store').commit();
-      }
+      self.get('store').find('position', type).then(
+        function(position){
+          // set issues into appropriate controller through position model
+          self.controllerFor(type).set('position', position);
+        }, 
+        function(position){
+          // create position documents (as a part of first time initialization)
+          if (position.status === 404){
+            self.get('store').createRecord('position', { id: type }).save().then(function(position){
+              self.controllerFor(type).set('position', position);
+            });
+          }
+        }
+      );
     });
   },
 
   _position: function(){
     // create a CouchDB `/_change` listener which serves an position documents
-    params = { include_docs: true, timeout: 100, filter: 'issues/only_positions'}
-    position = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: params });
+    params = { include_docs: true, filter: 'issues/only_positions'}
+    position = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', host: "http://localhost:5984", content: params });
 
-    // all upcoming changes are passed to `_handlePositionChanges` callback through `longpoll` strategy
+    // all upcoming changes are passed to `_handlePositionChanges` callback through `fromTail` strategy
     var self = this;
     position.fromTail(function(){
       position.longpoll(self._handlePositionChanges, self);
@@ -80,17 +83,17 @@ App.IndexRoute = Ember.Route.extend({
   _handlePositionChanges: function(data) {
     var self = this;
     data.forEach(function(obj){
-      position = self.controllerFor(obj.doc._id).get('position');
+      var position = self.controllerFor(obj.doc._id).get('position');
       // we should reload particular postion model in case of update is received from another user
-      if (position.get('_data.raw._rev') != obj.doc._rev)
+      if (position.get('_data.rev') != obj.doc._rev)
         position.reload();
     });
   },
 
   _issue: function() {
     // create a CouchDB `/_change` issue listener which serves an issues
-    params = { include_docs: true, timeout: 100, filter: 'issues/issue'}
-    issue = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', content: params });
+    var params = { include_docs: true, filter: 'issues/issue'};
+    var issue = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', host: "http://localhost:5984", content: params });
 
     // all upcoming changes are passed to `_handleIssueChanges` callback through `fromTail` strategy
     var self = this;
@@ -100,12 +103,12 @@ App.IndexRoute = Ember.Route.extend({
   },
 
   _handleIssueChanges: function(data) {
+    var self = this;
     // apply received updates
     data.forEach(function(obj){
-      issue = App.Issue.find(obj.doc._id);
-      if(issue.get('isLoaded')){
+      self.get('store').find('issue', obj.doc._id).then(function(issue){
         issue.reload();
-      }
+      })
     });
   }
 });
@@ -118,64 +121,79 @@ App.IndexController = Ember.Controller.extend({
 
   content: Ember.computed.alias('position.issues'),
 
-  createIssue: function(text) {
-    issue = App.Issue.createRecord({text: text});
-    issue.save();
+  actions: {
+    createIssue: function(text) {
+      var self = this;
+      var issue = this.get('store').createRecord('issue', {text: text});
+      issue.save().then(function(issue) {
+        self.get('position.issues').pushObject(issue);
+        self.get('position').save();
+      });
+    },
 
-    var self = this;
-    issue.addObserver('id', function(sender, key, value, context, rev) {
-      self.get('content').pushObject(this);
-      self.get('position').save();
-    });
-  },
+    saveIssue: function(model) {
+      model.save();
+    },
 
-  saveIssue: function(model) {
-    model.save();
-  },
+    deleteIssue: function(issue) {
+      var self = this;
+      self.get('position.issues').removeObject(issue);
+      issue.deleteRecord();
+      issue.save().then(function(){
+        self.get('position').save()
+      })
+    },
 
-  deleteIssue: function(issue) {
-    this.get('content').removeObject(issue);
-    this.get('position').save();
-    issue.deleteRecord();
-    issue.save();
-  },
+    addAttachment: function(files, model){
+      this._actions._addAttachment(0, files, files.length, model, this)
+    },
 
-  deleteAttachment: function(attachment){
-    attachment.get('_data.document.attachments').removeObject(attachment)
-    attachment.get('_data.document').save();
-    attachment.deleteRecord();
-  },
+    _addAttachment: function(count, files, size, model, self){
+      file = files[count];
+      attachmentId = "%@/%@".fmt(model.id, file.name);
 
-  addAttachment: function(files, model){
-    this._addAttachment(0, files, files.length, model)
-  },
+      params = {
+        doc_id: model.id,
+        model_name: App.Issue,
+        rev: model._data.rev,
+        id: attachmentId,
+        file: file,
+        content_type: file.type,
+        length: file.size,
+        file_name: file.name
+      }
 
-  _addAttachment: function(count, files, size, model){
-    file = files[count];
-    attachmentId = "%@/%@".fmt(model.id, file.name);
-
-    params = {
-      doc_id: model.id,
-      doc_type: App.Issue,
-      rev: model._data._rev,
-      id: attachmentId,
-      file: file,
-      content_type: file.type,
-      length: file.size,
-      file_name: file.name
-    }
-
-    var self = this;
-    attachment = App.Attachment.createRecord(params);
-    attachment.get('store').commit();
-    attachment.one('didCreate', function() {
-      Ember.run.next(function() {
+      var attachment = self.get('store').createRecord('attachment', params);
+      attachment.save().then(function() {
+        model.get('attachments').pushObject(attachment);
+        model.reload();
         count = count + 1;
         if(count < size){
-          self._addAttachment(count, files, size, model);
+          self._actions._addAttachment(count, files, size, model, self);
         }
       });
-    });
+    },
+
+    deleteAttachment: function(attachment){
+      attachment.deleteRecord();
+      attachment.save();
+    },
+
+    dropIssue: function(viewController, viewModel, thisModel) {
+      var position = this.get('content').toArray().indexOf(thisModel);
+      if (position === -1) { position = 0 }
+      viewController.get('content').removeObject(viewModel);
+
+      var self = this;
+      if(viewController.name !== this.name){
+        viewController.get('position').save().then(function() {
+         self.get('position').reload();
+       });
+      }
+
+      this.get('content').insertAt(position, viewModel);
+      this.get('position').save();
+    }
   }
 });
 
@@ -221,30 +239,15 @@ App.IssueView = Ember.View.extend({
 
   drop: function(event) {
     var view = Ember.View.views[event.dataTransfer.getData('id')];
-    var newModel = view.get('context');
-    var position = this.get('controller.content').toArray().indexOf(this.get('context'))
-
-    view.get('controller.content').removeObject(newModel);
-    thisArray = this.get('controller.content').toArray().insertAt(position, newModel);
-    this._insert(this, thisArray)
-
-    if(view.get('controller.name') !== this.get('controller.name')){
-      viewArray = view.get('controller.content').toArray();
-      this._insert(view, viewArray)
+    if((this.draggable === 'true') || (view.draggable === 'true')){
+      this.get('controller').send("dropIssue", view.get('controller'), view.get('context'), this.get('context'));
     }
-
     event.preventDefault();
     event.target.style.opacity = '1';
-  },
-
-  _insert: function(view, array){
-    view.set('controller.content.content', array.getEach('_reference'));
-    view.get('controller.position').save();
   }
 });
 
 App.NewIssueView = Ember.View.extend({
-
   tagName: "form",
   create: false,
   attributeBindings: ["style"],
@@ -301,33 +304,33 @@ App.DeleteAttachmentView = Ember.View.extend({
 });
 
 App.AttachmentView = Ember.View.extend({
-  
   tagName: "input",
   attributeBindings: ["style", "type", "multiple"],
   style: "display:none",
   type: 'file',
   multiple: true,
 
-  change: function(event) {
-    this.get('controller').send('addAttachment', event.target.files, this.get('context'));
+  actions: {
+    browseFile: function(e){
+     this.$().click();
+    }
   },
 
-  browseFile: function(event) {
-    this.$().click();
+  change: function(event) {
+    this.get('controller').send('addAttachment', event.target.files, this.get('context'));
   }
 });
 
-Ember.TextArea.reopen({
-  attributeBindings: ['viewName'],
-
+App.FocusedTextArea = Ember.TextArea.extend({
   elementDidChange: function() {
     this.$().focus();
   }.observes('element')
 });
 
-
-// Helpers
-
 Ember.Handlebars.helper('linkToAttachment', function(attachment) {
-  return new Handlebars.SafeString('/%@/%@'.fmt( attachment.get('_data.db'), attachment.get('id')));
+  aTagTemplate= "<a href='%@' target='_blank'>%@</a>"
+  url = "/%@/%@".fmt(attachment.get('_data.db'), attachment.get('id'));
+  return new Handlebars.SafeString(
+    aTagTemplate.fmt(url, attachment.get('file_name'))
+  );
 });
