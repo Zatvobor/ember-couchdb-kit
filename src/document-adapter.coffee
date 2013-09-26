@@ -130,13 +130,6 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
   customTypeLookup: false
   typeViewName: "all"
 
-  is: (status, h) ->
-    return true if @head(h.for).status == status
-
-  head: (h) ->
-    docId = if typeof h == "object" then h.get('id') else h
-    @ajax(docId, 'HEAD', { async: false })
-
   buildURL: ->
     host = Ember.get(this, "host")
     namespace = Ember.get(this, "namespace")

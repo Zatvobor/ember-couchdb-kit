@@ -153,18 +153,6 @@
   EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend({
     customTypeLookup: false,
     typeViewName: "all",
-    is: function(status, h) {
-      if (this.head(h["for"]).status === status) {
-        return true;
-      }
-    },
-    head: function(h) {
-      var docId;
-      docId = typeof h === "object" ? h.get('id') : h;
-      return this.ajax(docId, 'HEAD', {
-        async: false
-      });
-    },
     buildURL: function() {
       var host, namespace, url;
       host = Ember.get(this, "host");
