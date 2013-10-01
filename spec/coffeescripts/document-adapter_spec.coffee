@@ -2,7 +2,10 @@ Ember.ENV.TESTING = true
 
 describe 'EmberCouchDBKit.DocumentAdapter' , ->
   beforeEach ->
-    @subject = new TestEnv()
+    unless window.testing
+      window.subject = new TestEnv()
+      window.testing = true
+    @subject = window.subject
 
   describe 'model creation', ->
 
@@ -202,9 +205,9 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
         expect(user.get('name')).toEqual('Some Name')
 
     it 'by ids', ->
-      @subject.createDocument({id: "comment1", text: "Some text"})
-      @subject.createDocument({id: "comment2", text: "Some text"})
-      @subject.createDocument({id: "article", comments: ["comment1", "comment2"], label: "some label"})
+      @subject.createDocument({id: "comment4", text: "Some text"})
+      @subject.createDocument({id: "comment5", text: "Some text"})
+      @subject.createDocument({id: "article", comments: ["comment4", "comment5"], label: "some label"})
 
       article = @subject.find('article', 'article')
       runs ->
@@ -217,8 +220,8 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
             expect(comment.get('text')).toEqual('Some text')
 
     it "by query", ->
-      @subject.createDocument({id: "comment1", text: "Some text", type: "comment"})
-      @subject.createDocument({id: "comment2", text: "Some text", type: "comment"})
+      @subject.createDocument({id: "comment7", text: "Some text", type: "comment"})
+      @subject.createDocument({id: "comment8", text: "Some text", type: "comment"})
       @subject.createView("byComment")
       comments = @subject.findQuery('comment', {designDoc: "comments", viewName: "all"})
       runs ->

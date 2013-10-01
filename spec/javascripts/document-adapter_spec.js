@@ -3,7 +3,11 @@
 
   describe('EmberCouchDBKit.DocumentAdapter', function() {
     beforeEach(function() {
-      return this.subject = new TestEnv();
+      if (!window.testing) {
+        window.subject = new TestEnv();
+        window.testing = true;
+      }
+      return this.subject = window.subject;
     });
     describe('model creation', function() {
       it('record with specific id', function() {
@@ -260,16 +264,16 @@
       it('by ids', function() {
         var article;
         this.subject.createDocument({
-          id: "comment1",
+          id: "comment4",
           text: "Some text"
         });
         this.subject.createDocument({
-          id: "comment2",
+          id: "comment5",
           text: "Some text"
         });
         this.subject.createDocument({
           id: "article",
-          comments: ["comment1", "comment2"],
+          comments: ["comment4", "comment5"],
           label: "some label"
         });
         article = this.subject.find('article', 'article');
@@ -288,12 +292,12 @@
       return it("by query", function() {
         var comments;
         this.subject.createDocument({
-          id: "comment1",
+          id: "comment7",
           text: "Some text",
           type: "comment"
         });
         this.subject.createDocument({
-          id: "comment2",
+          id: "comment8",
           text: "Some text",
           type: "comment"
         });

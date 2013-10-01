@@ -3,7 +3,10 @@ Ember.ENV.TESTING = true
 describe 'EmberCouchDBKit.RevsAdapter', ->
 
   beforeEach ->
-    @subject = new TestEnv()
+    unless window.testing
+      window.subject = new TestEnv()
+      window.testing = true
+    @subject = window.subject
 
 
   it 'as belongsTo relation', ->

@@ -2,7 +2,10 @@ Ember.ENV.TESTING = true
 
 describe 'EmberCouchDBKit.AttachmentAdapter' , ->
   beforeEach ->
-    @subject = new TestEnv()
+    unless window.testing
+      window.subject = new TestEnv()
+      window.testing = true
+    @subject = window.subject
 
   describe 'model operations', ->
 

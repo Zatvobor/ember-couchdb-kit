@@ -3,7 +3,11 @@
 
   describe('EmberCouchDBKit.RevsAdapter', function() {
     beforeEach(function() {
-      return this.subject = new TestEnv();
+      if (!window.testing) {
+        window.subject = new TestEnv();
+        window.testing = true;
+      }
+      return this.subject = window.subject;
     });
     it('as belongsTo relation', function() {
       var person;

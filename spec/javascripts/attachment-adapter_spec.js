@@ -3,7 +3,11 @@
 
   describe('EmberCouchDBKit.AttachmentAdapter', function() {
     beforeEach(function() {
-      return this.subject = new TestEnv();
+      if (!window.testing) {
+        window.subject = new TestEnv();
+        window.testing = true;
+      }
+      return this.subject = window.subject;
     });
     return describe('model operations', function() {
       it('create', function() {
