@@ -3,7 +3,8 @@ ember-couchdb-kit
 
 Versions:
 
-* `v0.7` works with (`ember rc.6.1` and `ember-data 0.13`)
+* `v0.7` works with `ember rc.6.1` and `ember-data 0.13`
+* `v0.8` works with `ember 1.0.0` and `ember-data 1.0.0-beta.2`
 
 An `ember-data` kit for Apache CouchDB.
 
