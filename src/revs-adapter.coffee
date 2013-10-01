@@ -28,7 +28,7 @@ EmberCouchDBKit.RevSerializer = DS.RESTSerializer.extend
   `RevAdapter` is an adapter which gets revisions info by distinct document and used
   as a main adapter for history enabled models.
 
-  Let's consider `belongsTo` relation:
+  Let's consider `belongsTo` relation which returns previous version of document:
     ```coffee
     App.Task = DS.Model.extend
       title: DS.attr('string')
