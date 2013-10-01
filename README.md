@@ -17,7 +17,7 @@ There are some of these:
 * natural `find/create/deleteRecord` functions;
 * ability to work with `views`;
 * document's attachements designed as `hasMany` relation;
-* document's revisions designed as `belongsTo` relationship that points back such as corresponding `hasMany` relation;
+* document's revisions designed as `belongsTo` relationship that points back such as corresponding `belongsTo` relation;
 * ability to work with `/_changes`;
 
 
