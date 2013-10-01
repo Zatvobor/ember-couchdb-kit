@@ -38,7 +38,7 @@ class @TestEnv
   models: ->
     window.User = DS.Model.extend
       name: DS.attr('string')
-      history: DS.belongsTo('history')
+      history: DS.belongsTo('history', {inverse: null})
       attachments: DS.hasMany('attachment', {async: true})
 
     window.Comment = DS.Model.extend
@@ -60,6 +60,7 @@ class @TestEnv
 
     window.History = DS.Model.extend(
       user: DS.belongsTo('user', {inverse: null})
+      users: DS.hasMany('user', {async: true, inverse: null})
     )
 
 

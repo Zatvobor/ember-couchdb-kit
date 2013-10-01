@@ -20,7 +20,7 @@ EmberCouchDBKit.RevSerializer = DS.RESTSerializer.extend
       if relationship.kind == "belongsTo"
         hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(@extractId(type, hash))[1]
       else
-        throw "Unsupported relation. Not yet implemented"
+        hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(@extractId(type, hash))
 
     ), this
 

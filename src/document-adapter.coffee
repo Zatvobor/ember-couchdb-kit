@@ -199,7 +199,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
 
       @ajax(id, 'GET', normalizeResponce)
 
-  findWithRev: (store, type, id) ->
+  findWithRev: (store, type, id, hash) ->
     [_id, _rev] = id.split("/")[0..1]
     url = "%@?rev=%@".fmt(_id, _rev)
     normalizeResponce = (data) ->
@@ -208,21 +208,34 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
       data._id = id
       _modelJson[type.typeKey] = data
       _modelJson
-    @ajax(url, 'GET', normalizeResponce)
+    @ajax(url, 'GET', normalizeResponce, hash)
+
+  findManyWithRev: (store, type, ids) ->
+    key = Ember.String.pluralize(type.typeKey)
+    docs = {}
+    docs[key] = []
+    hash = {async: false}
+    ids.forEach (id) =>
+      @findWithRev(store, type, id, hash).then (doc) =>
+        docs[key].push(doc[type.typeKey])
+    docs
 
   findMany: (store, type, ids) ->
-    data =
-      include_docs: true
-      keys: ids
+    if @_checkForRevision(ids[0])
+      @findManyWithRev(store, type, ids)
+    else
+      data =
+        include_docs: true
+        keys: ids
 
-    normalizeResponce = (data) ->
-      json = {}
-      json[Ember.String.pluralize(type.typeKey)] = data.rows.getEach('doc').map((doc) => @_normalizeRevision(doc))
-      json
+      normalizeResponce = (data) ->
+        json = {}
+        json[Ember.String.pluralize(type.typeKey)] = data.rows.getEach('doc').map((doc) => @_normalizeRevision(doc))
+        json
 
-    @ajax('_all_docs?include_docs=true', 'POST', normalizeResponce, {
-      data: data
-    })
+      @ajax('_all_docs?include_docs=true', 'POST', normalizeResponce, {
+        data: data
+      })
 
   findQuery: (store, type, query, modelArray) ->
     designDoc = (query.designDoc || @get('designDoc'))

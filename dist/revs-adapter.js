@@ -20,7 +20,7 @@
         if (relationship.kind === "belongsTo") {
           return hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(this.extractId(type, hash))[1];
         } else {
-          throw "Unsupported relation. Not yet implemented";
+          return hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(this.extractId(type, hash));
         }
       }), this);
     }

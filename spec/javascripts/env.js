@@ -52,7 +52,9 @@
     TestEnv.prototype.models = function() {
       window.User = DS.Model.extend({
         name: DS.attr('string'),
-        history: DS.belongsTo('history'),
+        history: DS.belongsTo('history', {
+          inverse: null
+        }),
         attachments: DS.hasMany('attachment', {
           async: true
         })
@@ -83,6 +85,10 @@
       });
       return window.History = DS.Model.extend({
         user: DS.belongsTo('user', {
+          inverse: null
+        }),
+        users: DS.hasMany('user', {
+          async: true,
           inverse: null
         })
       });

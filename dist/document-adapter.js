@@ -242,7 +242,7 @@
         return this.ajax(id, 'GET', normalizeResponce);
       }
     },
-    findWithRev: function(store, type, id) {
+    findWithRev: function(store, type, id, hash) {
       var normalizeResponce, url, _id, _ref, _rev;
       _ref = id.split("/").slice(0, 2), _id = _ref[0], _rev = _ref[1];
       url = "%@?rev=%@".fmt(_id, _rev);
@@ -254,26 +254,46 @@
         _modelJson[type.typeKey] = data;
         return _modelJson;
       };
-      return this.ajax(url, 'GET', normalizeResponce);
+      return this.ajax(url, 'GET', normalizeResponce, hash);
+    },
+    findManyWithRev: function(store, type, ids) {
+      var docs, hash, key,
+        _this = this;
+      key = Ember.String.pluralize(type.typeKey);
+      docs = {};
+      docs[key] = [];
+      hash = {
+        async: false
+      };
+      ids.forEach(function(id) {
+        return _this.findWithRev(store, type, id, hash).then(function(doc) {
+          return docs[key].push(doc[type.typeKey]);
+        });
+      });
+      return docs;
     },
     findMany: function(store, type, ids) {
       var data, normalizeResponce;
-      data = {
-        include_docs: true,
-        keys: ids
-      };
-      normalizeResponce = function(data) {
-        var json,
-          _this = this;
-        json = {};
-        json[Ember.String.pluralize(type.typeKey)] = data.rows.getEach('doc').map(function(doc) {
-          return _this._normalizeRevision(doc);
+      if (this._checkForRevision(ids[0])) {
+        return this.findManyWithRev(store, type, ids);
+      } else {
+        data = {
+          include_docs: true,
+          keys: ids
+        };
+        normalizeResponce = function(data) {
+          var json,
+            _this = this;
+          json = {};
+          json[Ember.String.pluralize(type.typeKey)] = data.rows.getEach('doc').map(function(doc) {
+            return _this._normalizeRevision(doc);
+          });
+          return json;
+        };
+        return this.ajax('_all_docs?include_docs=true', 'POST', normalizeResponce, {
+          data: data
         });
-        return json;
-      };
-      return this.ajax('_all_docs?include_docs=true', 'POST', normalizeResponce, {
-        data: data
-      });
+      }
     },
     findQuery: function(store, type, query, modelArray) {
       var designDoc, normalizeResponce;
