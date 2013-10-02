@@ -19,7 +19,8 @@ EmberCouchDBKit.RevSerializer = DS.RESTSerializer.extend
 
       if relationship.kind == "belongsTo"
         hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(@extractId(type, hash))[1]
-      else
+
+      if relationship.kind == "hasMany"
         hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(@extractId(type, hash))
 
     ), this
@@ -36,10 +37,10 @@ EmberCouchDBKit.RevSerializer = DS.RESTSerializer.extend
 
 
     App.History = DS.Model.extend
+      # previous version of task entry
       task: DS.belongsTo('task', {inverse: null})
-
-    task = @get('store').find('task', id).get('history').then (history) ->
-      history.get('task')
+      # list of all available versions of task entry
+      tasks: DS.hasMany('task', {inverse: null, async: true})
     ```
 
   For getting more details check `spec/coffeescripts/revs-adapter_spec.coffee` file.

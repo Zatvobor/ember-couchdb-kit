@@ -65,4 +65,5 @@ describe 'EmberCouchDBKit.RevsAdapter', ->
           waitsFor ->
             users.toArray().length != 0
           runs ->
-            expect(users.toArray().length).toEqual(2)
+            expect(users.get('firstObject.name')).toEqual('updated')
+            expect(users.get('lastObject.name')).toEqual('name')

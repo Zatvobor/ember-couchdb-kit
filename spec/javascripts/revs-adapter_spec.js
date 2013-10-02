@@ -77,7 +77,8 @@
               return users.toArray().length !== 0;
             });
             return runs(function() {
-              return expect(users.toArray().length).toEqual(2);
+              expect(users.get('firstObject.name')).toEqual('updated');
+              return expect(users.get('lastObject.name')).toEqual('name');
             });
           });
         });

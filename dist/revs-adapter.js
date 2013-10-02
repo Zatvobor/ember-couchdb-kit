@@ -18,8 +18,9 @@
     normalizeRelationships: function(type, hash) {
       return type.eachRelationship((function(key, relationship) {
         if (relationship.kind === "belongsTo") {
-          return hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(this.extractId(type, hash))[1];
-        } else {
+          hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(this.extractId(type, hash))[1];
+        }
+        if (relationship.kind === "hasMany") {
           return hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(this.extractId(type, hash));
         }
       }), this);
@@ -38,10 +39,10 @@
   
   
       App.History = DS.Model.extend
+        # previous version of task entry
         task: DS.belongsTo('task', {inverse: null})
-  
-      task = @get('store').find('task', id).get('history').then (history) ->
-        history.get('task')
+        # list of all available versions of task entry
+        tasks: DS.hasMany('task', {inverse: null, async: true})
       ```
   
     For getting more details check `spec/coffeescripts/revs-adapter_spec.coffee` file.

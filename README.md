@@ -16,9 +16,9 @@ There are some of these:
 
 * natural `find/create/deleteRecord` functions;
 * ability to work with `views`;
-* document's attachements designed as `hasMany` relation;
-* document's revisions designed as `belongsTo` relationship that points back such as corresponding `belongsTo` relation;
-* ability to work with `/_changes`;
+* document's attachements designed as `hasMany` relationship;
+* document's revisions designed as `belongsTo` and `hasMany` relationships;
+* ability to work with `/_changes` feeds;
 
 
 Check source code for more details. In additional, you could find more in `/example` application and find out how to use `ember-couchdb-kit` on practice.
