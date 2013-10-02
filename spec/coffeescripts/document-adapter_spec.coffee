@@ -66,13 +66,12 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       article = undefined
 
       runs ->
-        article = @subject.create.call(@, 'article', {label: 'Label', comments: []})
+        article = @subject.create.call(@, 'article', {label: 'Label'})
 
       oldRev = undefined
 
       runs ->
         oldRev = article.get("_data.rev")
-        article.set('comments.content', [])
         article.get('comments').pushObject(comment)
         article.save()
 
@@ -81,7 +80,7 @@ describe 'EmberCouchDBKit.DocumentAdapter' , ->
       ,"", 3000
 
       runs ->
-        expect(article.get('_data').comments[0].id).toBe(comment.id)
+        expect(article.get('comments.firstObject.id')).toBe(comment.id)
 
   describe 'model updating', ->
 

@@ -91,14 +91,12 @@
         article = void 0;
         runs(function() {
           return article = this.subject.create.call(this, 'article', {
-            label: 'Label',
-            comments: []
+            label: 'Label'
           });
         });
         oldRev = void 0;
         runs(function() {
           oldRev = article.get("_data.rev");
-          article.set('comments.content', []);
           article.get('comments').pushObject(comment);
           return article.save();
         });
@@ -106,7 +104,7 @@
           return article.get('_data.rev') !== oldRev;
         }, "", 3000);
         return runs(function() {
-          return expect(article.get('_data').comments[0].id).toBe(comment.id);
+          return expect(article.get('comments.firstObject.id')).toBe(comment.id);
         });
       });
     });
