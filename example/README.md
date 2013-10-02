@@ -1,4 +1,10 @@
-Simple application which brings together all features and shows on practice how to use `ember-couchdb-kit`
+Simple application which brings all features together
+
+Online version
+==============
+
+* http://jsfiddle.net/nLMwt/13/show/
+
 
 Installation
 ============
@@ -18,32 +24,10 @@ curl -X PUT http://localhost:5984/boards/_design/issues -H 'Content-Type: applic
 {
    "_id": "_design/issues",
    "language": "javascript",
-   "views": {
-       "all": {
-           "map": "function(doc) { if (doc.type == \"issue\")  emit(null, {_id: doc._id}) }"
-       },
-       "all_by_board": {
-           "map":  "function(doc) { if (doc.type == \"issue\")  emit(doc.board, {_id: doc._id}) }"
-       }
-   },
    "filters": {
      "only_positions": "function(doc, req) { if(doc.type == \"position\") { return true; } }",
      "issue": "function(doc, req) {if(doc.type == \"issue\") { return true; } }"
    }
-}'
-```
-
-```
-curl -X PUT http://127.0.0.1:5984/boards/common -H 'Content-Type: application/json' -d '{
-     "type": "position"
-}'
-
-curl -X PUT http://127.0.0.1:5984/boards/advanced -H 'Content-Type: application/json' -d '{
-     "type": "position"
-}'
-
-curl -X PUT http://127.0.0.1:5984/boards/intermediate -H 'Content-Type: application/json' -d '{
-     "type": "position"
 }'
 ```
 

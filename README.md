@@ -61,6 +61,13 @@ rake jasmine
 open -a safari http://localhost:8888
 ```
 
+
+Live example
+============
+
+* http://jsfiddle.net/nLMwt/13
+
+
 License
 -------
 
