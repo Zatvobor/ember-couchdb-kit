@@ -257,18 +257,30 @@
       return this.ajax(url, 'GET', normalizeResponce, hash);
     },
     findManyWithRev: function(store, type, ids) {
-      var docs, hash, key,
+      var docs, hash, key, self,
         _this = this;
       key = Ember.String.pluralize(type.typeKey);
+      self = this;
       docs = {};
       docs[key] = [];
       hash = {
         async: false
       };
       ids.forEach(function(id) {
-        return _this.findWithRev(store, type, id, hash).then(function(doc) {
-          return docs[key].push(doc[type.typeKey]);
-        });
+        var url, _id, _ref, _rev;
+        _ref = id.split("/").slice(0, 2), _id = _ref[0], _rev = _ref[1];
+        url = "%@?rev=%@".fmt(_id, _rev);
+        url = '%@/%@'.fmt(_this.buildURL(), url);
+        hash.url = url;
+        hash.type = 'GET';
+        hash.dataType = 'json';
+        hash.contentType = 'application/json; charset=utf-8';
+        hash.success = function(json) {
+          json._id = id;
+          self._normalizeRevision(json);
+          return docs[key].push(json);
+        };
+        return Ember.$.ajax(hash);
       });
       return docs;
     },

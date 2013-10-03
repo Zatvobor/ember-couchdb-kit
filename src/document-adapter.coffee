@@ -212,12 +212,23 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
 
   findManyWithRev: (store, type, ids) ->
     key = Ember.String.pluralize(type.typeKey)
+    self = @
     docs = {}
     docs[key] = []
     hash = {async: false}
     ids.forEach (id) =>
-      @findWithRev(store, type, id, hash).then (doc) =>
-        docs[key].push(doc[type.typeKey])
+      [_id, _rev] = id.split("/")[0..1]
+      url = "%@?rev=%@".fmt(_id, _rev)
+      url = '%@/%@'.fmt(@buildURL(), url)
+      hash.url = url
+      hash.type = 'GET'
+      hash.dataType = 'json'
+      hash.contentType = 'application/json; charset=utf-8'
+      hash.success = (json) ->
+        json._id = id
+        self._normalizeRevision(json)
+        docs[key].push(json)
+      Ember.$.ajax(hash)
     docs
 
   findMany: (store, type, ids) ->
