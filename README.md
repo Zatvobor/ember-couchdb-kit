@@ -24,6 +24,12 @@ There are some of these:
 Check source code for more details. In additional, you could find more in `/example` application and find out how to use `ember-couchdb-kit` on practice.
 
 
+Live example
+============
+
+* http://jsfiddle.net/Zatvobor/nLMwt/14
+
+
 Ready to use as a regular JS assets
 -----------------------------------
 
@@ -60,12 +66,6 @@ rake jasmine
 ```
 open -a safari http://localhost:8888
 ```
-
-
-Live example
-============
-
-* http://jsfiddle.net/nLMwt/13
 
 
 License

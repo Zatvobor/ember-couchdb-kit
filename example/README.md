@@ -3,7 +3,7 @@ Simple application which brings all features together
 Online version
 ==============
 
-* http://jsfiddle.net/nLMwt/13/show/
+* http://jsfiddle.net/Zatvobor/nLMwt/14/show
 
 
 Installation
