@@ -2,13 +2,15 @@ var App = Ember.Application.create();
 
 App.Boards = ['common', 'intermediate', 'advanced'];
 
+App.Host = "http://localhost:5984";
+
 
 // Models
 
-App.ApplicationAdapter =  EmberCouchDBKit.DocumentAdapter.extend({db: 'boards', host: "http://localhost:5984"});
+App.ApplicationAdapter =  EmberCouchDBKit.DocumentAdapter.extend({db: 'boards', host: App.Host});
 App.ApplicationSerializer = EmberCouchDBKit.DocumentSerializer.extend();
 
-App.AttachmentAdapter = EmberCouchDBKit.AttachmentAdapter.extend({db: 'boards', host: "http://localhost:5984"});
+App.AttachmentAdapter = EmberCouchDBKit.AttachmentAdapter.extend({db: 'boards', host: App.Host});
 App.AttachmentSerializer = EmberCouchDBKit.AttachmentSerializer.extend();
 
 App.Issue = DS.Model.extend({
@@ -71,7 +73,7 @@ App.IndexRoute = Ember.Route.extend({
   _position: function(){
     // create a CouchDB `/_change` listener which serves an position documents
     params = { include_docs: true, filter: 'issues/only_positions'};
-    position = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', host: "http://localhost:5984", content: params });
+    position = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', host: App.Host, content: params });
 
     // all upcoming changes are passed to `_handlePositionChanges` callback through `fromTail` strategy
     var self = this;
@@ -93,7 +95,7 @@ App.IndexRoute = Ember.Route.extend({
   _issue: function() {
     // create a CouchDB `/_change` issue listener which serves an issues
     var params = { include_docs: true, filter: 'issues/issue'};
-    var issue = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', host: "http://localhost:5984", content: params });
+    var issue = EmberCouchDBKit.ChangesFeed.create({ db: 'boards', host: App.Host, content: params });
 
     // all upcoming changes are passed to `_handleIssueChanges` callback through `fromTail` strategy
     var self = this;
@@ -332,7 +334,7 @@ App.FocusedTextArea = Ember.TextArea.extend({
 
 Ember.Handlebars.helper('linkToAttachment', function(attachment) {
   aTagTemplate= "<a href='%@' target='_blank'>%@</a>"
-  url = "/%@/%@".fmt(attachment.get('_data.db'), attachment.get('id'));
+  url = "%@/%@/%@".fmt(App.Host, attachment.get('_data.db'), attachment.get('id'));
   return new Handlebars.SafeString(
     aTagTemplate.fmt(url, attachment.get('file_name'))
   );
