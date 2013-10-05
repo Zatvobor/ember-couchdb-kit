@@ -71,8 +71,14 @@
             if ((data != null ? (_ref = data.results) != null ? _ref.length : void 0 : void 0) && callback) {
               callback.call(self, data.results);
             }
-            _this.set('since', data.last_seq);
-            return _this._ajax(callback, self);
+            return _this.set('since', data.last_seq);
+          }
+        },
+        complete: function() {
+          if (!_this.get('stopTracking')) {
+            return setTimeout((function() {
+              return _this._ajax(callback, self);
+            }), 1000);
           }
         }
       });

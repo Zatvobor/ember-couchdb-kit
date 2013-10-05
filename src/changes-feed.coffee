@@ -60,11 +60,14 @@ EmberCouchDBKit.ChangesFeed = Ember.ObjectProxy.extend
       type: "GET",
       url: @_makeRequestPath(),
       dataType: 'json',
+
       success: (data) =>
         unless @get('stopTracking')
           callback.call(self, data.results) if data?.results?.length && callback
           @set('since', data.last_seq)
-          @_ajax(callback, self)
+      complete: =>
+        unless @get('stopTracking')
+          setTimeout((=> @_ajax(callback, self)), 1000)
      })
 
   _buildUrl: ->
