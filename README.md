@@ -1,3 +1,5 @@
+[![Code
+Climate](https://codeclimate.com/github/roundscope/ember-couchdb-kit.png)](https://codeclimate.com/github/roundscope/ember-couchdb-kit)
 ember-couchdb-kit
 =================
 
