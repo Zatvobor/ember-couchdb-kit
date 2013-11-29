@@ -97,7 +97,7 @@
         case "manyToNone":
         case "manyToMany":
         case "manyToOne":
-          if (Ember.get(record, key).get('isLoaded')) {
+          if (record.get(key).get('content.isLoaded') || Ember.get(record, key).get('isLoaded')) {
             return json[key] = Ember.get(record, key).mapBy(attribute);
           } else {
             if (record.get("_data.%@".fmt(key))) {
