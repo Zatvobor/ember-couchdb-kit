@@ -131,8 +131,16 @@ App.IndexController = Ember.Controller.extend({
       var self = this;
       var issue = this.get('store').createRecord('issue', {text: text});
       issue.save().then(function(issue) {
-        self.get('position.issues').pushObject(issue);
-        self.get('position').save();
+        if (self.get('position.issues.isLoaded')){
+            self.get('position.issues').pushObject(issue);
+            self.get('position').save();
+        }
+         else{
+            self.get('position.issues').then(function(issues){
+                self.get('position.issues').pushObject(issue);
+                self.get('position').save();
+            });
+        }
       });
     },
 
