@@ -3,14 +3,14 @@ Simple application which brings all features together
 Online version
 ==============
 
-* http://jsfiddle.net/nLMwt/16/show
+* http://jsfiddle.net/nLMwt/16/show (old version!)
 
 
 Installation
 ============
 
 ```
-bundle install
+npm install
 ```
 
 setup application related design docs
@@ -35,8 +35,13 @@ Run
 ===
 
 ```
-rackup
-curl http://localhost:3000/version
-# => 200, ember-couchdb-kit example app
-open -a safari http://localhost:3000/example/index.html
+grunt example-app-server
+# curl http://localhost:9001/
+open -a safari http://127.0.0.1:9001/index.html
 ```
+
+
+
+
+==============
+
