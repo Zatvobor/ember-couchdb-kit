@@ -3,3 +3,5 @@ vendor/bundle
 .bundle
 .rvmrc
 bin/
+node_modules/
+bower_components/
