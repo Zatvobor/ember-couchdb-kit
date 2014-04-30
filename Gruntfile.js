@@ -10,14 +10,14 @@ module.exports = function (grunt) {
         expand: true,
         flatten: true,
         src: ['src/*.coffee'],
-        dest: 'src/js/',
+        dest: 'tmp/src/',
         ext: '.js'
       },
       compileSpecs: {
         expand: true,
         flatten: true,
-        src: ['spec/coffeescripts/*.coffee'],
-        dest: 'spec/javascripts/',
+        src: ['spec/*.coffee'],
+        dest: 'tmp/spec/javascripts/',
         ext: '.js'
       }
     },
@@ -27,12 +27,12 @@ module.exports = function (grunt) {
       },
       dist: {
         src: [
-          'src/js/ember-couchdb-kit.js',
-          'src/js/document-adapter.js',
-          'src/js/attachment-adapter.js',
-          'src/js/revs-adapter.js',
-          'src/js/registry.js',
-          'src/js/changes-feed.js'
+          'tmp/src/ember-couchdb-kit.js',
+          'tmp/src/document-adapter.js',
+          'tmp/src/attachment-adapter.js',
+          'tmp/src/revs-adapter.js',
+          'tmp/src/registry.js',
+          'tmp/src/changes-feed.js'
         ],
         dest: 'dist/ember-couchdb-kit.js'
       }
@@ -59,21 +59,25 @@ module.exports = function (grunt) {
             'bower_components/ember/ember.js',
             'bower_components/ember-data/ember-data.js',
             'dist/ember-couchdb-kit.js',
-            'spec/javascripts/env.js',
-            'spec/javascripts/*_spec.js'
+            'tmp/spec/javascripts/env.js',
+            'tmp/spec/javascripts/*_spec.js'
           ]
         }
       }
     },
-    clean: [
-      'dist/*.js',
-      'spec/javascripts/*.js',
-      'src/js/*.js'
-    ]
+    mkdir: {
+      all: {
+        options: {
+          create: ['tmp', 'tmp/src', 'tmp/spec']
+        }
+      }
+    },
+    clean: ['dist/*.js', 'tmp/src/*.js', 'tmp/spec/*.js']
   });
 
   grunt.registerTask('build', [
     'clean',
+    'mkdir',
     'coffee:compileSources',
     'coffee:compileSpecs',
     'concat:dist',

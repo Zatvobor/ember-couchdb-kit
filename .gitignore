@@ -5,3 +5,4 @@ vendor/bundle
 bin/
 node_modules/
 bower_components/
+tmp/
