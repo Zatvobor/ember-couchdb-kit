@@ -35,13 +35,7 @@ Run
 ===
 
 ```
-grunt example-app-server
-# curl http://localhost:9001/
+grunt server
 open -a safari http://127.0.0.1:9001/index.html
 ```
-
-
-
-
 ==============
-

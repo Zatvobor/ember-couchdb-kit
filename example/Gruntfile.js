@@ -13,25 +13,14 @@ module.exports = function(grunt) {
         ]
       }
     },
-    
+
     concat: {
       options: {
         separator: ';'
       },
       dist: {
-        src: ['src/*.js'],
+        src: ['src/app.js', 'src/models.js', 'src/routes.js', 'src/controllers.js', 'src/views.js', 'src/*.js'],
         dest: 'public/app.js'
-      }
-    },
-    
-    uglify: {
-      options: {
-        banner: '/*! <%= pkg.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n'
-      },
-      dist: {
-        files: {
-          'public/app.min.js': ['<%= concat.dist.dest %>']
-        }
       }
     },
 
@@ -41,8 +30,6 @@ module.exports = function(grunt) {
           port: 9001,
           bases: ['public'],
           debug: true
-          //livereload: true, // if you just specify `true`, default port `35729` will be used
-          //serverreload: true
         }
       }
     }
@@ -50,19 +37,7 @@ module.exports = function(grunt) {
 
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  //grunt.loadNpmTasks('grunt-contrib-jshint');
-  //grunt.loadNpmTasks('grunt-contrib-qunit');
-  //grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-express');
 
-  //grunt.registerTask('test', ['jshint', 'qunit']);
-  
-  //grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
-  //grunt.registerTask('default', ['concat', 'uglify']);
-  
-
-  //grunt.registerTask('default', ['copy', 'concat', 'uglify', 'express', 'express-keepalive']);
-  grunt.registerTask('example-app-server', ['copy', 'concat', 'uglify', 'express', 'express-keepalive']);
-
+  grunt.registerTask('server', ['copy', 'concat', 'express', 'express-keepalive']);
 };
