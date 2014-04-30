@@ -8,8 +8,11 @@ module.exports = function(grunt) {
         files: [
           {expand: true, src: ['index.html'], dest: 'public/'},
           {expand: true, src: ['assets/*'], dest: 'public/'},
-          {expand: true, src: ['../dist/*.js'], dest: 'public/dist/', filter: 'isFile'},
-          {expand: true, src: ['../vendor/assets/javascripts/*.js'], dest: 'public/vendor/', filter: 'isFile'}
+          {expand: true, src: ['../dist/ember-couchdb-kit.js'], dest: 'public/dist/'},
+          {expand: true, flatten: true, src: ['../bower_components/jquery/jquery.js'], dest: 'public/vendor/assets/javascripts/'},
+          {expand: true, flatten: true, src: ['../bower_components/handlebars/handlebars.js'], dest: 'public/vendor/assets/javascripts/'},
+          {expand: true, flatten: true, src: ['../bower_components/ember/ember.js'], dest: 'public/vendor/assets/javascripts/'},
+          {expand: true, flatten: true, src: ['../bower_components/ember-data/ember-data.js'], dest: 'public/vendor/assets/javascripts/'}
         ]
       }
     },

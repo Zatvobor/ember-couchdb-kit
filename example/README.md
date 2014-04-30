@@ -9,9 +9,21 @@ Online version
 Installation
 ============
 
+change to parent directory and run "npm install" (chose ember#~1.0.0 bower component version if prompted)
+
 ```
+cd ..
 npm install
 ```
+
+change back to "example" directory and run "npm install"
+
+```
+cd example
+npm install
+```
+
+
 
 setup application related design docs
 
