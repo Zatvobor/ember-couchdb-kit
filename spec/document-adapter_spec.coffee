@@ -6,13 +6,7 @@ module 'EmberCouchDBKit.DocumentAdapter',
       window.subject = new TestEnv()
       window.testing = true
     @subject = window.subject
-    @async = (cb) ->
-      do stop
-      ->
-        do start
-        args = arguments
-        Ember.run ->
-          cb.apply @, args
+    @async = window.async
 
 test 'create record with given id', 1, ->
   person = @subject.create.call @, 'user', id: 'john@example.com'

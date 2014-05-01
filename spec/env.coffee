@@ -23,11 +23,18 @@ class @TestEnv
   constructor: ->
     DatabaseCleaner.reset()
 
+    window.async = (cb) ->
+      stop()
+      ->
+        start()
+        args = arguments
+        Em.run ->
+          cb.apply @, args
+
     unless window.Fixture
       @models()
       mapping = user: User, article: Article, attachment: Attachment, comment: Comment, message: Message, history: History
       window.Fixture = window.setupStore mapping
-
     @
 
   models: ->
