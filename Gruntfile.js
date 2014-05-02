@@ -63,8 +63,14 @@ module.exports = function (grunt) {
         options: {
           base: '.',
           port: 9997,
-          //keepalive: true
+          keepalive: true
         }
+      }
+    },
+    watch: {
+      tests: {
+        files: ['src/*.coffee', 'spec/*.coffee', 'spec/index.html'],
+        tasks: ['test']
       }
     },
     clean: ['dist/*.js', 'tmp/src/*.js', 'tmp/spec/*.js']
@@ -83,5 +89,10 @@ module.exports = function (grunt) {
     'build',
     'connect',
     'qunit'
+  ]);
+
+  grunt.registerTask('dev', [
+    'test',
+    'watch'
   ]);
 };
