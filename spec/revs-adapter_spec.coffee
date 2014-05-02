@@ -1,69 +1,25 @@
 Ember.ENV.TESTING = true
-
-describe 'EmberCouchDBKit.RevsAdapter', ->
-
-  beforeEach ->
+module 'EmberCouchDBKit.RevsAdapter',
+  setup: ->
     unless window.testing
       window.subject = new TestEnv()
       window.testing = true
     @subject = window.subject
+    @async = window.async
 
+test 'belongsTo relation', 1, ->
+  person = @subject.create.call @, 'user', name: 'name'
+  person.save().then @async =>
+    person.set('name', 'updated')
+    person.save().then @async ->
+      history = person.get 'history'
+      user = history.get '_.data.user'
+      equals user.get('name'), 'name', 'belongs ok'
 
-  it 'as belongsTo relation', ->
-    person = @subject.create.call(@, 'user', {name: 'name'})
-
-    runs ->
-      [id, rev] = [person.id, person.get("_data.rev")]
-
-      person.set('name', 'updated').save()
-
-      waitsFor ->
-        rev != person.get("_data.rev")
-      ,"update", 3000
-
-      runs ->
-        history = person.get('history')
-        waitsFor ->
-          history != null
-
-        runs ->
-          history.reload()
-
-        waitsFor ->
-          EmberCouchDBKit.RevsStore.registiry["#{id}/history"]._revs_info.length == 2
-        , "populate registry", 4000
-
-        runs ->
-          user = history.get('user')
-          waitsFor ->
-            user.get('_data.rev') != undefined
-          runs ->
-            expect(user.get('name')).toEqual('name')
-
-  it 'as hasMany relation', ->
-    person = @subject.create.call(@, 'user', {name: 'name'})
-    runs ->
-      [id, rev] = [person.id, person.get("_data.rev")]
-      person.set('name', 'updated').save()
-      waitsFor ->
-        rev != person.get("_data.rev")
-      ,"update", 3000
-
-      runs ->
-        history = person.get('history')
-        waitsFor ->
-          history != null
-
-        runs ->
-          history.reload()
-
-        waitsFor ->
-          EmberCouchDBKit.RevsStore.registiry["#{id}/history"]._revs_info.length == 2
-        , "populate registry", 4000
-        runs ->
-          users = history.get('users')
-          waitsFor ->
-            users.toArray().length != 0
-          runs ->
-            expect(users.get('firstObject.name')).toEqual('updated')
-            expect(users.get('lastObject.name')).toEqual('name')
+test 'hasMany relation', 1, ->
+  person = @subject.create.call @, 'user', name: 'name'
+  person.save().then @async =>
+    person.set 'name', 'updated'
+    person.save().then @async ->
+      history = person.get 'history'
+      ok history.get('_.data.users.length') is 2, 'has many'
