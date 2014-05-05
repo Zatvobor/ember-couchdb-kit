@@ -6,20 +6,19 @@ module 'EmberCouchDBKit.RevsAdapter',
       window.testing = true
     @subject = window.subject
     @async = window.async
+    @randId = ->
+      Math.floor Math.random() * 10000
 
 test 'belongsTo relation', 1, ->
-  person = @subject.create.call @, 'user', name: 'name'
-  person.save().then @async =>
-    person.set('name', 'updated')
-    person.save().then @async ->
-      history = person.get 'history'
-      user = history.get '_.data.user'
-      equals user.get('name'), 'name', 'belongs ok'
-
-test 'hasMany relation', 1, ->
-  person = @subject.create.call @, 'user', name: 'name'
+  person = @subject.create.call @, 'user', id: @randId(), name: 'name'
   person.save().then @async =>
     person.set 'name', 'updated'
     person.save().then @async ->
-      history = person.get 'history'
-      ok history.get('_.data.users.length') is 2, 'has many'
+      equal person.get('history').get('user.id').split('/')[0], person.id, 'belongs ok'
+
+test 'hasMany relation', 1, ->
+  person = @subject.create.call @, 'user', id: @randId(), name: 'john'
+  person.save().then @async =>
+    person.set 'name', 'updatedJohn'
+    person.save().then @async =>
+      equal person.get('history').get('_data.users.length'), 2, 'hasMany ok'
