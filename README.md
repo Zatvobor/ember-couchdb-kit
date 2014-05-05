@@ -1,5 +1,6 @@
 [![Code
 Climate](https://codeclimate.com/github/roundscope/ember-couchdb-kit.png)](https://codeclimate.com/github/roundscope/ember-couchdb-kit)
+[![Hack roundscope/ember-couchdb-kit on Nitrous.IO](https://d3o0mnbgv6k92a.cloudfront.net/assets/hack-s-v1-7475db0cf93fe5d1e29420c928ebc614.png)](https://www.nitrous.io/hack_button?source=embed&runtime=nodejs&repo=roundscope%2Fember-couchdb-kit)
 ember-couchdb-kit
 =================
 
