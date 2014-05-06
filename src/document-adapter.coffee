@@ -126,7 +126,7 @@ EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend
 @extends DS.Adapter
 ###
 EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
-
+  defaultSerializer: '_default'
   customTypeLookup: false
   typeViewName: "all"
 

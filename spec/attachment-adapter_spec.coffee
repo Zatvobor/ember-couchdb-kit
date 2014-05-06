@@ -62,6 +62,14 @@ test 'find', 1, ->
       @subject.find('attachment', attachment.id).then @async (rec) ->
         ok rec?, 'finds ok'
 
+test 'hasMany', 1, ->
+  rev = @subject.createDocument({id: "user1", name: "User"})
+  rev = @subject.createAttachment('user1', rev, {id: "user/image1"})
+  @subject.createAttachment('user1', rev, {id: "user/image2"})
+  @subject.find('user', 'user1').then @async (user) =>
+    user.get('attachments').then @async ->
+      equal user.get('attachments.length'), 2, 'okok'
+
       ###
     it 'find', ->
       rev = @subject.createDocument({id: "user1", name: "User"})
