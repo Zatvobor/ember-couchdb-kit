@@ -1,227 +1,69 @@
 Ember.ENV.TESTING = true
 
-describe 'EmberCouchDBKit.DocumentAdapter' , ->
-  beforeEach ->
+module 'EmberCouchDBKit.DocumentAdapter',
+  setup: ->
     unless window.testing
       window.subject = new TestEnv()
       window.testing = true
     @subject = window.subject
+    @async = window.async
 
-  describe 'model creation', ->
+test 'create record with given id', 1, ->
+  person = @subject.create.call @, 'user', id: 'john@example.com'
+  equal person.id, 'john@example.com', 'Id is correct'
 
-    it 'record with specific id', ->
-      person = @subject.create.call(@, 'user', {id: 'john@example.com'})
+test 'create record with correct attributes', 2, ->
+  person = @subject.create.call @, 'user', a: 'a', b: 'b'
+  equal person.get('a'), 'a', 'attr is correct'
+  equal person.get('b'), 'b', 'attr is correct'
 
-      runs ->
-        expect(person.id).toBe('john@example.com')
-        expect(person.get('_data.rev')).not.toBeNull()
-        expect(person.get('_data.rev')).not.toBeUndefined()
+test 'retrieve raw json', 1, ->
+  person = @subject.create.call @, 'user', name: 'john', id: Math.floor Math.random() * 10000
+  person.save().then @async ->
+    equal person.get('_data').name, 'john', 'Retrieve raw json ok'
 
-    it 'record with generated id', ->
-      person = @subject.create.call(@, 'user', {})
+test 'belongsTo relation', 1, ->
+  person = @subject.create.call @, 'user', id: Math.floor(Math.random() * 10000), name: 'john'
+  article = @subject.create.call @, 'article', label: 'lbl', user: person
+  equal article.get('user.name'), 'john', 'Retrieves relations attrs ok'
 
-      runs ->
-        expect(person.id).not.toBeNull()
+test 'retrieve belongsTo field as raw json', 1, ->
+  person = @subject.create.call @, 'user', id: Math.floor(Math.random() * 10000), name: 'john'
+  message = @subject.create.call @, 'message', user: person
+  message.save().then @async ->
+    equal message.get('_data.user.id'), person.get('name'), 'Retrieves raw belongsTo json ok'
 
+test 'hasMany relation', 1, ->
+  article = @subject.create.call @, 'article', label: 'Label'
+  article.save().then @async =>
+    comment = @subject.create.call @, 'comment', text: 'text', article: article
+    article.save().then @async ->
+      equal article.get('comments.firstObject.id'), comment.id, 'Handles hasMany relation ok'
 
-    it 'simple {a:"a", b:"b"} model', ->
-      person = @subject.create.call(@, 'user', {a: 'a', b: 'b'})
+test 'update', 1, ->
+  person = @subject.create.call @, 'user', id: Math.floor(Math.random() * 10000), name: 'john'
+  person.save().then @async =>
+    rev = person.get '_data.rev'
+    person.set 'name', 'paul'
+    person.save().then @async ->
+      ok person.get('_data.rev') isnt rev, 'Increments rev on update'
 
-      runs ->
-        expect(person.get('a')).toBe('a')
-        expect(person.get('b')).toBe('b')
+test 'update belongsTo relation', 1, ->
+  person1 = @subject.create.call @, 'user', id: Math.floor(Math.random() * 10000), name: 'john'
+  person2 = @subject.create.call @, 'user', id: Math.floor(Math.random() * 10000), name: 'paul'
+  article = @subject.create.call @, 'article', label: 'lbl', user: person1
+  article.set 'user', person2
+  article.save().then @async ->
+    equal article.get('user.id'), person2.id, 'Updates parent relation'
 
+test 'delete', 1, ->
+  person = @subject.create.call @, 'user', id: Math.floor(Math.random() * 10000), name: 'john'
+  person.save().then @async =>
+    person.deleteRecord()
+    person.save().then @async ->
+      ok person.get('isDeleted'), 'Marks record deleted'
 
-    it 'always available as a raw json object', ->
-      person = @subject.create.call(@, 'user', {name: 'john'})
-
-      runs ->
-        expect(person.get('_data').name).toBe('john')
-
-    it 'belongsTo relation', ->
-      person = @subject.create.call(@, 'user', {name: 'john'})
-
-      runs ->
-        article = @subject.create.call(@, 'article', {})
-        runs ->
-          article.set('user', person)
-          article.save()
-
-          waitsFor ->
-            article.get('_data.user') != null
-
-          runs ->
-            expect(article.get('user.name')).toBe('john')
-
-    it 'belongsTo field avilable as a raw js object', ->
-      person = @subject.create.call(@, 'user', {name: 'john'})
-
-      runs ->
-        message = @subject.create.call(@, 'message', {user: person})
-        runs ->
-          expect(message.get('_data.user.id')).toBe('john')
-
-    it 'with hasMany', ->
-      comment = @subject.create.call(@, 'comment', {text: 'text'})
-      article = undefined
-
-      runs ->
-        article = @subject.create.call(@, 'article', {label: 'Label'})
-
-      oldRev = undefined
-
-      runs ->
-        oldRev = article.get("_data.rev")
-        article.get('comments').pushObject(comment)
-        article.save()
-
-      waitsFor ->
-        article.get('_data.rev') != oldRev
-      ,"", 3000
-
-      runs ->
-        expect(article.get('comments.firstObject.id')).toBe(comment.id)
-
-  describe 'model updating', ->
-
-    it 'in general', ->
-      person = @subject.create.call(@, 'user', {name: "John"})
-      prevRev = undefined
-
-      runs ->
-        prevRev = person.get("_data.rev")
-        person.set('name', 'Bobby')
-        person.save()
-
-      waitsFor ->
-        prevRev != person.get("_data.rev")
-      ,"", 3000
-
-      runs ->
-        expect(prevRev).not.toEqual(person.get("_data.rev"))
-
-    it 'belongsTo relation', ->
-      name = 'Vpupkin'
-      newName = 'Bobby'
-
-      person1 = @subject.create.call(@, 'user', {name: name})
-
-      article = undefined
-      prevRev = undefined
-      person2 = undefined
-
-      runs ->
-        article = @subject.create.call(@, 'article', {label: 'Label', user: person1})
-
-      runs ->
-        prevRev =  article.get("_data.rev")
-        person2 = @subject.create.call(@, 'user', {name: newName})
-
-      runs ->
-        article.set('user', person2)
-        article.save()
-
-      waitsFor ->
-        prevRev != article.get("_data.rev")
-      ,"", 3000
-
-      runs ->
-        expect(prevRev).not.toEqual(article.get("_data.rev"))
-        expect(article.get('user.id')).toEqual(person2.id)
-
-
-
-    it 'updates hasMany relation', ->
-      comment = @subject.create.call(@, 'comment', {text: 'Text'})
-
-      article = undefined
-      comment2 = undefined
-
-      runs ->
-        article = @subject.create.call(@, 'article', {label: 'Label', comments: []})
-
-      runs ->
-
-        article.get('comments').pushObject(comment)
-        article.save()
-
-      waitsFor ->
-        article.get('_data').comments != undefined
-      ,"", 3000
-
-      runs ->
-        expect(article.get('comments').toArray().length).toEqual(1)
-        comment2 = @subject.create.call(@, 'comment', {text: 'Text2'})
-
-      runs ->
-        article.get('comments').pushObject(comment2)
-        article.save()
-
-      waitsFor ->
-        article.get('_data').comments != undefined && article.get('_data').comments.length == 2
-      ,"", 3000
-
-      runs ->
-        expect(article.get('comments').toArray().length).toEqual(2)
-
-    it "update hasMany without load" , ->
-      rev = @subject.createDocument({id: "article8", label: 'Label', comments: ["comment1", "comment2"]})
-      @subject.createDocument({id: "comment1"})
-      @subject.createDocument({id: "comment2"})
-      article = undefined
-      runs =>
-        window.Fixture.store.find('article', 'article8').then (m) ->
-          article = m
-
-        waitsFor =>
-          article != undefined
-
-        runs ->
-          expect(article.get('_data').comments.length).toEqual(2)
-          article.set('label', 'updated label')
-          article.save()
-          waitsFor ->
-            article.get('data._rev') != rev
-          runs ->
-            expect(article.get('_data').comments.length).toEqual(2)
-
-
-  describe "deletion", ->
-
-    it "in general", ->
-      person = @subject.create.call(@, 'user', {name: 'Vpupkin'})
-
-      runs ->
-        person.deleteRecord()
-        person.save()
-        expect(person.get('isDeleted')).toBe(true)
-
-  describe "find", ->
-    it "by id", ->
-      @subject.createDocument({id: "findId", name: "Some Name"})
-      user = @subject.find('user', 'findId')
-      runs ->
-        expect(user.get('name')).toEqual('Some Name')
-
-    it 'by ids', ->
-      @subject.createDocument({id: "comment4", text: "Some text"})
-      @subject.createDocument({id: "comment5", text: "Some text"})
-      @subject.createDocument({id: "article", comments: ["comment4", "comment5"], label: "some label"})
-
-      article = @subject.find('article', 'article')
-      runs ->
-        article.get('comments')
-
-        waitsFor ->
-          article.get('comments.length') != undefined && article.get('comments.length') != 0
-        runs ->
-          article.get('comments').forEach (comment) ->
-            expect(comment.get('text')).toEqual('Some text')
-
-    it "by query", ->
-      @subject.createDocument({id: "comment7", text: "Some text", type: "comment"})
-      @subject.createDocument({id: "comment8", text: "Some text", type: "comment"})
-      @subject.createView("byComment")
-      comments = @subject.findQuery('comment', {designDoc: "comments", viewName: "all"})
-      runs ->
-        expect(comments.toArray().length).toEqual(2)
+test 'find by id', 1, ->
+  person = @subject.create.call @, 'user', id: Math.floor(Math.random() * 10000), name: 'john'
+  @subject.find('user', person.id).then @async (user) ->
+    equal user.get('name'), 'john', 'Finds record by id'
