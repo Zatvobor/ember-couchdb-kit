@@ -15,6 +15,25 @@
       },
       remove: function(type, key) {
         return delete _data[type + ':' + key];
+      },
+      mapRevIds: function(type, key) {
+        var _this = this;
+        return this.get(type, key)._revs_info.map(function(_rev) {
+          return "%@/%@".fmt(_this.get(type, key)._id, _rev.rev);
+        });
+      },
+      stopAll: function() {
+        var k, v, _results;
+        _results = [];
+        for (k in _data) {
+          v = _data[k];
+          if (k.indexOf('changes_worker') === 0) {
+            _results.push(v.stop());
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
       }
     };
   })();
@@ -608,10 +627,10 @@
     normalizeRelationships: function(type, hash) {
       return type.eachRelationship((function(key, relationship) {
         if (relationship.kind === "belongsTo") {
-          hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(this.extractId(type, hash))[1];
+          hash[key] = EmberCouchDBKit.sharedStore.mapRevIds('revs', this.extractId(type, hash))[1];
         }
         if (relationship.kind === "hasMany") {
-          return hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(this.extractId(type, hash));
+          return hash[key] = EmberCouchDBKit.sharedStore.mapRevIds('revs', this.extractId(type, hash));
         }
       }), this);
     }
@@ -665,7 +684,7 @@
       }
       return new Ember.RSVP.Promise(function(resolve, reject) {
         hash.success = function(data) {
-          EmberCouchDBKit.RevsStore.add(id, data);
+          EmberCouchDBKit.sharedStore.add('revs', id, data);
           return Ember.run(null, resolve, {
             history: {
               id: id
@@ -694,93 +713,6 @@
       return url;
     }
   });
-
-}).call(this);
-;(function() {
-  var _ref, _ref1, _ref2,
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  EmberCouchDBKit.BaseRegistry = (function() {
-    function BaseRegistry() {
-      this.registiry = {};
-    }
-
-    BaseRegistry.prototype.add = function(key, value) {
-      return this.registiry[key] = value;
-    };
-
-    BaseRegistry.prototype.get = function(key) {
-      return this.registiry[key];
-    };
-
-    BaseRegistry.prototype.remove = function() {
-      return delete this.registiry[key];
-    };
-
-    return BaseRegistry;
-
-  })();
-
-  EmberCouchDBKit.RevsStoreClass = (function(_super) {
-    __extends(RevsStoreClass, _super);
-
-    function RevsStoreClass() {
-      _ref = RevsStoreClass.__super__.constructor.apply(this, arguments);
-      return _ref;
-    }
-
-    RevsStoreClass.prototype.mapRevIds = function(key) {
-      var _this = this;
-      return this.get(key)._revs_info.map(function(_rev) {
-        return "%@/%@".fmt(_this.get(key)._id, _rev.rev);
-      });
-    };
-
-    return RevsStoreClass;
-
-  })(EmberCouchDBKit.BaseRegistry);
-
-  EmberCouchDBKit.RevsStore = new EmberCouchDBKit.RevsStoreClass();
-
-  EmberCouchDBKit.AttachmentStoreClass = (function(_super) {
-    __extends(AttachmentStoreClass, _super);
-
-    function AttachmentStoreClass() {
-      _ref1 = AttachmentStoreClass.__super__.constructor.apply(this, arguments);
-      return _ref1;
-    }
-
-    return AttachmentStoreClass;
-
-  })(EmberCouchDBKit.BaseRegistry);
-
-  EmberCouchDBKit.AttachmentStore = new EmberCouchDBKit.AttachmentStoreClass();
-
-  EmberCouchDBKit.ChangesWorkersClass = (function(_super) {
-    __extends(ChangesWorkersClass, _super);
-
-    function ChangesWorkersClass() {
-      _ref2 = ChangesWorkersClass.__super__.constructor.apply(this, arguments);
-      return _ref2;
-    }
-
-    ChangesWorkersClass.prototype.stopAll = function() {
-      var k, v, _ref3, _results;
-      _ref3 = this.registiry;
-      _results = [];
-      for (k in _ref3) {
-        v = _ref3[k];
-        _results.push(v.stop());
-      }
-      return _results;
-    };
-
-    return ChangesWorkersClass;
-
-  })(EmberCouchDBKit.BaseRegistry);
-
-  EmberCouchDBKit.ChangesWorkers = new EmberCouchDBKit.ChangesWorkersClass();
 
 }).call(this);
 ;/*
