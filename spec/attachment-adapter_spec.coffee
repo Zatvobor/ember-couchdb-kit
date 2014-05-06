@@ -27,7 +27,6 @@ test 'create', 1, ->
     attachment.save().then @async ->
       notEqual user.get('_data.rev'), rev, 'attachment created'
 
-
 test 'delete', 2, ->
   rev = @subject.createDocument({id: "user0", name: "UserZero"})
   rev = @subject.createAttachment('user0', rev, {id: "user/image3"})
@@ -40,7 +39,6 @@ test 'delete', 2, ->
       attachment.save().then @async =>
         user.get('attachments').then @async ->
           equal user.get('attachments.length'), 1, 'one attachment gone'
-
 
 test 'find', 1, ->
   user = @user()
@@ -66,18 +64,3 @@ test 'hasMany', 1, ->
   @subject.find('user', 'user1').then @async (user) =>
     user.get('attachments').then @async ->
       equal user.get('attachments.length'), 2, 'okok'
-
-      ###
-    it 'find', ->
-      rev = @subject.createDocument({id: "user1", name: "User"})
-      rev = @subject.createAttachment('user1', rev, {id: "user/image1"})
-      @subject.createAttachment('user1', rev, {id: "user/image2"})
-      user = @subject.find('user', 'user1')
-      runs ->
-        user.get('attachments')
-      waitsFor ->
-        user.get('attachments.length') != undefined && user.get('attachments.length') != 0
-      , 3000
-      runs ->
-        expect(user.get('attachments.length')).toEqual(2)
-###
