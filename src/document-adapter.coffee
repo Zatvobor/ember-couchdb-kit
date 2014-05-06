@@ -48,7 +48,7 @@ EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend
         revpos: v.revpos
         db: v.db
 
-      EmberCouchDBKit.AttachmentStore.add(key, attachment)
+      EmberCouchDBKit.sharedStore.add('attachment', key, attachment)
       _attachments.push(key)
     hash.attachments = _attachments
 
@@ -301,7 +301,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     _attachments = {}
 
     record.get('attachments').forEach (item) ->
-      attachment = EmberCouchDBKit.AttachmentStore.get(item.get('id'))
+      attachment = EmberCouchDBKit.sharedStore.get('attachment', item.get('id'))
       _attachments[item.get('file_name')] =
         content_type: attachment.content_type
         digest: attachment.digest
