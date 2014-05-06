@@ -81,7 +81,8 @@ App.CancelView = Ember.View.extend({
 });
 
 App.DeleteIssueView = Ember.View.extend({
-  tagName: "span",
+  tagName: "button",
+  classNames: ['btn', 'btn-xs', 'btn-danger'],
 
   click: function(event){
     event.preventDefault();
