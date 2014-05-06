@@ -21,4 +21,4 @@ test 'hasMany relation', 1, ->
   person.save().then @async =>
     person.set 'name', 'updatedJohn'
     person.save().then @async =>
-      equal person.get('history').get('_data.users.length'), 2, 'hasMany ok'
+      equal person.get('history').get('_data.users.length'), 1, 'hasMany ok'

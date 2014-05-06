@@ -61,7 +61,7 @@ class @TestEnv
       db: DS.attr 'string'
 
     window.History = DS.Model.extend
-      user: DS.belongsTo 'user', inverse: null
+      user: DS.belongsTo 'user', inverse: 'history'
       users: DS.hasMany 'user', async: true, inverse: null
 
   create: (type, params) ->
@@ -126,7 +126,6 @@ window.setupStore = (options) ->
   container.register "store:main", DS.Store.extend adapter: adapter
 
   container.register "serializer:_default", EmberCouchDBKit.DocumentSerializer
-  container.register "serializer:application", EmberCouchDBKit.DocumentSerializer
   container.register "serializer:history", EmberCouchDBKit.RevSerializer
   container.register "serializer:attachment", EmberCouchDBKit.AttachmentSerializer
 
