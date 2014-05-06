@@ -6,19 +6,37 @@ module 'EmberCouchDBKit.RevsAdapter',
       window.testing = true
     @subject = window.subject
     @async = window.async
-    @randId = ->
-      Math.floor Math.random() * 10000
 
 test 'belongsTo relation', 1, ->
-  person = @subject.create.call @, 'user', id: @randId(), name: 'name'
-  person.save().then @async =>
-    person.set 'name', 'updated'
-    person.save().then @async ->
-      equal person.get('history').get('user.id').split('/')[0], person.id, 'belongs ok'
+  person = @subject.create.call @, 'user', name: 'name'
+  person.save().then @async (saved) =>
+    saved.set 'name', 'updated'
+    saved.save().then @async (updated) =>
+      stop()
+      history = updated.get 'history'
+      setTimeout =>
+        history.reload()
+        setTimeout =>
+          start()
+          equal history.get('user.id').split('/')[0], person.id, 'history belongsTo user'
+        , 1000
+      , 1000
 
 test 'hasMany relation', 1, ->
-  person = @subject.create.call @, 'user', id: @randId(), name: 'john'
-  person.save().then @async =>
-    person.set 'name', 'updatedJohn'
-    person.save().then @async =>
-      equal person.get('history').get('_data.users.length'), 1, 'hasMany ok'
+  person = @subject.create.call @, 'user', name: 'john'
+  person.save().then @async (saved) =>
+    saved.set 'name', 'updatedJohn'
+    saved.save().then @async (updated) =>
+      stop()
+      history = updated.get 'history'
+      setTimeout =>
+        history.reload()
+        setTimeout =>
+          history.get('users')
+          setTimeout =>
+            start()
+            console.log(length)
+            equal history.get('users.length'), 2, 'history hasMany users'
+          , 1000
+        , 1000
+      , 1000
