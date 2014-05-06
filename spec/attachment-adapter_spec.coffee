@@ -28,22 +28,19 @@ test 'create', 1, ->
       notEqual user.get('_data.rev'), rev, 'attachment created'
 
 
-test 'delete', 1, ->
-  user = @user()
-  user.save().then @async =>
-    params =
-      model_name: 'user'
-      doc_id: user.get 'id'
-      id: "%@/%@".fmt user.get('id'), 'test_image.jpeg'
-      file: window.TestImage
-      rev: user.get '_data.rev'
-      content_type: 'image/jpeg'
-      length: 4056
-      file_name: 'test_image.jpeg'
-    attachment = @subject.create.call @, 'attachment', params
-    attachment.save().then @async ->
+test 'delete', 2, ->
+  rev = @subject.createDocument({id: "user0", name: "UserZero"})
+  rev = @subject.createAttachment('user0', rev, {id: "user/image3"})
+  @subject.createAttachment('user0', rev, {id: "user/image4"})
+  @subject.find('user', 'user0').then @async (user) =>
+    user.get('attachments').then @async =>
+      equal user.get('attachments.length'), 2, 'two attachments exist'
+      attachment = user.get('attachments.firstObject')
       attachment.deleteRecord()
-      ok not user.get('attachments.length'), 'attachments deleted'
+      attachment.save().then @async =>
+        user.get('attachments').then @async ->
+          equal user.get('attachments.length'), 1, 'one attachment gone'
+
 
 test 'find', 1, ->
   user = @user()
