@@ -192,6 +192,7 @@
 
 
   EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend({
+    defaultSerializer: '_default',
     customTypeLookup: false,
     typeViewName: "all",
     buildURL: function() {
