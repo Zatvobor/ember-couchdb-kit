@@ -3,18 +3,21 @@
     VERSION: '1.0.dev'
   });
 
-  /*
-  EmberCouchDBKit.sharedStore = do ->
-    _data = {}
-    
-    add: (type, key, value) ->
-      _data[type + ':' + key] = value
-    get: (type, key) ->
-      _data[type + ':' + key]
-    remove: (type, key) ->
-    	delete _data[type + ':' + key]
-  */
-
+  EmberCouchDBKit.sharedStore = (function() {
+    var _data;
+    _data = {};
+    return {
+      add: function(type, key, value) {
+        return _data[type + ':' + key] = value;
+      },
+      get: function(type, key) {
+        return _data[type + ':' + key];
+      },
+      remove: function(type, key) {
+        return delete _data[type + ':' + key];
+      }
+    };
+  })();
 
 }).call(this);
 ;/*
