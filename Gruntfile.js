@@ -16,7 +16,7 @@ module.exports = function (grunt) {
       compileSpecs: {
         expand: true,
         flatten: true,
-        src: ['spec/*.coffee'],
+        src: ['spec/*.coffee', 'qunitspec/*.coffee'],
         dest: 'tmp/spec/javascripts/',
         ext: '.js'
       }
@@ -44,32 +44,33 @@ module.exports = function (grunt) {
         }
       }
     },
-    karma: {
-      unit: {
-        options: {
-          frameworks: ['jasmine'],
-          browsers: ['PhantomJS'],
-          captureTimeout: 60000,
-          keepalive: true,
-          autoWatch: true,
-          singleRun: false,
-          files: [
-            'bower_components/jquery/jquery.js',
-            'bower_components/handlebars/handlebars.js',
-            'bower_components/ember/ember.js',
-            'bower_components/ember-data/ember-data.js',
-            'dist/ember-couchdb-kit.js',
-            'tmp/spec/javascripts/env.js',
-            'tmp/spec/javascripts/*_spec.js'
-          ]
-        }
-      }
-    },
     mkdir: {
       all: {
         options: {
           create: ['tmp', 'tmp/src', 'tmp/spec']
         }
+      }
+    },
+    qunit: {
+      local: {
+        options: {
+          urls: ['http://localhost:9997/spec/index.html']
+        }
+      }
+    },
+    connect: {
+      server: {
+        options: {
+          base: '.',
+          port: 9997,
+          keepalive: true
+        }
+      }
+    },
+    watch: {
+      tests: {
+        files: ['src/*.coffee', 'spec/*.coffee', 'spec/index.html'],
+        tasks: ['test']
       }
     },
     clean: ['dist/*.js', 'tmp/src/*.js', 'tmp/spec/*.js']
@@ -86,6 +87,12 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test', [
     'build',
-    'karma:unit'
+    'connect',
+    'qunit'
+  ]);
+
+  grunt.registerTask('dev', [
+    'test',
+    'watch'
   ]);
 };
