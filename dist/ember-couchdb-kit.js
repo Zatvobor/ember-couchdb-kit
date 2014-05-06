@@ -3,6 +3,19 @@
     VERSION: '1.0.dev'
   });
 
+  /*
+  EmberCouchDBKit.sharedStore = do ->
+    _data = {}
+    
+    add: (type, key, value) ->
+      _data[type + ':' + key] = value
+    get: (type, key) ->
+      _data[type + ':' + key]
+    remove: (type, key) ->
+    	delete _data[type + ':' + key]
+  */
+
+
 }).call(this);
 ;/*
 @namespace EmberCouchDBKit
@@ -58,7 +71,7 @@
           revpos: v.revpos,
           db: v.db
         };
-        EmberCouchDBKit.AttachmentStore.add(key, attachment);
+        EmberCouchDBKit.sharedStore.add('attachment', key, attachment);
         _attachments.push(key);
       }
       return hash.attachments = _attachments;
@@ -380,7 +393,7 @@
       _attachments = {};
       record.get('attachments').forEach(function(item) {
         var attachment;
-        attachment = EmberCouchDBKit.AttachmentStore.get(item.get('id'));
+        attachment = EmberCouchDBKit.sharedStore.get('attachment', item.get('id'));
         return _attachments[item.get('file_name')] = {
           content_type: attachment.content_type,
           digest: attachment.digest,
@@ -481,7 +494,7 @@
     find: function(store, type, id) {
       return new Ember.RSVP.Promise(function(resolve, reject) {
         return Ember.run(null, resolve, {
-          attachment: EmberCouchDBKit.AttachmentStore.get(id)
+          attachment: EmberCouchDBKit.sharedStore.get('attachment', id)
         });
       });
     },
@@ -489,7 +502,7 @@
       var docs,
         _this = this;
       docs = ids.map(function(item) {
-        item = EmberCouchDBKit.AttachmentStore.get(item);
+        item = EmberCouchDBKit.sharedStore.get('attachment', item);
         item.db = _this.get('db');
         return item;
       });
