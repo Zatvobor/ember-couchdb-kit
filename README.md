@@ -6,12 +6,14 @@ ember-couchdb-kit
 
 Versions:
 
-* `v0.9` works with `ember 1.0.0` and `ember-data 1.0.0-beta.3`
-* `v0.8` works with `ember 1.0.0` and `ember-data 1.0.0-beta.2`
-* `v0.7` works with `ember rc.6.1` and `ember-data 0.13`
+* `v1.0.0` works with `ember 1.5.1` and `ember-data 1.0.0-beta.7`
+* `v0.9.0` works with `ember 1.0.0` and `ember-data 1.0.0-beta.3`
+* `v0.8.0` works with `ember 1.0.0` and `ember-data 1.0.0-beta.2`
+* `v0.7.0` works with `ember rc.6.1` and `ember-data 0.13`
 
 
-An `ember-data` kit for Apache CouchDB.
+An `ember-data` kit for Apache CouchDB. A collection of adapters to work
+with CouchDB documents, attachments, revisions, changes feed.
 
 We love a CouchDB and its RESTful and many other core things such as MVCC, attachments and /_changes. These all brings your data and application flow together as well.
 
@@ -26,14 +28,16 @@ There are some of these:
 * ability to work with `/_changes` feeds;
 
 
-Check source code for more details. In additional, you could find more in `/example` application and find out how to use `ember-couchdb-kit` on practice.
-
-
 Live example
 ============
 
-* http://jsfiddle.net/nLMwt/17
+* http://labs.roundscope.com/ember-couchdb-kit
 
+
+Usage
+=====
+
+Check the usage example in `/example` directory.
 
 Ready to use as a regular JS assets
 -----------------------------------
@@ -42,35 +46,18 @@ An `ember-couchdb-kit` ships both with compiled js assets and coffee sources.
 Compiled assets plased in `dist/**.js` folder.
 
 
-Ready to install as a regular gem
----------------------------------
+Install with bower
+----------------
 
 ```
-gem "ember-couchdb-kit", git: "git@github.com:roundscope/ember-couchdb-kit.git"
-```
-
-Rails aware generator for vendoring packages into application vendor/assets/javascripts placeholder
-
-```
-./bin/rails g ember_couchdb_kit:install
-```
-
-Add into your application.js
-```
-//= require ember-couchdb-kit
+bower install ember-couchdb-kit
 ```
 
 
-Learn through specs
--------------------
+Contribution
+------------
 
-```
-rake jasmine
-```
-
-```
-open -a safari http://localhost:8888
-```
+To run tests `grunt test`
 
 
 License
