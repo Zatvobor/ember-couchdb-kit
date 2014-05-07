@@ -42,5 +42,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-express');
 
-  grunt.registerTask('server', ['copy', 'concat', 'express', 'express-keepalive']);
+  grunt.registerTask('build', ['copy', 'concat']);
+  grunt.registerTask('server', ['build', 'express', 'express-keepalive']);
 };

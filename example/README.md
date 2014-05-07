@@ -9,11 +9,12 @@ Online version
 Installation
 ============
 
-change to parent directory and run "npm install" (chose ember#~1.0.0 bower component version if prompted)
+change to parent directory, run "npm install" (chose ember#~1.0.0 bower component version if prompted) and run "grunt build"
 
 ```
 cd ..
 npm install
+grunt build
 ```
 
 change back to "example" directory and run "npm install"
