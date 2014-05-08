@@ -31,7 +31,7 @@ There are some of these:
 Live example
 ============
 
-* http://labs.roundscope.com/ember-couchdb-kit
+* http://ember-couchdb-kit.roundscope.pw
 
 
 Usage
