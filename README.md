@@ -15,7 +15,7 @@ Versions:
 An `ember-data` kit for Apache CouchDB. A collection of adapters to work
 with CouchDB documents, attachments, revisions, changes feed.
 
-We love a CouchDB and its RESTful and many other core things such as MVCC, attachments and /_changes. These all brings your data and application flow together as well.
+We love a CouchDB and its RESTful and many other core things such as MVCC, attachments and `/_changes`. These all brings your data and application flow together as well.
 
 Inspired by [pangratz/ember-couchdb-adapter](https://github.com/pangratz/ember-couchdb-adapter) and contains many fixes and newbie features.
 
