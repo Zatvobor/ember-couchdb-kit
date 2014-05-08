@@ -3,7 +3,7 @@ Simple application which brings all features together
 Online version
 ==============
 
-* http://jsfiddle.net/nLMwt/16/show (old version!)
+* http://ember-couchdb-kit.roundscope.pw
 
 
 Installation
