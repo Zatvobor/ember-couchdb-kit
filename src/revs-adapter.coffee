@@ -18,10 +18,10 @@ EmberCouchDBKit.RevSerializer = DS.RESTSerializer.extend
     type.eachRelationship ((key, relationship) ->
 
       if relationship.kind == "belongsTo"
-        hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(@extractId(type, hash))[1]
+        hash[key] = EmberCouchDBKit.sharedStore.mapRevIds('revs', @extractId(type, hash))[1]
 
       if relationship.kind == "hasMany"
-        hash[key] = EmberCouchDBKit.RevsStore.mapRevIds(@extractId(type, hash))
+        hash[key] = EmberCouchDBKit.sharedStore.mapRevIds('revs', @extractId(type, hash))
 
     ), this
 
@@ -75,7 +75,7 @@ EmberCouchDBKit.RevAdapter = DS.Adapter.extend
 
     return new Ember.RSVP.Promise((resolve, reject) ->
       hash.success = (data) ->
-        EmberCouchDBKit.RevsStore.add(id, data)
+        EmberCouchDBKit.sharedStore.add('revs', id, data)
         Ember.run(null, resolve, {history: {id: id} })
 
       Ember.$.ajax(hash)

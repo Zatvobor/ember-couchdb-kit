@@ -53,12 +53,12 @@ EmberCouchDBKit.AttachmentAdapter = DS.Adapter.extend
 
   find: (store, type, id) ->
     return new Ember.RSVP.Promise((resolve, reject) ->
-      Ember.run(null, resolve, {attachment: EmberCouchDBKit.AttachmentStore.get(id)})
+      Ember.run null, resolve, {attachment: EmberCouchDBKit.sharedStore.get('attachment', id)}
     )
 
   findMany: (store, type, ids) ->
     docs = ids.map (item) =>
-      item = EmberCouchDBKit.AttachmentStore.get(item)
+      item = EmberCouchDBKit.sharedStore.get('attachment', item)
       item.db = @get('db')
       item
 
