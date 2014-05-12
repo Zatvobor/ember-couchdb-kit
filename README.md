@@ -33,7 +33,6 @@ Live example
 
 * http://ember-couchdb-kit.roundscope.pw
 
-
 Usage
 =====
 
@@ -42,8 +41,7 @@ Check the usage example in `/example` directory.
 Ready to use as a regular JS assets
 -----------------------------------
 
-An `ember-couchdb-kit` ships both with compiled js assets and coffee sources. 
-Compiled assets plased in `dist/**.js` folder.
+An `ember-couchdb-kit` ships with compiled assets which is plased in `dist` directory.
 
 
 Install with bower
