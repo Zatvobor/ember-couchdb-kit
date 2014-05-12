@@ -53,13 +53,6 @@ Install with bower
 bower install ember-couchdb-kit
 ```
 
-
-Contribution
-------------
-
-To run tests `grunt test`
-
-
 License
 -------
 
