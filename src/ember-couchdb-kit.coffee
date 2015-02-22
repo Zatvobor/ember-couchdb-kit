@@ -7,7 +7,7 @@
 #= require changes-feed
 
 window.EmberCouchDBKit = Ember.Namespace.create
-  VERSION: '1.0.0'
+  VERSION: '1.0.1'
 
 EmberCouchDBKit.sharedStore = do ->
   _data = {}
