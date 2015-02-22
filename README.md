@@ -1,6 +1,3 @@
-[![Code
-Climate](https://codeclimate.com/github/roundscope/ember-couchdb-kit.png)](https://codeclimate.com/github/roundscope/ember-couchdb-kit)
-[![Hack roundscope/ember-couchdb-kit on Nitrous.IO](https://d3o0mnbgv6k92a.cloudfront.net/assets/hack-s-v1-7475db0cf93fe5d1e29420c928ebc614.png)](https://www.nitrous.io/hack_button?source=embed&runtime=nodejs&repo=roundscope%2Fember-couchdb-kit)
 ember-couchdb-kit
 =================
 
@@ -28,11 +25,6 @@ There are some of these:
 * ability to work with `/_changes` feeds;
 
 
-Live example
-============
-
-* http://ember-couchdb-kit.roundscope.pw
-
 Usage
 =====
 
@@ -41,7 +33,7 @@ Check the usage example in `/example` directory.
 Ready to use as a regular JS assets
 -----------------------------------
 
-An `ember-couchdb-kit` ships with compiled assets which is plased in `dist` directory.
+An `ember-couchdb-kit` ships with compiled assets which is placed in `dist` directory.
 
 
 Install with bower
@@ -55,4 +47,4 @@ License
 -------
 
 `ember-couchdb-kit` source code is released under MIT-License.
-Check [MIT-LICENSE](https://github.com/roundscope/ember-couchdb-kit/blob/master/MIT-LICENSE) for more details.
+Check [MIT-LICENSE](https://github.com/zatvobor/ember-couchdb-kit/blob/master/MIT-LICENSE) for more details.
