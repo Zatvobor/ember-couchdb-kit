@@ -133,7 +133,7 @@
       var attribute, key, relationshipType;
       attribute = relationship.options.attribute || "id";
       key = relationship.key;
-      relationshipType = DS.RelationshipChange.determineRelationshipType(record.constructor, relationship);
+      relationshipType = record.constructor.determineRelationshipType(relationship);
       switch (relationshipType) {
         case "manyToNone":
         case "manyToMany":
