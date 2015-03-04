@@ -1,7 +1,5 @@
 {
   "name": "ember-couchdb-kit",
-  "version": "0.0.0",
-  "repository": "https://github.com/roundscope/ember-couchdb-kit",
   "scripts": {
     "postinstall": "bower install",
     "test": "grunt test"
