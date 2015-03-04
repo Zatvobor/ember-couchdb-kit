@@ -77,7 +77,7 @@ EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend
   serializeHasMany: (record, json, relationship) ->
     attribute = (relationship.options.attribute || "id")
     key = relationship.key
-    relationshipType = record.constructor.determineRelationshipType(relationship);
+    relationshipType = record.constructor.determineRelationshipType(relationship)
     switch relationshipType
       when "manyToNone", "manyToMany", "manyToOne"
         if record.get(key).get('content.isLoaded') || Ember.get(record, key).get('isLoaded')
@@ -285,7 +285,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     })
 
   createRecord: (store, type, record) ->
-    json = store.serializerFor(type.typeKey).serialize(record);
+    json = store.serializerFor(type.typeKey).serialize(record)
     @_push(store, type, record, json)
 
   updateRecord: (store, type, record) ->
