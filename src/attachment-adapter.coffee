@@ -83,7 +83,7 @@ EmberCouchDBKit.AttachmentAdapter = DS.Adapter.extend
           data = JSON.parse(request.response)
           data.model_name = record.get('model_name')
           data.doc_id = record.get('doc_id')
-          json = adapter.serialize(record, includeId: true)
+          json = adapter.serialize(record._createSnapshot(), includeId: true)
           delete data.id
           Ember.run(null, resolve, {attachment: $.extend(json, data)})
       request.send(record.get('file'))

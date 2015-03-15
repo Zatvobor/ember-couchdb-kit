@@ -394,7 +394,7 @@
     },
     createRecord: function(store, type, record) {
       var json;
-      json = store.serializerFor(type.typeKey).serialize(record);
+      json = store.serializerFor(type.typeKey).serialize(record._createSnapshot());
       return this._push(store, type, record, json);
     },
     updateRecord: function(store, type, record) {
@@ -554,7 +554,7 @@
             data = JSON.parse(request.response);
             data.model_name = record.get('model_name');
             data.doc_id = record.get('doc_id');
-            json = adapter.serialize(record, {
+            json = adapter.serialize(record._createSnapshot(), {
               includeId: true
             });
             delete data.id;
