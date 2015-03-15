@@ -394,7 +394,7 @@
     },
     createRecord: function(store, type, record) {
       var json;
-      json = store.serializerFor(type.typeKey).serialize(record);
+      json = store.serializerFor(type.typeKey).serialize(record._createSnapshot());
       return this._push(store, type, record, json);
     },
     updateRecord: function(store, type, record) {
