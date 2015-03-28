@@ -2,10 +2,18 @@
   "name": "ember-couchdb-kit",
   "description": "An Ember.js adapter for Apache CouchDB",
   "repository": {
-    "type": "git", "url": "git://github.com/zatvobor/ember-couchdb-kit.git"
+    "type": "git",
+    "url": "git://github.com/zatvobor/ember-couchdb-kit.git"
   },
   "main": "dist/ember-couchdb-kit.min.js",
   "ignore": [
-    "example", "spec", "src", "Gruntfile.js", "package.json"
-  ]
+    "example",
+    "spec",
+    "src",
+    "Gruntfile.js",
+    "package.json"
+  ],
+  "devDependencies": {
+    "qunit": "~1.17.1"
+  }
 }
