@@ -71,7 +71,7 @@ EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend
     key = relationship.key
     belongsTo = record.belongsTo(key)
     return  if Ember.isNone(belongsTo)
-    json[key] = belongsTo.attr(attribute)
+    json[key] = if (attribute == "id") then belongsTo.id else belongsTo.attr(attribute)
     json[key + "_type"] = belongsTo.typeKey  if relationship.options.polymorphic
 
   serializeHasMany: (record, json, relationship) ->

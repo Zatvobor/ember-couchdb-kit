@@ -14,12 +14,10 @@ test 'belongsTo relation', 1, ->
     saved.save().then @async (updated) =>
       stop()
       history = updated.get 'history'
-      console.log(history)
       setTimeout =>
         history.reload()
         setTimeout =>
           start()
-          console.log(history.get('_data'))
           equal history.get('user.id').split('/')[0], person.id, 'history belongsTo user'
         , 1000
       , 1000

@@ -124,8 +124,7 @@
       if (Ember.isNone(belongsTo)) {
         return;
       }
-      console.log(belongsTo);
-      json[key] = belongsTo.attr(attribute);
+      json[key] = attribute === "id" ? belongsTo.id : belongsTo.attr(attribute);
       if (relationship.options.polymorphic) {
         return json[key + "_type"] = belongsTo.typeKey;
       }
