@@ -115,30 +115,31 @@ window.setupStore = (options) ->
   env = {}
 
   options = options or {}
-  container = env.container = new Ember.Container()
+  registry = new Ember.Registry(options)
+  container = env.container = registry.container()
   adapter = env.adapter = EmberCouchDBKit.DocumentAdapter.extend db:'doc', host: 'http://localhost:5984'
 
   delete options.adapter
 
   for prop of options
-    container.register "model:" + prop, options[prop]
+    registry.register "model:" + prop, options[prop]
 
-  container.register "store:main", DS.Store.extend adapter: adapter
+  registry.register "store:main", DS.Store.extend adapter: adapter
 
-  container.register "serializer:_default", EmberCouchDBKit.DocumentSerializer
-  container.register "serializer:history", EmberCouchDBKit.RevSerializer
-  container.register "serializer:attachment", EmberCouchDBKit.AttachmentSerializer
+  registry.register "serializer:_default", EmberCouchDBKit.DocumentSerializer
+  registry.register "serializer:history", EmberCouchDBKit.RevSerializer
+  registry.register "serializer:attachment", EmberCouchDBKit.AttachmentSerializer
 
-  container.register "adapter:_rest", DS.RESTAdapter
-  container.register "adapter:history", EmberCouchDBKit.RevAdapter.extend db:'doc', host: 'http://localhost:5984'
-  container.register "adapter:attachment", EmberCouchDBKit.AttachmentAdapter.extend db:'doc', host: 'http://localhost:5984'
+  registry.register "adapter:_rest", DS.RESTAdapter
+  registry.register "adapter:history", EmberCouchDBKit.RevAdapter.extend db:'doc', host: 'http://localhost:5984'
+  registry.register "adapter:attachment", EmberCouchDBKit.AttachmentAdapter.extend db:'doc', host: 'http://localhost:5984'
 
-  container.register 'transform:boolean', DS.BooleanTransform
-  container.register 'transform:date', DS.DateTransform
-  container.register 'transform:number', DS.NumberTransform
-  container.register 'transform:string', DS.StringTransform
+  registry.register 'transform:boolean', DS.BooleanTransform
+  registry.register 'transform:date', DS.DateTransform
+  registry.register 'transform:number', DS.NumberTransform
+  registry.register 'transform:string', DS.StringTransform
 
-  container.injection "serializer", "store", "store:main"
+  registry.injection "serializer", "store", "store:main"
 
   env.serializer = container.lookup("serializer:_default")
   env.restSerializer = container.lookup("serializer:_rest")
