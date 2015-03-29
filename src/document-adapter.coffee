@@ -69,22 +69,18 @@ EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend
   serializeBelongsTo: (record, json, relationship) ->
     attribute = (relationship.options.attribute || "id")
     key = relationship.key
-    belongsTo = Ember.get(record, key)
+    belongsTo = record.belongsTo(key)
     return  if Ember.isNone(belongsTo)
-    json[key] = Ember.get(belongsTo, attribute)
-    json[key + "_type"] = belongsTo.constructor.typeKey  if relationship.options.polymorphic
+    json[key] = belongsTo.attr(attribute)
+    json[key + "_type"] = belongsTo.typeKey  if relationship.options.polymorphic
 
   serializeHasMany: (record, json, relationship) ->
     attribute = (relationship.options.attribute || "id")
     key = relationship.key
-    relationshipType = record.constructor.determineRelationshipType(relationship)
+    relationshipType = record.type.determineRelationshipType(relationship)
     switch relationshipType
       when "manyToNone", "manyToMany", "manyToOne"
-        if record.get(key).get('content.isLoaded') || Ember.get(record, key).get('isLoaded')
-          json[key] = Ember.get(record, key).mapBy(attribute)
-        else
-          if record.get("_data.%@".fmt(key))
-            json[key] = record.get("_data.%@".fmt(key)).mapBy('id')
+          json[key] = record.hasMany(key).mapBy(attribute)
 ###
 
   A `DocumentAdapter` should be used as a main adapter for working with models as a CouchDB documents.
