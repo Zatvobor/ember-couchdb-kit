@@ -44,10 +44,15 @@ Install with bower
 bower install ember-couchdb-kit
 ```
 
+Contribution
+------------
+
+See [CONTRIBUTING.md](CONTRIBUTING.md)
+
 License
 -------
 
 `ember-couchdb-kit` source code is released under MIT-License.
-Check [MIT-LICENSE](https://github.com/zatvobor/ember-couchdb-kit/blob/master/MIT-LICENSE) for more details.
+Check [MIT-LICENSE](MIT-LICENSE) for more details.
 
 [![Analytics](https://ga-beacon.appspot.com/UA-61065309-1/Zatvobor/ember-couchdb-kit/README)](https://github.com/igrigorik/ga-beacon)
