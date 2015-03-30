@@ -1,3 +1,5 @@
+![Bower version](http://img.shields.io/bower/v/ember-couchdb-kit.svg) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](MIT-LICENSE)
+
 ember-couchdb-kit
 =================
 
