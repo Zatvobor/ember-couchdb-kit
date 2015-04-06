@@ -161,7 +161,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
       if adapter.headers
         headers = adapter.headers
         hash.beforeSend = (xhr) ->
-          forEach.call Ember.keys(headers), (key) ->
+          Ember.keys(headers).forEach (key) ->
             xhr.setRequestHeader key, headers[key]
 
       unless hash.success
