@@ -232,7 +232,7 @@
         if (adapter.headers) {
           headers = adapter.headers;
           hash.beforeSend = function(xhr) {
-            return forEach.call(Ember.keys(headers), function(key) {
+            return Ember.keys(headers).forEach(function(key) {
               return xhr.setRequestHeader(key, headers[key]);
             });
           };
