@@ -1,6 +1,7 @@
 {
   "name": "ember-couchdb-kit",
   "description": "An Ember.js adapter for Apache CouchDB",
+  "version": "1.0.2",
   "repository": {
     "type": "git",
     "url": "git://github.com/ValidUSA/ember-couchdb-kit.git"
