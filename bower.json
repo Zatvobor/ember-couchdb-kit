@@ -3,7 +3,7 @@
   "description": "An Ember.js adapter for Apache CouchDB",
   "repository": {
     "type": "git",
-    "url": "git://github.com/zatvobor/ember-couchdb-kit.git"
+    "url": "git://github.com/ValidUSA/ember-couchdb-kit.git"
   },
   "main": "dist/ember-couchdb-kit.min.js",
   "ignore": [
@@ -14,9 +14,9 @@
     "package.json"
   ],
   "devDependencies": {
-    "jquery": "1.11.1",
-    "ember": "1.8.1",
-    "ember-data": "1.0.0-beta.15",
+    "jquery": "1.11.3",
+    "ember": "1.12.0",
+    "ember-data": "1.0.0-beta.17",
     "qunit": "~1.17.1"
   }
 }
