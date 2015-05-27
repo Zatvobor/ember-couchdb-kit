@@ -25,6 +25,12 @@ EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend
   extractSingle: (store, type, payload, id, requestType) ->
     @_super(store, type, payload, id, requestType)
 
+  extractMeta: (store, type, payload) ->
+    if payload && payload.total_rows
+      store.setMetadataFor(type, {total_rows: payload.total_rows})
+      delete payload.total_rows
+    return
+
   serialize: (record, options) ->
     @_super(record, options)
 
@@ -252,6 +258,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     normalizeResponce = (data) ->
       json = {}
       json[designDoc] = data.rows.getEach('doc').map((doc) => @_normalizeRevision(doc))
+      json['total_rows'] = data.total_rows
       json
 
     @ajax('_design/%@/_view/%@'.fmt(designDoc, query.viewName), 'GET', normalizeResponce, {

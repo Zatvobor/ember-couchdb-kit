@@ -68,6 +68,14 @@
     extractSingle: function(store, type, payload, id, requestType) {
       return this._super(store, type, payload, id, requestType);
     },
+    extractMeta: function(store, type, payload) {
+      if (payload && payload.total_rows) {
+        store.setMetadataFor(type, {
+          total_rows: payload.total_rows
+        });
+        delete payload.total_rows;
+      }
+    },
     serialize: function(record, options) {
       return this._super(record, options);
     },
@@ -357,6 +365,7 @@
         json[designDoc] = data.rows.getEach('doc').map(function(doc) {
           return _this._normalizeRevision(doc);
         });
+        json['total_rows'] = data.total_rows;
         return json;
       };
       return this.ajax('_design/%@/_view/%@'.fmt(designDoc, query.viewName), 'GET', normalizeResponce, {
