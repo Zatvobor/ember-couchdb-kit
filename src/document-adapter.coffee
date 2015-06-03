@@ -288,7 +288,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     })
 
   createRecord: (store, type, record) ->
-    json = store.serializerFor(type.typeKey).serialize(record())
+    json = store.serializerFor(type.typeKey).serialize(record)
     @_push(store, type, record, json)
 
   updateRecord: (store, type, record) ->
