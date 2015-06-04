@@ -51,7 +51,7 @@
     primaryKey: '_id',
     normalize: function(type, hash, prop) {
       this.normalizeId(hash);
-      this.normalizeAttachments(hash["_attachments"], type.typeKey, hash);
+      this.normalizeAttachments(hash["_attachments"], type.modelName, hash);
       this.addHistoryId(hash);
       this.normalizeUsingDeclaredMapping(type, hash);
       this.normalizeAttributes(type, hash);
@@ -76,8 +76,8 @@
         delete payload.total_rows;
       }
     },
-    serialize: function(record, options) {
-      return this._super(record, options);
+    serialize: function(snapshot, options) {
+      return this._super(snapshot, options);
     },
     addHistoryId: function(hash) {
       return hash.history = "%@/history".fmt(hash.id);
@@ -124,29 +124,29 @@
         }), this);
       }
     },
-    serializeBelongsTo: function(record, json, relationship) {
+    serializeBelongsTo: function(snapshot, json, relationship) {
       var attribute, belongsTo, key;
       attribute = relationship.options.attribute || "id";
       key = relationship.key;
-      belongsTo = record.belongsTo(key);
+      belongsTo = snapshot.belongsTo(key);
       if (Ember.isNone(belongsTo)) {
         return;
       }
       json[key] = attribute === "id" ? belongsTo.id : belongsTo.attr(attribute);
       if (relationship.options.polymorphic) {
-        return json[key + "_type"] = belongsTo.typeKey;
+        return json[key + "_type"] = belongsTo.modelName;
       }
     },
-    serializeHasMany: function(record, json, relationship) {
+    serializeHasMany: function(snapshot, json, relationship) {
       var attribute, key, relationshipType;
       attribute = relationship.options.attribute || "id";
       key = relationship.key;
-      relationshipType = record.type.determineRelationshipType(relationship);
+      relationshipType = snapshot.type.determineRelationshipType(relationship);
       switch (relationshipType) {
         case "manyToNone":
         case "manyToMany":
         case "manyToOne":
-          return json[key] = record.hasMany(key).mapBy(attribute);
+          return json[key] = snapshot.hasMany(key).mapBy(attribute);
       }
     }
   });
@@ -215,10 +215,10 @@
       }
       return url;
     },
-    ajax: function(url, type, normalizeResponce, hash) {
-      return this._ajax('%@/%@'.fmt(this.buildURL(), url || ''), type, normalizeResponce, hash);
+    ajax: function(url, type, normalizeResponse, hash) {
+      return this._ajax('%@/%@'.fmt(this.buildURL(), url || ''), type, normalizeResponse, hash);
     },
-    _ajax: function(url, type, normalizeResponce, hash) {
+    _ajax: function(url, type, normalizeResponse, hash) {
       var adapter;
       if (hash == null) {
         hash = {};
@@ -248,7 +248,7 @@
         if (!hash.success) {
           hash.success = function(json) {
             var _modelJson;
-            _modelJson = normalizeResponce.call(adapter, json);
+            _modelJson = normalizeResponse.call(adapter, json);
             return Ember.run(null, resolve, _modelJson);
           };
         }
@@ -268,42 +268,42 @@
       }
       return json;
     },
-    shouldCommit: function(record, relationships) {
+    shouldCommit: function(snapshot, relationships) {
       return this._super.apply(arguments);
     },
     find: function(store, type, id) {
-      var normalizeResponce;
+      var normalizeResponse;
       if (this._checkForRevision(id)) {
         return this.findWithRev(store, type, id);
       } else {
-        normalizeResponce = function(data) {
+        normalizeResponse = function(data) {
           var _modelJson;
           this._normalizeRevision(data);
           _modelJson = {};
-          _modelJson[type.typeKey] = data;
+          _modelJson[type.modelName] = data;
           return _modelJson;
         };
-        return this.ajax(id, 'GET', normalizeResponce);
+        return this.ajax(id, 'GET', normalizeResponse);
       }
     },
     findWithRev: function(store, type, id, hash) {
-      var normalizeResponce, url, _id, _ref, _rev;
+      var normalizeResponse, url, _id, _ref, _rev;
       _ref = id.split("/").slice(0, 2), _id = _ref[0], _rev = _ref[1];
       url = "%@?rev=%@".fmt(_id, _rev);
-      normalizeResponce = function(data) {
+      normalizeResponse = function(data) {
         var _modelJson;
         this._normalizeRevision(data);
         _modelJson = {};
         data._id = id;
-        _modelJson[type.typeKey] = data;
+        _modelJson[type.modelName] = data;
         return _modelJson;
       };
-      return this.ajax(url, 'GET', normalizeResponce, hash);
+      return this.ajax(url, 'GET', normalizeResponse, hash);
     },
     findManyWithRev: function(store, type, ids) {
       var docs, hash, key, self,
         _this = this;
-      key = Ember.String.pluralize(type.typeKey);
+      key = Ember.String.pluralize(type.modelName);
       self = this;
       docs = {};
       docs[key] = [];
@@ -329,7 +329,7 @@
       return docs;
     },
     findMany: function(store, type, ids) {
-      var data, normalizeResponce;
+      var data, normalizeResponse;
       if (this._checkForRevision(ids[0])) {
         return this.findManyWithRev(store, type, ids);
       } else {
@@ -337,28 +337,28 @@
           include_docs: true,
           keys: ids
         };
-        normalizeResponce = function(data) {
+        normalizeResponse = function(data) {
           var json,
             _this = this;
           json = {};
-          json[Ember.String.pluralize(type.typeKey)] = data.rows.getEach('doc').map(function(doc) {
+          json[Ember.String.pluralize(type.modelName)] = data.rows.getEach('doc').map(function(doc) {
             return _this._normalizeRevision(doc);
           });
           return json;
         };
-        return this.ajax('_all_docs?include_docs=true', 'POST', normalizeResponce, {
+        return this.ajax('_all_docs?include_docs=true', 'POST', normalizeResponse, {
           data: data
         });
       }
     },
     findQuery: function(store, type, query, modelArray) {
-      var designDoc, normalizeResponce;
+      var designDoc, normalizeResponse;
       designDoc = query.designDoc || this.get('designDoc');
       if (!query.options) {
         query.options = {};
       }
       query.options.include_docs = true;
-      normalizeResponce = function(data) {
+      normalizeResponse = function(data) {
         var json,
           _this = this;
         json = {};
@@ -368,21 +368,21 @@
         json['total_rows'] = data.total_rows;
         return json;
       };
-      return this.ajax('_design/%@/_view/%@'.fmt(designDoc, query.viewName), 'GET', normalizeResponce, {
+      return this.ajax('_design/%@/_view/%@'.fmt(designDoc, query.viewName), 'GET', normalizeResponse, {
         context: this,
         data: query.options
       });
     },
     findAll: function(store, type) {
-      var data, designDoc, normalizeResponce, typeString, typeViewName;
-      typeString = Ember.String.singularize(type.typeKey);
+      var data, designDoc, normalizeResponse, typeString, typeViewName;
+      typeString = Ember.String.singularize(type.modelName);
       designDoc = this.get('designDoc') || typeString;
       typeViewName = this.get('typeViewName');
-      normalizeResponce = function(data) {
+      normalizeResponse = function(data) {
         var json,
           _this = this;
         json = {};
-        json[[Ember.String.pluralize(type.typeKey)]] = data.rows.getEach('doc').map(function(doc) {
+        json[[Ember.String.pluralize(type.modelName)]] = data.rows.getEach('doc').map(function(doc) {
           return _this._normalizeRevision(doc);
         });
         return json;
@@ -391,33 +391,35 @@
         include_docs: true,
         key: '"' + typeString + '"'
       };
-      return this.ajax('_design/%@/_view/%@'.fmt(designDoc, typeViewName), 'GET', normalizeResponce, {
+      return this.ajax('_design/%@/_view/%@'.fmt(designDoc, typeViewName), 'GET', normalizeResponse, {
         data: data
       });
     },
-    createRecord: function(store, type, record) {
+    createRecord: function(store, type, snapshot) {
       var json;
-      json = store.serializerFor(type.typeKey).serialize(record._createSnapshot());
-      return this._push(store, type, record, json);
+      json = store.serializerFor(type.modelName).serialize(snapshot);
+      delete json.rev;
+      return this._push(store, type, snapshot, json);
     },
-    updateRecord: function(store, type, record) {
+    updateRecord: function(store, type, snapshot) {
       var json;
-      json = this.serialize(record, {
+      json = this.serialize(snapshot, {
         associations: true,
         includeId: true
       });
-      if (record.get('attachments')) {
-        this._updateAttachmnets(record, json);
+      if (snapshot.attr('attachments')) {
+        this._updateAttachmnets(snapshot, json);
       }
-      return this._push(store, type, record, json);
+      delete json.rev;
+      return this._push(store, type, snapshot, json);
     },
-    deleteRecord: function(store, type, record) {
-      return this.ajax("%@?rev=%@".fmt(record.get('id'), record.get('_data.rev')), 'DELETE', (function() {}), {});
+    deleteRecord: function(store, type, snapshot) {
+      return this.ajax("%@?rev=%@".fmt(snapshot.id, snapshot.attr('rev')), 'DELETE', (function() {}), {});
     },
-    _updateAttachmnets: function(record, json) {
+    _updateAttachmnets: function(snapshot, json) {
       var _attachments;
       _attachments = {};
-      record.get('attachments').forEach(function(item) {
+      snapshot.attr('attachments').forEach(function(item) {
         var attachment;
         attachment = EmberCouchDBKit.sharedStore.get('attachment', item.get('id'));
         return _attachments[item.get('file_name')] = {
@@ -435,22 +437,22 @@
     _checkForRevision: function(id) {
       return id.split("/").length > 1;
     },
-    _push: function(store, type, record, json) {
-      var id, method, normalizeResponce;
-      id = record.get('id') || '';
-      method = record.get('id') ? 'PUT' : 'POST';
-      if (record.get('_data.rev')) {
-        json._rev = record.get('_data.rev');
+    _push: function(store, type, snapshot, json) {
+      var id, method, normalizeResponse;
+      id = snapshot.id || '';
+      method = snapshot.id ? 'PUT' : 'POST';
+      if (snapshot.attr('rev')) {
+        json._rev = snapshot.attr('rev');
       }
-      normalizeResponce = function(data) {
+      normalizeResponse = function(data) {
         var _data, _modelJson;
         _data = json || {};
         this._normalizeRevision(data);
         _modelJson = {};
-        _modelJson[type.typeKey] = $.extend(_data, data);
+        _modelJson[type.modelName] = $.extend(_data, data);
         return _modelJson;
       };
-      return this.ajax(id, method, normalizeResponce, {
+      return this.ajax(id, method, normalizeResponse, {
         data: json
       });
     }
