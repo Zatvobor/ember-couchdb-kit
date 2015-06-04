@@ -289,11 +289,13 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
 
   createRecord: (store, type, record) ->
     json = store.serializerFor(type.typeKey).serialize(record)
+    delete json.rev;
     @_push(store, type, record, json)
 
   updateRecord: (store, type, record) ->
     json = @serialize(record, {associations: true, includeId: true })
     @_updateAttachmnets(record, json) if record.get('attachments')
+    delete json.rev;
     @_push(store, type, record, json)
 
   deleteRecord: (store, type, record) ->
