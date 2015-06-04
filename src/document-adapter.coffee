@@ -9,7 +9,7 @@ EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend
 
   normalize: (type, hash, prop) ->
     @normalizeId(hash)
-    @normalizeAttachments(hash["_attachments"],  type.typeKey, hash)
+    @normalizeAttachments(hash["_attachments"],  type.modelName, hash)
     @addHistoryId(hash)
     @normalizeUsingDeclaredMapping(type, hash)
     @normalizeAttributes(type, hash)
@@ -31,8 +31,8 @@ EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend
       delete payload.total_rows
     return
 
-  serialize: (record, options) ->
-    @_super(record, options)
+  serialize: (snapshot, options) ->
+    @_super(snapshot, options)
 
   addHistoryId: (hash) ->
     hash.history = "%@/history".fmt(hash.id)
@@ -72,21 +72,21 @@ EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend
         delete hash[payloadKey]
       ), this
 
-  serializeBelongsTo: (record, json, relationship) ->
+  serializeBelongsTo: (snapshot, json, relationship) ->
     attribute = (relationship.options.attribute || "id")
     key = relationship.key
-    belongsTo = record.belongsTo(key)
+    belongsTo = snapshot.belongsTo(key)
     return  if Ember.isNone(belongsTo)
     json[key] = if (attribute == "id") then belongsTo.id else belongsTo.attr(attribute)
-    json[key + "_type"] = belongsTo.typeKey  if relationship.options.polymorphic
+    json[key + "_type"] = belongsTo.modelName  if relationship.options.polymorphic
 
-  serializeHasMany: (record, json, relationship) ->
+  serializeHasMany: (snapshot, json, relationship) ->
     attribute = (relationship.options.attribute || "id")
     key = relationship.key
-    relationshipType = record.type.determineRelationshipType(relationship)
+    relationshipType = snapshot.type.determineRelationshipType(relationship)
     switch relationshipType
       when "manyToNone", "manyToMany", "manyToOne"
-          json[key] = record.hasMany(key).mapBy(attribute)
+          json[key] = snapshot.hasMany(key).mapBy(attribute)
 ###
 
   A `DocumentAdapter` should be used as a main adapter for working with models as a CouchDB documents.
@@ -143,10 +143,10 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     url = "/" + url  unless host
     url
 
-  ajax: (url, type, normalizeResponce, hash) ->
-    @_ajax('%@/%@'.fmt(@buildURL(), url || ''), type, normalizeResponce, hash)
+  ajax: (url, type, normalizeResponse, hash) ->
+    @_ajax('%@/%@'.fmt(@buildURL(), url || ''), type, normalizeResponse, hash)
 
-  _ajax: (url, type, normalizeResponce, hash={}) ->
+  _ajax: (url, type, normalizeResponse, hash={}) ->
     adapter = this
     return new Ember.RSVP.Promise((resolve, reject) ->
       if url.split("/").pop() == "" then url = url.substr(0, url.length - 1)
@@ -168,7 +168,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
 
       unless hash.success
         hash.success = (json) ->
-          _modelJson = normalizeResponce.call(adapter, json)
+          _modelJson = normalizeResponse.call(adapter, json)
           Ember.run(null, resolve, _modelJson)
 
       hash.error = (jqXHR, textStatus, errorThrown) ->
@@ -186,34 +186,34 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     json
 
 
-  shouldCommit: (record, relationships) ->
+  shouldCommit: (snapshot, relationships) ->
     @_super.apply(arguments)
 
   find: (store, type, id) ->
     if @_checkForRevision(id)
       @findWithRev(store, type, id)
     else
-      normalizeResponce = (data) ->
+      normalizeResponse = (data) ->
         @_normalizeRevision(data)
         _modelJson = {}
-        _modelJson[type.typeKey] = data
+        _modelJson[type.modelName] = data
         _modelJson
 
-      @ajax(id, 'GET', normalizeResponce)
+      @ajax(id, 'GET', normalizeResponse)
 
   findWithRev: (store, type, id, hash) ->
     [_id, _rev] = id.split("/")[0..1]
     url = "%@?rev=%@".fmt(_id, _rev)
-    normalizeResponce = (data) ->
+    normalizeResponse = (data) ->
       @_normalizeRevision(data)
       _modelJson = {}
       data._id = id
-      _modelJson[type.typeKey] = data
+      _modelJson[type.modelName] = data
       _modelJson
-    @ajax(url, 'GET', normalizeResponce, hash)
+    @ajax(url, 'GET', normalizeResponse, hash)
 
   findManyWithRev: (store, type, ids) ->
-    key = Ember.String.pluralize(type.typeKey)
+    key = Ember.String.pluralize(type.modelName)
     self = @
     docs = {}
     docs[key] = []
@@ -241,12 +241,12 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
         include_docs: true
         keys: ids
 
-      normalizeResponce = (data) ->
+      normalizeResponse = (data) ->
         json = {}
-        json[Ember.String.pluralize(type.typeKey)] = data.rows.getEach('doc').map((doc) => @_normalizeRevision(doc))
+        json[Ember.String.pluralize(type.modelName)] = data.rows.getEach('doc').map((doc) => @_normalizeRevision(doc))
         json
 
-      @ajax('_all_docs?include_docs=true', 'POST', normalizeResponce, {
+      @ajax('_all_docs?include_docs=true', 'POST', normalizeResponse, {
         data: data
       })
 
@@ -255,57 +255,56 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
     query.options = {} unless query.options
     query.options.include_docs = true
 
-    normalizeResponce = (data) ->
+    normalizeResponse = (data) ->
       json = {}
       json[designDoc] = data.rows.getEach('doc').map((doc) => @_normalizeRevision(doc))
       json['total_rows'] = data.total_rows
       json
 
-    @ajax('_design/%@/_view/%@'.fmt(designDoc, query.viewName), 'GET', normalizeResponce, {
+    @ajax('_design/%@/_view/%@'.fmt(designDoc, query.viewName), 'GET', normalizeResponse, {
       context: this
       data: query.options
     })
 
   findAll: (store, type) ->
 
-    typeString = Ember.String.singularize(type.typeKey)
-
+    typeString = Ember.String.singularize(type.modelName)
     designDoc = @get('designDoc') || typeString
 
     typeViewName = @get('typeViewName')
 
-    normalizeResponce = (data) ->
+    normalizeResponse = (data) ->
       json = {}
-      json[[Ember.String.pluralize(type.typeKey)]] = data.rows.getEach('doc').map((doc) => @_normalizeRevision(doc))
+      json[[Ember.String.pluralize(type.modelName)]] = data.rows.getEach('doc').map((doc) => @_normalizeRevision(doc))
       json
 
     data =
       include_docs: true
       key: '"' + typeString + '"'
 
-    @ajax('_design/%@/_view/%@'.fmt(designDoc, typeViewName), 'GET', normalizeResponce, {
+    @ajax('_design/%@/_view/%@'.fmt(designDoc, typeViewName), 'GET', normalizeResponse, {
       data: data
     })
 
-  createRecord: (store, type, record) ->
-    json = store.serializerFor(type.typeKey).serialize(record)
-    delete json.rev;
-    @_push(store, type, record, json)
+  createRecord: (store, type, snapshot) ->
+    json = store.serializerFor(type.modelName).serialize(snapshot)
+    delete json.rev
+    @_push(store, type, snapshot, json)
 
-  updateRecord: (store, type, record) ->
-    json = @serialize(record, {associations: true, includeId: true })
-    @_updateAttachmnets(record, json) if record.get('attachments')
-    delete json.rev;
-    @_push(store, type, record, json)
+  updateRecord: (store, type, snapshot) ->
+    json = @serialize(snapshot, {associations: true, includeId: true })
+    @_updateAttachmnets(snapshot, json) if snapshot.attr('attachments')
+    delete json.rev
+    @_push(store, type, snapshot, json)
 
-  deleteRecord: (store, type, record) ->
-    @ajax("%@?rev=%@".fmt(record.get('id'), record.get('_data.rev')), 'DELETE', (->), {
+  deleteRecord: (store, type, snapshot) ->
+    @ajax("%@?rev=%@".fmt(snapshot.id, snapshot.attr('rev')), 'DELETE', (->), {
     })
 
-  _updateAttachmnets: (record, json) ->
+  _updateAttachmnets: (snapshot, json) ->
     _attachments = {}
 
-    record.get('attachments').forEach (item) ->
+    snapshot.attr('attachments').forEach (item) ->
       attachment = EmberCouchDBKit.sharedStore.get('attachment', item.get('id'))
       _attachments[item.get('file_name')] =
         content_type: attachment.content_type
@@ -321,20 +320,20 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
   _checkForRevision: (id) ->
     id.split("/").length > 1
 
-  _push: (store, type, record, json) ->
-    id     = record.get('id') || ''
-    method = if record.get('id') then 'PUT' else 'POST'
+  _push: (store, type, snapshot, json) ->
+    id     = snapshot.id || ''
+    method = if snapshot.id then 'PUT' else 'POST'
 
-    if record.get('_data.rev')
-      json._rev = record.get('_data.rev')
+    if snapshot.attr('rev')
+      json._rev = snapshot.attr('rev')
 
-    normalizeResponce = (data) ->
+    normalizeResponse = (data) ->
       _data = json || {}
       @_normalizeRevision(data)
       _modelJson = {}
-      _modelJson[type.typeKey] = $.extend(_data, data)
+      _modelJson[type.modelName] = $.extend(_data, data)
       _modelJson
 
-    @ajax(id, method, normalizeResponce, {
+    @ajax(id, method, normalizeResponse, {
       data: json
     })
