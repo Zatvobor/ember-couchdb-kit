@@ -293,7 +293,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
 
   updateRecord: (store, type, snapshot) ->
     json = @serialize(snapshot, {associations: true, includeId: true })
-    @_updateAttachmnets(snapshot, json) if snapshot.attr('attachments')
+    @_updateAttachmnets(snapshot, json) if 'attachments' in snapshot._attributes 
     delete json.rev
     @_push(store, type, snapshot, json)
 

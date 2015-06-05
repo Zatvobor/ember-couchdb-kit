@@ -47,6 +47,8 @@
 
 
 (function() {
+  var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
   EmberCouchDBKit.DocumentSerializer = DS.RESTSerializer.extend({
     primaryKey: '_id',
     normalize: function(type, hash, prop) {
@@ -407,7 +409,7 @@
         associations: true,
         includeId: true
       });
-      if (snapshot.attr('attachments')) {
+      if (__indexOf.call(snapshot._attributes, 'attachments') >= 0) {
         this._updateAttachmnets(snapshot, json);
       }
       delete json.rev;
