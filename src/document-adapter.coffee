@@ -293,7 +293,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
 
   updateRecord: (store, type, snapshot) ->
     json = @serialize(snapshot, {associations: true, includeId: true })
-    @_updateAttachmnets(snapshot, json) if 'attachments' in snapshot._attributes 
+    @_updateAttachmnets(snapshot, json) if 'attachment' of snapshot._attributes 
     delete json.rev
     @_push(store, type, snapshot, json)
 
@@ -326,7 +326,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
 
     if snapshot.attr('rev')
       json._rev = snapshot.attr('rev')
-
+ 
     normalizeResponse = (data) ->
       _data = json || {}
       @_normalizeRevision(data)
