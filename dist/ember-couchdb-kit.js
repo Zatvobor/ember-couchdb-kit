@@ -120,31 +120,25 @@
       var attribute, belongsTo, key;
       attribute = relationship.options.attribute || "id";
       key = relationship.key;
-      belongsTo = Ember.get(record, key);
+      belongsTo = record.belongsTo(key);
       if (Ember.isNone(belongsTo)) {
         return;
       }
-      json[key] = Ember.get(belongsTo, attribute);
+      json[key] = attribute === "id" ? belongsTo.id : belongsTo.attr(attribute);
       if (relationship.options.polymorphic) {
-        return json[key + "_type"] = belongsTo.constructor.typeKey;
+        return json[key + "_type"] = belongsTo.typeKey;
       }
     },
     serializeHasMany: function(record, json, relationship) {
       var attribute, key, relationshipType;
       attribute = relationship.options.attribute || "id";
       key = relationship.key;
-      relationshipType = record.constructor.determineRelationshipType(relationship);
+      relationshipType = record.type.determineRelationshipType(relationship);
       switch (relationshipType) {
         case "manyToNone":
         case "manyToMany":
         case "manyToOne":
-          if (record.get(key).get('content.isLoaded') || Ember.get(record, key).get('isLoaded')) {
-            return json[key] = Ember.get(record, key).mapBy(attribute);
-          } else {
-            if (record.get("_data.%@".fmt(key))) {
-              return json[key] = record.get("_data.%@".fmt(key)).mapBy('id');
-            }
-          }
+          return json[key] = record.hasMany(key).mapBy(attribute);
       }
     }
   });

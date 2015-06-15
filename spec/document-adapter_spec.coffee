@@ -31,7 +31,7 @@ test 'retrieve belongsTo field as raw json', 1, ->
   person = @subject.create.call @, 'user', id: Math.floor(Math.random() * 10000), name: 'john'
   message = @subject.create.call @, 'message', user: person
   message.save().then @async ->
-    equal message.get('_data.user.id'), person.get('name'), 'Retrieves raw belongsTo json ok'
+    equal message.get('_data.user'), person.get('name'), 'Retrieves raw belongsTo json ok'
 
 test 'hasMany relation', 1, ->
   article = @subject.create.call @, 'article', label: 'Label'
