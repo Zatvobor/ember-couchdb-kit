@@ -5,6 +5,7 @@ ember-couchdb-kit
 
 Versions:
 
+* `v1.0.5` works with `ember 1.11.0` and `ember-data 1.0.0-beta.15`
 * `v1.0.3` works with `ember 1.8.1` and `ember-data 1.0.0-beta.15`
 * `v1.0.0` works with `ember 1.5.1` and `ember-data 1.0.0-beta.7`
 * `v0.9.0` works with `ember 1.0.0` and `ember-data 1.0.0-beta.3`

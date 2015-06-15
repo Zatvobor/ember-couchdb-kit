@@ -15,7 +15,7 @@
   ],
   "devDependencies": {
     "jquery": "1.11.1",
-    "ember": "1.8.1",
+    "ember": "1.11.0",
     "ember-data": "1.0.0-beta.15",
     "qunit": "~1.17.1"
   }
