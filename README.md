@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](MIT-LICENSE)
+[![Build Status](https://travis-ci.org/zatvobor/ember-coucdb-kit.svg?branch=2.0.0-alpha)](https://travis-ci.org/zatvobor/ember-coucdb-kit)[![License](https://img.shields.io/badge/license-MIT-blue.svg)](MIT-LICENSE)
 
 #### ember-couchdb-kit
 
@@ -15,7 +15,7 @@ Versions:
 
 
 #### Contribution
-  
+
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 
