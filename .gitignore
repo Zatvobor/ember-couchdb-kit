@@ -1,11 +1,3 @@
-.idea/
-vendor/bundle
-.bundle
-.rvmrc
-bin/
 node_modules/
 bower_components/
 tmp/
-.DS_Store
-example/public
-dist/
