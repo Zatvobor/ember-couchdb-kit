@@ -293,7 +293,7 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
 
   updateRecord: (store, type, snapshot) ->
     json = @serialize(snapshot, {associations: true, includeId: true })
-    @_updateAttachmnets(snapshot, json) if 'attachment' of snapshot._attributes 
+    @_updateAttachmnets(snapshot, json) if 'attachments' of snapshot.record._data
     delete json.rev
     @_push(store, type, snapshot, json)
 
@@ -304,9 +304,9 @@ EmberCouchDBKit.DocumentAdapter = DS.Adapter.extend
   _updateAttachmnets: (snapshot, json) ->
     _attachments = {}
 
-    snapshot.attr('attachments').forEach (item) ->
+    snapshot._hasManyRelationships.attachments.forEach (item) ->
       attachment = EmberCouchDBKit.sharedStore.get('attachment', item.get('id'))
-      _attachments[item.get('file_name')] =
+      _attachments[attachment.file_name] =
         content_type: attachment.content_type
         digest: attachment.digest
         length: attachment.length

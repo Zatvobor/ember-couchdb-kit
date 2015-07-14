@@ -407,7 +407,7 @@
         associations: true,
         includeId: true
       });
-      if ('attachment' in snapshot._attributes) {
+      if ('attachments' in snapshot.record._data) {
         this._updateAttachmnets(snapshot, json);
       }
       delete json.rev;
@@ -419,10 +419,10 @@
     _updateAttachmnets: function(snapshot, json) {
       var _attachments;
       _attachments = {};
-      snapshot.attr('attachments').forEach(function(item) {
+      snapshot._hasManyRelationships.attachments.forEach(function(item) {
         var attachment;
         attachment = EmberCouchDBKit.sharedStore.get('attachment', item.get('id'));
-        return _attachments[item.get('file_name')] = {
+        return _attachments[attachment.file_name] = {
           content_type: attachment.content_type,
           digest: attachment.digest,
           length: attachment.length,
