@@ -402,12 +402,13 @@
       return this._push(store, type, snapshot, json);
     },
     updateRecord: function(store, type, snapshot) {
-      var json;
+      var json, snapData;
       json = this.serialize(snapshot, {
         associations: true,
         includeId: true
       });
-      if ('attachments' in snapshot.record._data) {
+      snapData = snapshot.record._data;
+      if ('attachments' in snapData ? snapData.attachments.length > 0 : void 0) {
         this._updateAttachmnets(snapshot, json);
       }
       delete json.rev;
